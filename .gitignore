@@ -52,3 +52,41 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Ignorar archivos binarios de Visual Studio
+.vs/
+.vscode/
+.idea/
+
+# Archivos de compilación de .NET
+bin/
+obj/
+
+# Archivos de configuración locales
+appsettings.Development.json
+appsettings.Local.json
+
+# Archivos de base de datos
+*.db
+*.bak
+*.sql
+
+# Archivos de MongoDB
+mongodb/
+
+# Directorios específicos de Docker
+docker-compose.override.yml
+docker-compose.yml
+
+# Logs
+*.log
+
+# Archivos de sistema macOS
+.DS_Store
+
+# Archivos de sistema Windows
+Thumbs.db
+
+# Entornos de ejecución
+*.user
+*.suo
