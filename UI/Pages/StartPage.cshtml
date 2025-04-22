@@ -1,0 +1,403 @@
+@page
+@model StartPageModel
+@{
+  Layout = null; 
+  ViewData["Title"] = "Página de inicio"; // Esto asegura que no se use el layout predeterminado
+}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dusk sky</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  <link rel="stylesheet" href="~/css/site.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+    rel="stylesheet">
+
+
+</head>
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+    crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
+  <nav class="custom-navbar navbar navbar-expand-lg ">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#" style="color: whitesmoke;">
+        <img src="/Resources/Images/logo.webp">
+        Dusk Sky</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#" style="color: whitesmoke;">Lists</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" style="color: whitesmoke;">Members</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" style="color: whitesmoke;">Journals</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+              style="color: whitesmoke;">
+              Access
+            </a>
+            <ul class="dropdown-menu">
+              <li><button class="dropdown-item btn btn-primary" type="button" href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Sign
+                  Up</button></li>
+              <li><a class="dropdown-item" href="#">Create Account</a></li>
+            </ul>
+          </li>
+          <li>
+
+            <form class="d-flex" role="search">
+              <input class="form-control me-2 searchInput" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-outline-primary custom-button" type="submit">Search</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </nav>
+  <div class="container-img">
+    <img src="https://rectifygaming.com/wp-content/uploads/2022/09/halo-infinite-season-3-news.jpg" alt="...">
+  </div>
+
+  <div class="container-quote">
+    <h2>
+      Track films you’ve watched. <br>
+      Save those you want to see. <br>
+      Tell your friends what’s good. <br>
+    </h2>
+    <p></p>
+    <button type="button" class="btn btn-primary btn-lg custom-button">Get Started - it´s free</button>
+    <p>
+      <br>The social network for gamers.
+    </p>
+  </div>
+
+  <div class="card-group custom-card">
+    <div class="card">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1599660/header.jpg?t=1717622011"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card">
+      <img
+        src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3328900/ce44be95e162d6b292c2504f1e5a08b35392e7e1/header.jpg?t=1744627835"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card ">
+      <img
+        src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1222670/header_alt_assets_7_spanish.jpg?t=1744305171"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2456740/header.jpg?t=1744688805"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1062520/header.jpg?t=1744857075"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
+        class="card-img-top" alt="...">
+
+    </div>
+  </div>
+  <div class="card-group ">
+    <div class="card">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2995920/header.jpg?t=1733241802"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1462570/header.jpg?t=1662047426"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card ">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1172470/header.jpg?t=1741980558"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1774580/header.jpg?t=1701206599"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card">
+      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2842040/header.jpg?t=1744913029"
+        class="card-img-top" alt="...">
+
+    </div>
+    <div class="card">
+      <img
+        src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/990080/a3cdc6f40d97df8ac993679c2dd1edeb5222421e/header.jpg?t=1744736444"
+        class="card-img-top" alt="...">
+
+    </div>
+  </div>
+
+  <div>
+    <h4>
+      <br>
+      Dusk Sky lets you...
+      <p></p>
+    </h4>
+    <div class="card-group">
+      <div class="card mb-3 custom-card-group">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <p class="card-text">Keep track of every game you´ve ever played (or just start from the day you join)
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3 custom-card-group">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <p class="card-text">Show some love for your favorite games, lists and reviews with a like</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3 custom-card-group">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <p class="card-text">Write and share reviews, and follow friends and other Members to read theirs</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="card-group">
+      <div class="card mb-3 custom-card-group">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <p class="card-text">Rate each game on a five-star scale (with halves) to record and share your reaction
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3 custom-card-group">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <p class="card-text">Keep a dairy of your game playing (and upgrade to <b>Pro</b> for comprehesive status
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3 custom-card-group">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <p class="card-text">Compile and share lists of games on any topic and Keep a wishlist of games to play
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <div>
+    <h6>Just Reviewed</h6>
+    <hr>
+
+    <div class="card-group custom-card-reviewed">
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1599660/header.jpg?t=1717622011"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img
+          src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3328900/ce44be95e162d6b292c2504f1e5a08b35392e7e1/header.jpg?t=1744627835"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card ">
+        <img
+          src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1222670/header_alt_assets_7_spanish.jpg?t=1744305171"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2456740/header.jpg?t=1744688805"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1062520/header.jpg?t=1744857075"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
+          class="card-img-top" alt="...">
+
+      </div>
+      <div class="card">
+        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
+          class="card-img-top" alt="...">
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="container-fluid" style="padding: 20px;">
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <div style="flex-grow: 3;">
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-4">
+              <img src="https://th.bing.com/th/id/OIP.YYA1QSw8shFEvZFpR1QsEAHaEK?rs=1&pid=ImgDetMain"
+                class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title">GTA V</h5>
+                <p class="card-text">un videojuego muy entretenido....</p>
+                <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1;">
+        <div class="card mb-3">
+          <img src="..." class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title">Título Card Derecha 1</h5>
+            <p class="card-text">Este es un card más ancho...</p>
+            <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Título Card Derecha 2</h5>
+            <p class="card-text">Este es un card más ancho...</p>
+            <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
+          </div>
+          <img src="..." class="card-img-bottom" alt="...">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="text-align: center; margin-left: 400px;">
+  Launch static backdrop modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Understood</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>

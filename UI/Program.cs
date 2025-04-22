@@ -1,7 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages();  // Agregar soporte para Razor Pages
+builder.Services.AddHttpClient();   // <--- Agrega esta línea aquí
 
 var app = builder.Build();
 
@@ -9,18 +10,15 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseRouting();
 
-app.UseAuthorization();
+app.MapGet("/", () => Results.Redirect("/StartPage"));
+app.UseStaticFiles();
 
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages();  // Esto mapea Razor Pages a las rutas
 
 app.Run();
