@@ -1,24 +1,24 @@
 @font-face {
-  font-family: 'Inter'; /* El nombre que le darás a tu fuente */
-  src: url('../fonts/Inter-VariableFont_opsz\,wght.ttf') format('ttf'),
-       url('../fonts/Inter_18pt-ExtraBold.ttf') format('ttf'),
-       url('../fonts/Inter_18pt-Bold.ttf') format('ttf');
+  font-family: "Inter"; /* El nombre que le darás a tu fuente */
+  src: url("../fonts/Inter-VariableFont_opsz\,wght.ttf") format("ttf"),
+    url("../fonts/Inter_18pt-ExtraBold.ttf") format("ttf"),
+    url("../fonts/Inter_18pt-Bold.ttf") format("ttf");
   font-weight: normal;
   font-style: normal;
   font-display: swap; /* Recomendado para evitar el "flash de texto invisible" */
 }
 
 @font-face {
-  font-family: 'InterBold'; /* El nombre que le darás a tu fuente */
-  src: url('../fonts/Inter-VariableFont_opsz\,wght.ttf') format('ttf');
+  font-family: "InterBold"; /* El nombre que le darás a tu fuente */
+  src: url("../fonts/Inter-VariableFont_opsz\,wght.ttf") format("ttf");
   font-weight: bold;
   font-style: normal;
   font-display: swap; /* Recomendado para evitar el "flash de texto invisible" */
 }
 
 @font-face {
-  font-family: 'InterBolder'; /* El nombre que le darás a tu fuente */
-  src: url('../fonts/Inter_18pt-ExtraBold.ttf') format('ttf');
+  font-family: "InterBolder"; /* El nombre que le darás a tu fuente */
+  src: url("../fonts/Inter_18pt-ExtraBold.ttf") format("ttf");
   font-weight: bolder;
   font-style: normal;
   font-display: swap; /* Recomendado para evitar el "flash de texto invisible" */
@@ -34,7 +34,11 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
@@ -46,20 +50,22 @@ html {
 body {
   margin-bottom: 60px;
   background-color: whitesmoke;
-  margin-left:20px ;
+  margin-left: 20px;
   margin-right: 20px;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
 
-.container-img{
+.container-img {
   margin-top: -10;
   position: absolute;
   z-index: 0;
@@ -68,13 +74,12 @@ body {
 }
 
 .container-img img {
-  width: 100vw;  
+  width: 100vw;
   height: 100vh;
   object-fit: cover;
   margin-left: 0;
   margin-right: 0;
   /*filter: brightness(2.5);*/
-  
 }
 
 .container-img::before {
@@ -85,27 +90,41 @@ body {
   right: 0;
   bottom: 0;
   /* Degradado radial desde blanco opaco en el borde hasta transparente en el centro */
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.8) 95%, whitesmoke 100%),
-            linear-gradient(to left, rgba(0, 0, 255, 0) 80%, rgba(255, 255, 255, .8) 95%, whitesmoke 100%),
-            linear-gradient(to right, rgba(255, 0, 0, 0) 80%, rgba(255, 255, 255, .8) 95%, whitesmoke 100%);
-background-repeat: no-repeat; /* Evita que los degradados se repitan */
+  background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 70%,
+      rgba(255, 255, 255, 0.8) 95%,
+      whitesmoke 100%
+    ),
+    linear-gradient(
+      to left,
+      rgba(0, 0, 255, 0) 80%,
+      rgba(255, 255, 255, 0.8) 95%,
+      whitesmoke 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(255, 0, 0, 0) 80%,
+      rgba(255, 255, 255, 0.8) 95%,
+      whitesmoke 100%
+    );
+  background-repeat: no-repeat; /* Evita que los degradados se repitan */
   z-index: 1;
   pointer-events: none;
-  background-attachment:fixed ;
+  background-attachment: fixed;
 }
 .custom-navbar {
-  background: rgba(255, 255, 255, 0);  /* Fondo transparente */
-  position: absolute;  /* Hacer que el navbar quede fijo */
+  background: rgba(255, 255, 255, 0); /* Fondo transparente */
+  position: absolute; /* Hacer que el navbar quede fijo */
   width: 100%;
   top: 0;
   margin-left: 30%;
-  z-index: 1000;  /* Asegura que el navbar quede por encima de otros elementos */
+  z-index: 1000; /* Asegura que el navbar quede por encima de otros elementos */
   font-weight: bolder;
   color: whitesmoke;
- 
 }
 
-.container-quote{
+.container-quote {
   justify-content: center;
   top: 50vh;
   position: relative;
@@ -113,38 +132,257 @@ background-repeat: no-repeat; /* Evita que los degradados se repitan */
   text-align: center;
   font-weight: bolder;
   color: whitesmoke;
-  font-family:'InterBolder', sans-serif;
-
 }
 
-.custom-button{
-  background-color: #6495ED;
-  border: #6495ED;
+.custom-button {
+  background-color: #6495ed;
+  border: #6495ed;
   color: whitesmoke;
 }
 
-.searchInput { /* Si usas una clase */
+.searchInput {
+  /* Si usas una clase */
   border-radius: 25px; /* Ajusta el valor para redondear los bordes. Un valor mayor crea bordes más redondeados. */
-  background-color: rgba(255, 255, 255, 0.5); /* Establece el color de fondo a blanco con un 50% de opacidad (traslúcido). Ajusta el valor alfa (el último) para más o menos transparencia. */
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.5
+  ); /* Establece el color de fondo a blanco con un 50% de opacidad (traslúcido). Ajusta el valor alfa (el último) para más o menos transparencia. */
   padding: 8px 12px; /* Ajusta el espaciado interno para que el texto no esté pegado al borde. */
   /* Otros estilos que puedas tener */
 }
 
-
-.custom-card{
+.custom-card {
   margin-top: 75vh;
   position: relative;
 }
 
-.custom-card-group{
+.custom-card-group {
   max-width: 540px;
   background-color: rgba(100, 149, 237, 0.4);
   border: 0cm;
   margin: 5px;
   border-radius: 24px;
-  
 }
 
-.custom-card-reviewed{
+.custom-card-reviewed {
   position: relative;
 }
+
+.custom-modal {
+  background: rgba(255, 255, 255, 0.4); /* Más blanco */
+  backdrop-filter: blur(15px); /* Más desenfoque para dar más luz */
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Borde más blanco */
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); /* Un toque de profundidad */
+}
+
+.input-glass {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: #000;
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.input-glass::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.input-glass:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.button-glass {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: #fff;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.button-glass:hover {
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 40px rgba(31, 38, 135, 0.3);
+  color: #000;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.button-glass-blue {
+  background: linear-gradient(
+    135deg,
+    rgba(86, 149, 255, 0.4),
+    rgba(0, 102, 255, 0.35)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 102, 255, 0.25);
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.button-glass-blue:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(86, 149, 255, 0.6),
+    rgba(0, 102, 255, 0.5)
+  );
+  box-shadow: 0 8px 40px rgba(0, 102, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.feature-card {
+  background: linear-gradient(
+    135deg,
+    rgba(173, 216, 255, 0.35),
+    rgba(180, 200, 255, 0.3)
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  color: #000;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.card-glass {
+  background: linear-gradient(135deg, rgba(173, 216, 255, 0.25), rgba(173, 216, 255, 0.35));
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-glass:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 30px rgba(0, 102, 255, 0.2);
+}
+
+.card-glass-blue {
+  background: linear-gradient(135deg, rgba(86, 149, 255, 0.3), rgba(0, 102, 255, 0.25));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 24px rgba(0, 102, 255, 0.15);
+  padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: #000;
+}
+
+.card-glass-blue:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 32px rgba(0, 102, 255, 0.3);
+}
+
+.icon-shadow {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+
+.dropdown-menu.glassy-dropdown {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+
+.card-glossy {
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.85), rgba(20, 20, 20, 0.8));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #d0d0d0;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.card-glossy .poster {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+.card-glossy .card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.card-glossy .year {
+  color: #aaa;
+  margin-left: 8px;
+  font-weight: 400;
+}
+
+.card-glossy .user-info img.user-avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 1px solid #444;
+}
+
+.card-glossy .stars {
+  color: #41d17d;
+  font-size: 1.2rem;
+  margin-left: 6px;
+}
+
+.card-glossy .likes {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.card-glossy .likes i {
+  margin-right: 6px;
+  color: #bbb;
+}
+
+
+

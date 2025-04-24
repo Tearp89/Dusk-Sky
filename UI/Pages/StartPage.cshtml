@@ -1,403 +1,379 @@
 @page
 @model StartPageModel
 @{
-  Layout = null; 
-  ViewData["Title"] = "Página de inicio"; // Esto asegura que no se use el layout predeterminado
+    Layout = null;
+    ViewData["Title"] = "Página de inicio"; // Esto asegura que no se use el layout predeterminado
 }
 
 <!doctype html>
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dusk sky</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-  <link rel="stylesheet" href="~/css/site.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-    rel="stylesheet">
-
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dusk sky</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
-    crossorigin="anonymous"></script>
-  <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
-  <nav class="custom-navbar navbar navbar-expand-lg ">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#" style="color: whitesmoke;">
-        <img src="/Resources/Images/logo.webp">
-        Dusk Sky</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#" style="color: whitesmoke;">Lists</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" style="color: whitesmoke;">Members</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" style="color: whitesmoke;">Journals</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-              style="color: whitesmoke;">
-              Access
-            </a>
-            <ul class="dropdown-menu">
-              <li><button class="dropdown-item btn btn-primary" type="button" href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Sign
-                  Up</button></li>
-              <li><a class="dropdown-item" href="#">Create Account</a></li>
-            </ul>
-          </li>
-          <li>
-
-            <form class="d-flex" role="search">
-              <input class="form-control me-2 searchInput" type="search" placeholder="Search" aria-label="Search">
-              <button class="btn btn-outline-primary custom-button" type="submit">Search</button>
-            </form>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-  </nav>
-  <div class="container-img">
-    <img src="https://rectifygaming.com/wp-content/uploads/2022/09/halo-infinite-season-3-news.jpg" alt="...">
-  </div>
-
-  <div class="container-quote">
-    <h2>
-      Track films you’ve watched. <br>
-      Save those you want to see. <br>
-      Tell your friends what’s good. <br>
-    </h2>
-    <p></p>
-    <button type="button" class="btn btn-primary btn-lg custom-button">Get Started - it´s free</button>
-    <p>
-      <br>The social network for gamers.
-    </p>
-  </div>
-
-  <div class="card-group custom-card">
-    <div class="card">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1599660/header.jpg?t=1717622011"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card">
-      <img
-        src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3328900/ce44be95e162d6b292c2504f1e5a08b35392e7e1/header.jpg?t=1744627835"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card ">
-      <img
-        src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1222670/header_alt_assets_7_spanish.jpg?t=1744305171"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2456740/header.jpg?t=1744688805"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1062520/header.jpg?t=1744857075"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
-        class="card-img-top" alt="...">
-
-    </div>
-  </div>
-  <div class="card-group ">
-    <div class="card">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2995920/header.jpg?t=1733241802"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1462570/header.jpg?t=1662047426"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card ">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1172470/header.jpg?t=1741980558"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1774580/header.jpg?t=1701206599"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card">
-      <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2842040/header.jpg?t=1744913029"
-        class="card-img-top" alt="...">
-
-    </div>
-    <div class="card">
-      <img
-        src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/990080/a3cdc6f40d97df8ac993679c2dd1edeb5222421e/header.jpg?t=1744736444"
-        class="card-img-top" alt="...">
-
-    </div>
-  </div>
-
-  <div>
-    <h4>
-      <br>
-      Dusk Sky lets you...
-      <p></p>
-    </h4>
-    <div class="card-group">
-      <div class="card mb-3 custom-card-group">
-        <div class="row g-0">
-          <div class="col-md-4">
-            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
-          </div>
-          <div class="col-md-8">
-            <div class="card-body">
-              <p class="card-text">Keep track of every game you´ve ever played (or just start from the day you join)
-              </p>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+        crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
+    <nav class="custom-navbar navbar navbar-expand-lg ">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#" style="color: whitesmoke;">
+                <img src="/Resources/Images/logo.webp">
+                Dusk Sky</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#" style="color: whitesmoke;">Lists</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" style="color: whitesmoke;">Members</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" style="color: whitesmoke;">Journals</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" style="color: whitesmoke;">
+                            Access
+                        </a>
+                        <ul class="dropdown-menu glassy-dropdown">
+                            <li><button class="dropdown-item btn btn-primary" type="button" href="#"
+                                    data-bs-toggle="modal" data-bs-target="#signUpModal">Sign
+                                    In</button></li>
+                            <li><a class="dropdown-item" href="#">Create Account</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <form class="d-flex" role="search">
+                            <input class="form-control me-2 searchInput input-glass" type="search" placeholder="Search"
+                                aria-label="Search">
+                            <button class="btn btn-outline-primary button-glass-blue" type="submit">Search</button>
+                        </form>
+                    </li>
+                </ul>
             </div>
-          </div>
         </div>
-      </div>
-
-      <div class="card mb-3 custom-card-group">
-        <div class="row g-0">
-          <div class="col-md-4">
-            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
-          </div>
-          <div class="col-md-8">
-            <div class="card-body">
-              <p class="card-text">Show some love for your favorite games, lists and reviews with a like</p>
+    </nav>
+    <div class="container-img">
+        <img src="https://rectifygaming.com/wp-content/uploads/2022/09/halo-infinite-season-3-news.jpg" alt="...">
+    </div>
+    <div class="container-quote">
+        <h2>
+            Track games you’ve played. <br>
+            Save those you want to play. <br>
+            Tell your friends what’s good. <br>
+        </h2>
+        <p></p>
+        <button type="button" class="btn btn-primary btn-lg button-glass-blue">Get Started - it´s free</button>
+        <p>
+            <br>The social network for gamers.
+        </p>
+    </div>
+    <div class="card-group custom-card">
+        @if (Model.Juegos != null && Model.Juegos.Count > 0)
+        {
+            @foreach (var juego in Model.Juegos.Take(6))
+            {
+                <div class="card">
+                    <img src="@juego.ImagenUrl" class="card-img-top" alt="@juego.Titulo">
+                </div>
+            }
+            @for (int i = Model.Juegos.Count; i < 6; i++)
+            {
+                <div class="card">
+                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                </div>
+            }
+        }
+        else
+        {
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="card">
+                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                </div>
+            }
+        }
+    </div>
+    <div class="card-group ">
+        @if (Model.Juegos != null && Model.Juegos.Count > 6)
+        {
+            @foreach (var juego in Model.Juegos.Skip(6).Take(6))
+            {
+                <div class="card">
+                    <img src="@juego.ImagenUrl" class="card-img-top" alt="@juego.Titulo">
+                </div>
+            }
+            @for (int i = Model.Juegos.Count - 6; i < 6 && Model.Juegos.Count < 12; i++)
+            {
+                <div class="card">
+                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                </div>
+            }
+        }
+        else if (Model.Juegos != null && Model.Juegos.Count > 0)
+        {
+            @foreach (var juego in Model.Juegos.Skip(6))
+            {
+                <div class="card">
+                    <img src="@juego.ImagenUrl" class="card-img-top" alt="@juego.Titulo">
+                </div>
+            }
+            @for (int i = Model.Juegos.Count; i < 12; i++)
+            {
+                <div class="card">
+                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                </div>
+            }
+        }
+        else
+        {
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="card">
+                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                </div>
+            }
+        }
+    </div>
+    <div>
+        <h4>
+            <br>
+            Dusk Sky lets you...
+            <p></p>
+        </h4>
+        <div class="card-group">
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Keep track of every game you´ve ever played (or just start from the day
+                                you join)
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card mb-3 custom-card-group">
-        <div class="row g-0">
-          <div class="col-md-4">
-            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
-          </div>
-          <div class="col-md-8">
-            <div class="card-body">
-              <p class="card-text">Write and share reviews, and follow friends and other Members to read theirs</p>
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Show some love for your favorite games, lists and reviews with a like
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Write and share reviews, and follow friends and other Members to read
+                                theirs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+        <div class="card-group">
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Rate each game on a five-star scale (with halves) to record and share
+                                your reaction
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Keep a dairy of your game playing (and upgrade to <b>Pro</b> for
+                                comprehesive status
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Compile and share lists of games on any topic and Keep a wishlist of
+                                games to play
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h6>Just Reviewed</h6>
+        <hr>
+        <div class="card-group custom-card-reviewed">
+            @if (Model.Juegos != null && Model.Juegos.Count > 0)
+            {
+                @foreach (var imagen in Model.Juegos.Take(6))
+                {
+                    <div class="card">
+                        <div class="card-body">
+
+                            <img src=@imagen.ImagenUrl class="card-img-top">
+                        </div>
+                    </div>
+                }
+                @for (int i = Model.Comentarios.Count; i < 10; i++)
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Sin Comentarios</h6>
+                            <p class="card-text">No hay comentarios recientes.</p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                @for (int i = 0; i < 10; i++)
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Cargando...</h6>
+                            <p class="card-text">Esperando comentarios.</p>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+<div class="container-fluid" style="padding: 20px;">
+    <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+
+        <!-- Tarjeta grande a la izquierda -->
+        <div style="flex-grow: 3; flex-basis: 0;">
+            <div class="card mb-3 card-glossy d-flex flex-row">
+                <div class="flex-1">
+                    <img src="https://th.bing.com/th/id/OIP.YYA1QSw8shFEvZFpR1QsEAHaEK?rs=1&pid=ImgDetMain"
+                         class="img-fluid h-100 w-100 poster" alt="GTA V Poster">
+                </div>
+                <div class="flex-3 p-3 d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="card-title">GTA V <span class="year">2013</span></h5>
+
+                        <div class="d-flex align-items-center user-info mb-2">
+                            <img src="https://i.pravatar.cc/32" alt="Avatar" class="user-avatar">
+                            <span><strong>Usuario123</strong></span>
+                            <span class="stars">★★★★½</span>
+                        </div>
+
+                        <p class="card-text">Un videojuego muy entretenido con misiones memorables y libertad total.</p>
+                        <p class="card-text"><strong>Podcast ep. 22.</strong><br>YT Review disponible.</p>
+                    </div>
+
+                    <div class="likes">
+                        <i class="bi bi-heart-fill"></i> 17,701 likes
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas pequeñas a la derecha -->
+        <div style="flex-grow: 1; flex-basis: 0;">
+            <div class="card mb-3">
+                <img src="..." class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">Título Card Derecha 1</h5>
+                    <p class="card-text">Este es un card más ancho...</p>
+                    <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Título Card Derecha 2</h5>
+                    <p class="card-text">Este es un card más ancho...</p>
+                    <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
+                </div>
+                <img src="..." class="card-img-bottom" alt="...">
+            </div>
+        </div>
 
     </div>
-    <div class="card-group">
-      <div class="card mb-3 custom-card-group">
-        <div class="row g-0">
-          <div class="col-md-4">
-            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
-          </div>
-          <div class="col-md-8">
-            <div class="card-body">
-              <p class="card-text">Rate each game on a five-star scale (with halves) to record and share your reaction
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card mb-3 custom-card-group">
-        <div class="row g-0">
-          <div class="col-md-4">
-            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
-          </div>
-          <div class="col-md-8">
-            <div class="card-body">
-              <p class="card-text">Keep a dairy of your game playing (and upgrade to <b>Pro</b> for comprehesive status
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card mb-3 custom-card-group">
-        <div class="row g-0">
-          <div class="col-md-4">
-            <i class="fa-solid fa-eye fa-6x" style="text-align: center;"></i>
-          </div>
-          <div class="col-md-8">
-            <div class="card-body">
-              <p class="card-text">Compile and share lists of games on any topic and Keep a wishlist of games to play
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-
-  </div>
-
-  <div>
-    <h6>Just Reviewed</h6>
-    <hr>
-
-    <div class="card-group custom-card-reviewed">
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1599660/header.jpg?t=1717622011"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img
-          src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3328900/ce44be95e162d6b292c2504f1e5a08b35392e7e1/header.jpg?t=1744627835"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card ">
-        <img
-          src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1222670/header_alt_assets_7_spanish.jpg?t=1744305171"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2456740/header.jpg?t=1744688805"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1062520/header.jpg?t=1744857075"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
-          class="card-img-top" alt="...">
-
-      </div>
-      <div class="card">
-        <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2408820/header.jpg?t=1737540641"
-          class="card-img-top" alt="...">
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="container-fluid" style="padding: 20px;">
-    <div style="display: flex; gap: 10px; align-items: center;">
-      <div style="flex-grow: 3;">
-        <div class="card mb-3">
-          <div class="row g-0">
-            <div class="col-md-4">
-              <img src="https://th.bing.com/th/id/OIP.YYA1QSw8shFEvZFpR1QsEAHaEK?rs=1&pid=ImgDetMain"
-                class="img-fluid rounded-start" alt="...">
-            </div>
-            <div class="col-md-8">
-              <div class="card-body">
-                <h5 class="card-title">GTA V</h5>
-                <p class="card-text">un videojuego muy entretenido....</p>
-                <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="flex-grow: 1;">
-        <div class="card mb-3">
-          <img src="..." class="card-img-top" alt="...">
-          <div class="card-body">
-            <h5 class="card-title">Título Card Derecha 1</h5>
-            <p class="card-text">Este es un card más ancho...</p>
-            <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Título Card Derecha 2</h5>
-            <p class="card-text">Este es un card más ancho...</p>
-            <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
-          </div>
-          <img src="..." class="card-img-bottom" alt="...">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="text-align: center; margin-left: 400px;">
-  Launch static backdrop modal
-</button>
-
-<!-- Modal -->
-<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Understood</button>
-      </div>
-    </div>
-  </div>
 </div>
 
+    <div class="modal fade" id="signUpModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content custom-modal">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Sign Up</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="exampleInputEmail1" class="form-label">Email address</label>
+                            <input type="email" class="form-control input-glass" id="exampleInputEmail1"
+                                aria-describedby="emailHelp">
+                            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Password</label>
+                            <input type="password" class="form-control input-glass" id="exampleInputPassword1">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                            <label class="form-check-label" for="exampleCheck1">Remember me</label>
+                        </div>
+                    </form>
 
-
-
-
-
-
-
-
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary button-glass-blue">Sign In</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
