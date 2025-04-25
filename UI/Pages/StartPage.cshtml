@@ -1,8 +1,11 @@
 @page
+@using System.Text.Json
 @model StartPageModel
 @{
     Layout = null;
     ViewData["Title"] = "Página de inicio"; // Esto asegura que no se use el layout predeterminado
+    int index = 0;
+    
 }
 
 <!doctype html>
@@ -289,54 +292,99 @@
 <div class="container-fluid" style="padding: 20px;">
     <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
 
-        <!-- Tarjeta grande a la izquierda -->
+        <div class="d-flex flex-column gap-3">
+    @foreach (var comentario in Model.Comentarios)
+    {
         <div style="flex-grow: 3; flex-basis: 0;">
             <div class="card mb-3 card-glossy d-flex flex-row">
                 <div class="flex-1">
                     <img src="https://th.bing.com/th/id/OIP.YYA1QSw8shFEvZFpR1QsEAHaEK?rs=1&pid=ImgDetMain"
-                         class="img-fluid h-100 w-100 poster" alt="GTA V Poster">
+                         class="img-fluid h-100 w-100 poster" alt="Juego asociado">
                 </div>
                 <div class="flex-3 p-3 d-flex flex-column justify-content-between">
                     <div>
-                        <h5 class="card-title">GTA V <span class="year">2013</span></h5>
+                        <h5 class="card-title">
+                            @comentario.Texto.Substring(0, Math.Min(30, comentario.Texto.Length))...
+                            <span class="year">@comentario.Fecha.ToString("yyyy")</span>
+                        </h5>
 
                         <div class="d-flex align-items-center user-info mb-2">
-                            <img src="https://i.pravatar.cc/32" alt="Avatar" class="user-avatar">
-                            <span><strong>Usuario123</strong></span>
-                            <span class="stars">★★★★½</span>
+                            <img src="@comentario.AvatarUrl" alt="@comentario.Usuario" class="user-avatar">
+                            <span><strong>@comentario.Usuario</strong></span>
+                            <span class="stars">❤️ @comentario.Likes</span>
                         </div>
 
-                        <p class="card-text">Un videojuego muy entretenido con misiones memorables y libertad total.</p>
-                        <p class="card-text"><strong>Podcast ep. 22.</strong><br>YT Review disponible.</p>
+                        <p class="card-text">@comentario.Texto</p>
+                        <p class="card-text">
+                            <small class="text-muted">Publicado el @comentario.Fecha.ToString("dd MMM yyyy")</small>
+                        </p>
                     </div>
 
                     <div class="likes">
-                        <i class="bi bi-heart-fill"></i> 17,701 likes
+                        <i class="bi bi-heart-fill"></i> @comentario.Likes likes
                     </div>
                 </div>
             </div>
         </div>
+    }
+</div>
 
-        <!-- Tarjetas pequeñas a la derecha -->
-        <div style="flex-grow: 1; flex-basis: 0;">
-            <div class="card mb-3">
-                <img src="..." class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">Título Card Derecha 1</h5>
-                    <p class="card-text">Este es un card más ancho...</p>
-                    <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
-                </div>
-            </div>
+<div class="container d-flex flex-column gap-4">
 
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Título Card Derecha 2</h5>
-                    <p class="card-text">Este es un card más ancho...</p>
-                    <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
-                </div>
-                <img src="..." class="card-img-bottom" alt="...">
+        @foreach (var seccion in Model.SeccionesJuegos)
+{
+    var id = $"collage-{index++}";
+     var json = JsonSerializer.Serialize(seccion.Value, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    });
+
+    <div style="flex-grow: 1; flex-basis: 0;">
+        <div class="card mb-3 card-glossy-light">
+            <div id="@id" class="poster-collage"></div>
+            <div class="card-body">
+                <h5 class="card-title">@seccion.Key</h5>
+
+                @foreach (var juego in seccion.Value)
+                {
+                    <div class="juego-info mb-2">
+                        <strong>@juego.Titulo</strong><br />
+                        <span class="text-muted">@juego.DescripcionCorta</span>
+                    </div>
+                }
+
+                <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
             </div>
         </div>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const pelis = @Html.Raw(json);
+        const cont = document.getElementById("@id");
+
+        if (cont && pelis) {
+            pelis.forEach((peli, i) => {
+                const img = document.createElement('img');
+                img.src = peli.imagenUrl;
+                img.alt = peli.titulo;
+                img.classList.add('poster');
+                img.style.left = `${i * 40}px`;
+                cont.appendChild(img);
+            });
+        }
+    });
+</script>
+
+}
+</div>
+
+
+
+            
+
+        
+        
 
     </div>
 </div>

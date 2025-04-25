@@ -330,11 +330,12 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #d0d0d0;
-  border-radius: 12px;
-  padding: 0;
+  border-radius: 10px;
+  padding: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.05);
   overflow: hidden;
+  font-size: 0.9rem;
 }
 
 .card-glossy .poster {
@@ -344,7 +345,7 @@ body {
 }
 
 .card-glossy .card-title {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: bold;
   color: #ffffff;
   margin-bottom: 4px;
@@ -386,3 +387,79 @@ body {
 
 
 
+.user-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.card-glossy-light {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #000;
+}
+
+
+.poster-collage {
+  position: relative;
+  height: 180px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.poster {
+  position: absolute;
+  height: 100%;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+}
+
+.poster:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.juego-info {
+  padding: 4px 0;
+  font-size: 0.9rem;
+}
+
+
+.poster-collage {
+  position: relative;
+  height: 180px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.poster {
+  position: absolute;
+  height: 100%;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+}
+
+.poster:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.container {
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+.card-glossy-light {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #f0f0f0;
+}

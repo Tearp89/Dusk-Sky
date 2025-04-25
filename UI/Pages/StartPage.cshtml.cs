@@ -96,11 +96,15 @@ public class Comentario
     public string Usuario { get; set; }
     public string Texto { get; set; }
     public DateTime Fecha { get; set; }
+    public string AvatarUrl { get; set; } = "https://i.pravatar.cc/32";
+    public int Likes { get; set; }
 }
+
 
 public class StartPageModel : PageModel
 {
     private readonly ILogger<StartPageModel> _logger;
+    public Dictionary<string, List<Juego>> SeccionesJuegos { get; set; }
     // private readonly IHttpClientFactory _httpClientFactory; // Comentado por ahora
 
     public StartPageModel(ILogger<StartPageModel> logger/*, IHttpClientFactory httpClientFactory*/) // Comentado por ahora
@@ -137,21 +141,44 @@ public class StartPageModel : PageModel
         Juegos = juegosSimulados.Take(12).ToList(); // Tomamos los primeros 12 para las dos primeras secciones
 
         // Simulación de comentarios
-        var comentariosSimulados = new List<Comentario>()
-        {
-            new Comentario { Usuario = "Usuario1", Texto = "¡Me encantó este juego!", Fecha = DateTime.Now.AddDays(-2) },
-            new Comentario { Usuario = "GamerPro", Texto = "Gráficos impresionantes y jugabilidad fluida.", Fecha = DateTime.Now.AddDays(-5) },
-            new Comentario { Usuario = "CriticoGamer", Texto = "Una experiencia inmersiva.", Fecha = DateTime.Now.AddDays(-1) },
-            new Comentario { Usuario = "JugadorCasual", Texto = "Muy divertido para pasar el rato.", Fecha = DateTime.Now.AddDays(-7) },
-            new Comentario { Usuario = "FanDeLaSaga", Texto = "¡El mejor de la serie!", Fecha = DateTime.Now.AddDays(-3) },
-            new Comentario { Usuario = "NuevoJugador", Texto = "Recién lo empiezo y ya me gusta.", Fecha = DateTime.Now.AddDays(-4) },
-            new Comentario { Usuario = "Experto4K", Texto = "Se ve increíble en mi TV 4K.", Fecha = DateTime.Now.AddDays(-6) },
-            new Comentario { Usuario = "Velocista", Texto = "La historia te atrapa desde el principio.", Fecha = DateTime.Now.AddDays(-8) },
-            new Comentario { Usuario = "Explorador", Texto = "El mundo es enorme y lleno de secretos.", Fecha = DateTime.Now.AddDays(-9) },
-            new Comentario { Usuario = "MultiplayerFan", Texto = "Las opciones multijugador son geniales.", Fecha = DateTime.Now.AddDays(-10) },
-            // Puedes agregar más comentarios si quieres
-        };
+        var comentariosSimulados = new List<Comentario>
+{
+    new Comentario { Usuario = "Usuario1", Texto = "¡Me encantó este juego!", Fecha = DateTime.Now.AddDays(-2), Likes = 134 },
+    new Comentario { Usuario = "GamerPro", Texto = "Gráficos impresionantes y jugabilidad fluida.", Fecha = DateTime.Now.AddDays(-5), Likes = 87 },
+    new Comentario { Usuario = "CriticoGamer", Texto = "Una experiencia inmersiva.", Fecha = DateTime.Now.AddDays(-1), Likes = 192 },
+    new Comentario { Usuario = "JugadorCasual", Texto = "Muy divertido para pasar el rato.", Fecha = DateTime.Now.AddDays(-7), Likes = 65 },
+    new Comentario { Usuario = "FanDeLaSaga", Texto = "¡El mejor de la serie!", Fecha = DateTime.Now.AddDays(-3), Likes = 220 },
+    new Comentario { Usuario = "NuevoJugador", Texto = "Recién lo empiezo y ya me gusta.", Fecha = DateTime.Now.AddDays(-4), Likes = 47 },
+    new Comentario { Usuario = "Experto4K", Texto = "Se ve increíble en mi TV 4K.", Fecha = DateTime.Now.AddDays(-6), Likes = 76 },
+    new Comentario { Usuario = "Velocista", Texto = "La historia te atrapa desde el principio.", Fecha = DateTime.Now.AddDays(-8), Likes = 58 },
+    new Comentario { Usuario = "Explorador", Texto = "El mundo es enorme y lleno de secretos.", Fecha = DateTime.Now.AddDays(-9), Likes = 82 },
+    new Comentario { Usuario = "MultiplayerFan", Texto = "Las opciones multijugador son geniales.", Fecha = DateTime.Now.AddDays(-10), Likes = 105 },
+};
+
+
 
         Comentarios = comentariosSimulados.OrderByDescending(c => c.Fecha).Take(10).ToList(); // Tomamos los 10 comentarios más recientes
+        SeccionesJuegos = new Dictionary<string, List<Juego>>
+        {
+            ["Top Ventas"] = new List<Juego>
+            {
+                new Juego { Titulo = "Elden Ring", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
+                new Juego { Titulo = "God of War", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
+                new Juego { Titulo = "Zelda TOTK", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" }
+            },
+            ["Nuevos Lanzamientos"] = new List<Juego>
+            {
+                new Juego { Titulo = "Starfield", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
+                new Juego { Titulo = "Spider-Man 2", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
+                new Juego { Titulo = "Hogwarts Legacy", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" }
+            },
+            ["Favoritos de la comunidad"] = new List<Juego>
+            {
+                new Juego { Titulo = "The Witcher 3", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
+                new Juego { Titulo = "Cyberpunk 2077", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" }
+            }
+        };
     }
+
+    
 }
