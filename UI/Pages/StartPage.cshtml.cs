@@ -88,6 +88,10 @@ public class Juego
     public string Titulo { get; set; }
     public string ImagenUrl { get; set; }
     public string DescripcionCorta { get; set; }
+
+    public string Usuario { get; set; }
+
+    public string AvatarUrl { get; set; } = "https://i.pravatar.cc/32";
     // ... otras propiedades que devuelva tu API
 }
 
@@ -100,6 +104,12 @@ public class Comentario
     public int Likes { get; set; }
 }
 
+public class Usuario {
+    public string NombreUsuario { get; set; }
+    public string AvatarUrl { get; set; } = "https://i.pravatar.cc/32";
+
+
+}
 
 public class StartPageModel : PageModel
 {

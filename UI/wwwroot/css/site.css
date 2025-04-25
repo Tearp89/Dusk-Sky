@@ -50,8 +50,7 @@ html {
 body {
   margin-bottom: 60px;
   background-color: whitesmoke;
-  margin-left: 20px;
-  margin-right: 20px;
+  
 }
 
 .form-floating > .form-control-plaintext::placeholder,
@@ -114,15 +113,68 @@ body {
   background-attachment: fixed;
 }
 .custom-navbar {
-  background: rgba(255, 255, 255, 0); /* Fondo transparente */
-  position: absolute; /* Hacer que el navbar quede fijo */
+  background: rgba(255, 255, 255, 0);
+  position: absolute;
   width: 100%;
   top: 0;
-  margin-left: 30%;
-  z-index: 1000; /* Asegura que el navbar quede por encima de otros elementos */
+  z-index: 1000;
   font-weight: bolder;
   color: whitesmoke;
+  overflow-x: clip;
+  overflow-y: visible;
 }
+
+/* Container principal */
+.container-fluid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Logo a la izquierda, menú al centro */
+  position: relative;
+}
+
+/* Logo */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+/* Botón hamburguesa a la derecha en móviles */
+.navbar-toggler {
+  position: absolute;
+  right: 10px;
+}
+
+/* Menú centrado */
+#navbarNavDropdown {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Estilos del menú */
+.navbar-nav {
+  gap: 20px;
+}
+
+.nav-link {
+  color: whitesmoke !important;
+}
+
+
+.nav-link {
+  color: whitesmoke !important;
+}
+
+/* El botón hamburguesa */
+.navbar-toggler {
+  margin-left: 10px;
+}
+
 
 .container-quote {
   justify-content: center;
@@ -294,7 +346,7 @@ body {
 }
 
 .card-glass-blue {
-  background: linear-gradient(135deg, rgba(86, 149, 255, 0.3), rgba(0, 102, 255, 0.25));
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.3), rgba(20, 20, 20, 0.25));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
@@ -319,7 +371,7 @@ body {
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
@@ -332,11 +384,11 @@ body {
   color: #d0d0d0;
   border-radius: 10px;
   padding: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  overflow: hidden;
-  font-size: 0.9rem;
-}
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+} 
 
 .card-glossy .poster {
   object-fit: cover;
@@ -461,5 +513,5 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #f0f0f0;
+  color: #000;
 }
