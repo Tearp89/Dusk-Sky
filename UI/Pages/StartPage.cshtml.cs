@@ -114,16 +114,88 @@ public class Usuario {
 public class StartPageModel : PageModel
 {
     private readonly ILogger<StartPageModel> _logger;
+    private readonly IAuthService _authService;
+    [BindProperty]
+    public AuthRequestDto LoginData { get; set; } = new();
+
+    [BindProperty]
+    public RegisterRequestDto RegisterData { get; set; } = new();
+
+    public string? ErrorMessage { get; set; }
+
     public Dictionary<string, List<Juego>> SeccionesJuegos { get; set; }
     // private readonly IHttpClientFactory _httpClientFactory; // Comentado por ahora
 
-    public StartPageModel(ILogger<StartPageModel> logger/*, IHttpClientFactory httpClientFactory*/) // Comentado por ahora
+    public StartPageModel(ILogger<StartPageModel> logger, IAuthService authService) // Comentado por ahora
     {
         _logger = logger;
+        _authService = authService;
         // _httpClientFactory = httpClientFactory; // Comentado por ahora
         Juegos = new List<Juego>(); // Inicializa la lista para evitar NullReferenceException
         Comentarios = new List<Comentario>(); // Inicializa la lista de comentarios
     }
+
+   public async Task<IActionResult> OnPostLoginAsync()
+{
+    var result = await _authService.LoginAsync(LoginData);
+
+    if (result != null)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,               // evita acceso desde JS
+            Secure = false,                 // solo se envía por HTTPS
+            SameSite = SameSiteMode.Strict, // previene CSRF
+            Expires = DateTime.UtcNow.AddDays(7) // duración de la sesión
+        };
+
+        Response.Cookies.Append("DuskSkyToken", result.AccessToken, cookieOptions);
+
+        // Puedes guardar el refresh token también si lo usas
+        // Response.Cookies.Append("DuskSkyRefresh", result.RefreshToken, cookieOptions);
+
+        return RedirectToPage("/Homepage/Index"); // o tu página principal logueado
+    }
+
+    ErrorMessage = "Email or password incorrect.";
+    return Page();
+}
+
+
+    public async Task<IActionResult> OnPostRegisterAsync()
+{
+    var registerResult = await _authService.RegisterAsync(RegisterData);
+    if (registerResult != null)
+    {
+        // Login automático usando los datos del registro
+        var loginRequest = new AuthRequestDto
+        {
+            Username = RegisterData.Username,
+            Password = RegisterData.Password
+        };
+
+        var loginResult = await _authService.LoginAsync(loginRequest);
+        if (loginResult != null && !string.IsNullOrWhiteSpace(loginResult.AccessToken))
+        {
+            Response.Cookies.Append("DuskSkyToken", loginResult.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return RedirectToPage("/Homepage/Index");
+        }
+
+        ErrorMessage = "Registro exitoso, pero fallo al iniciar sesión.";
+        return Page();
+    }
+
+    ErrorMessage = "Registro fallido.";
+    return Page();
+}
+
 
     public List<Juego> Juegos { get; set; }
     public List<Comentario> Comentarios { get; set; }

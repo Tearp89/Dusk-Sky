@@ -35,9 +35,10 @@
 
         <!-- Logo (a la izquierda) -->
         <a class="navbar-brand" href="#" style="color: whitesmoke;">
-            <img src="/Resources/Images/logo.webp" alt="Logo">
+             <img src="~/Images/logo.webp" alt="Logo" height="40">
             Dusk Sky
         </a>
+           
 
         <!-- Botón hamburguesa para móviles -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
@@ -57,7 +58,7 @@
                         Access
                     </a>
                     <ul class="dropdown-menu glassy-dropdown">
-                        <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#signUpModal">Sign In</button></li>
+                        <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#signInModal">Sign In</button></li>
                         <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createAccountModal">Create Account</button></li>
                     </ul>
                 </li>
@@ -75,7 +76,7 @@
 
 
     <div class="container-img">
-        <img src="https://rectifygaming.com/wp-content/uploads/2022/09/halo-infinite-season-3-news.jpg" alt="...">
+        <img src="../Images/startpage.png" alt="...">
     </div>
     <div class="container-quote">
         <h2>
@@ -264,7 +265,8 @@
                         </div>
                     </div>
                 }
-                @for (int i = Model.Comentarios.Count; i < 10; i++)
+                if(Model.Comentarios != null){
+                    @for (int i = Model.Comentarios.Count; i < 10; i++)
                 {
                     <div class="card">
                         <div class="card-body">
@@ -273,6 +275,8 @@
                         </div>
                     </div>
                 }
+                }
+                
             }
             else
             {
@@ -290,7 +294,7 @@
     </div>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <div class="container-fluid" style="padding: 20px;">
-    <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: nowrap;">
+    <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: nowrap; ">
         
         <!-- COLUMNA IZQUIERDA: Comentarios -->
         <div style="flex: 3;" class="d-flex flex-column gap-3">
@@ -329,10 +333,10 @@
         </div>
 
         <!-- COLUMNA DERECHA: Juegos con collage -->
-        <div style="flex: 1;" class="d-flex flex-column gap-4">
+        <div style="flex: 2;" class="d-flex flex-column gap-4">
             
-
-            @foreach (var seccion in Model.SeccionesJuegos)
+            @if (Model.SeccionesJuegos != null){
+                @foreach (var seccion in Model.SeccionesJuegos)
             {
                 var id = $"collage-{index++}";
                 var json = JsonSerializer.Serialize(seccion.Value, new JsonSerializerOptions
@@ -374,57 +378,95 @@
                                 img.src = peli.imagenUrl;
                                 img.alt = peli.titulo;
                                 img.classList.add('poster');
-                                img.style.left = `${i * 40}px`;
+                                img.style.left = `${i * 65}px`;
                                 cont.appendChild(img);
                             });
                         }
                     });
                 </script>
             }
+
+            }
+            
         </div>
     </div>
 </div>
 
 
 
-    <div class="modal fade" id="createAccountModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content custom-modal">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Sign Up</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="exampleInputEmail1" class="form-label">Email address</label>
-                            <input type="email" class="form-control input-glass" id="exampleInputEmail1"
-                                aria-describedby="emailHelp">
-                            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="exampleInputEmail1" class="form-label">Username</label>
-                            <input type="email" class="form-control input-glass" id="username"
-                                >
-                        </div>
-                        <div class="mb-3">
-                            <label for="exampleInputPassword1" class="form-label">Password</label>
-                            <input type="password" class="form-control input-glass" id="exampleInputPassword1">
-                        </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                            <label class="form-check-label" for="exampleCheck1">Remember me</label>
-                        </div>
-                    </form>
+   <div class="modal fade" id="createAccountModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Sign Up</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page-handler="Register">
+                    <div class="mb-3">
+                        <label asp-for="RegisterData.Email" class="form-label">Email address</label>
+                        <input asp-for="RegisterData.Email" class="form-control input-glass" type="email" />
+                        <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="RegisterData.Username" class="form-label">Username</label>
+                        <input asp-for="RegisterData.Username" class="form-control input-glass" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="RegisterData.Password" class="form-label">Password</label>
+                        <input asp-for="RegisterData.Password" class="form-control input-glass" type="password" />
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                        <label class="form-check-label" for="exampleCheck1">Remember me</label>
+                    </div>
 
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary button-glass-blue">Sign Up</button>
-                </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary button-glass-blue">Sign Up</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
+
+    <div class="modal fade" id="signInModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Sign In</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page-handler="Login">
+                    <div class="mb-3">
+                        <label asp-for="LoginData.Username" class="form-label">Email or Username</label>
+                        <input asp-for="LoginData.Username" class="form-control input-glass" type="text" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="LoginData.Password" class="form-label">Password</label>
+                        <input asp-for="LoginData.Password" class="form-control input-glass" type="password" />
+                    </div>
+                    <div class="mb-3">
+                        <a class="form-label" href="/Index">Forgotten?</a>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                        <label class="form-check-label" for="exampleCheck1">Remember me</label>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary button-glass-blue">Sign In</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 
 </html>
