@@ -1,5 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 public interface IGameService
 {
-    Task<List<GameDto>> GetTopGamesAsync();
-    Task<GameDto?> GetGameByIdAsync(Guid gameId);
+    Task<List<GamePreviewDTO>> GetGamePreviewsAsync();
+    Task<GameDetailsDTO?> GetGameByIdAsync(Guid id);
+    Task<(bool success, string? message, Guid? gameId)> ImportGameAsync(int steamAppId);
 }

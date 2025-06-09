@@ -35,7 +35,7 @@
 
         <!-- Logo (a la izquierda) -->
         <a class="navbar-brand" href="#" style="color: whitesmoke;">
-             <img src="~/Images/logo.webp" alt="Logo" height="40">
+             <img src="~/Images/logo_dusk.png" alt="Logo" height="40">
             Dusk Sky
         </a>
            
@@ -90,54 +90,57 @@
             <br>The social network for gamers.
         </p>
     </div>
-    <div class="card-group custom-card">
-        @if (Model.Juegos != null && Model.Juegos.Count > 0)
-        {
-            @foreach (var juego in Model.Juegos.Take(6))
+
+    <div class="main-content">
+            <div class="card-group custom-card">
+            @if (Model.Games != null && Model.Games.Count > 0)
             {
-                <div class="card">
-                    <img src="@juego.ImagenUrl" class="card-img-top" alt="@juego.Titulo">
-                </div>
+                @foreach (var game in Model.Games.Take(6))
+                {
+                    <div class="card">
+                        <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title">
+                    </div>
+                }
+                @for (int i = Model.Juegos.Count; i < 6; i++)
+                {
+                    <div class="card">
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                    </div>
+                }
             }
-            @for (int i = Model.Juegos.Count; i < 6; i++)
+            else
             {
-                <div class="card">
-                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
-                </div>
+                @for (int i = 0; i < 6; i++)
+                {
+                    <div class="card">
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                    </div>
+                }
             }
-        }
-        else
-        {
-            @for (int i = 0; i < 6; i++)
-            {
-                <div class="card">
-                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
-                </div>
-            }
-        }
     </div>
     <div class="card-group ">
-        @if (Model.Juegos != null && Model.Juegos.Count > 6)
+        @if (Model.Games != null && Model.Games.Count > 6)
         {
-            @foreach (var juego in Model.Juegos.Skip(6).Take(6))
-            {
+            @foreach (var game in Model.Games.Skip(6).Take(6))
+            {   
                 <div class="card">
-                    <img src="@juego.ImagenUrl" class="card-img-top" alt="@juego.Titulo">
+                    <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title">
+                     <p>@game.Title</p> 
                 </div>
             }
-            @for (int i = Model.Juegos.Count - 6; i < 6 && Model.Juegos.Count < 12; i++)
+            @for (int i = Model.Games.Count - 6; i < 6 && Model.Games.Count < 12; i++)
             {
                 <div class="card">
                     <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
                 </div>
             }
         }
-        else if (Model.Juegos != null && Model.Juegos.Count > 0)
+        else if (Model.Games != null && Model.Games.Count > 0)
         {
-            @foreach (var juego in Model.Juegos.Skip(6))
+            @foreach (var game in Model.Games.Skip(6))
             {
                 <div class="card">
-                    <img src="@juego.ImagenUrl" class="card-img-top" alt="@juego.Titulo">
+                    <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title">
                 </div>
             }
             @for (int i = Model.Juegos.Count; i < 12; i++)
@@ -181,7 +184,7 @@
             <div class="card mb-3 card-glass-blue">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                        <i class="fa-solid fa-heart fa-6x icon-shadow" style="text-align: center;"></i>
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
@@ -194,7 +197,7 @@
             <div class="card mb-3 card-glass-blue">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                        <i class="fa-solid fa-align-justify fa-6x icon-shadow" style="text-align: center;"></i>
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
@@ -209,7 +212,7 @@
             <div class="card mb-3 card-glass-blue">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                        <i class="fa-solid fa-star fa-6x icon-shadow" style="text-align: center;"></i>
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
@@ -223,7 +226,7 @@
             <div class="card mb-3 card-glass-blue">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                        <i class="fa-solid fa-calendar fa-6x icon-shadow" style="text-align: center;"></i>
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
@@ -237,7 +240,7 @@
             <div class="card mb-3 card-glass-blue">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                        <i class="fa-solid fa-list fa-6x icon-shadow" style="text-align: center;"></i>
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
@@ -451,7 +454,7 @@
                         <input asp-for="LoginData.Password" class="form-control input-glass" type="password" />
                     </div>
                     <div class="mb-3">
-                        <a class="form-label" href="/Index">Forgotten?</a>
+                        <a class="form-label" href="/Homepage/Index">Forgotten?</a>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="exampleCheck1">
@@ -467,6 +470,9 @@
     </div>
 </div>
 
+
+    </div>
+    
 </body>
 
 </html>

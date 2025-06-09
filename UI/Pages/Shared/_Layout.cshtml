@@ -24,7 +24,7 @@
         string? currentPage = ViewContext.RouteData.Values["page"]?.ToString()?.ToLower();
         string navbarClass = currentPage switch
         {
-            "/index" => "navbar-home",
+            "/homepage/index" => "navbar-home",
             "/profile" => "navbar-profile",
             _ => "navbar-default"
         };
@@ -44,7 +44,7 @@
             <div class="container-fluid">
                 <!-- Logo -->
                 <a class="navbar-brand text-white" asp-area="" asp-page="/Index">
-                    <img src="~/Images/logo.webp" alt="Logo Dusk Sky" height="40" />
+                    <img src="~/Images/logo_dusk.png" alt="Logo Dusk Sky" height="40" />
                     Dusk Sky
                 </a>
 
@@ -66,6 +66,12 @@
                                 <li><a class="dropdown-item" asp-page="/Films">Films</a></li>
                                 <li><a class="dropdown-item" asp-page="/Reviews">Reviews</a></li>
                                 <li><a class="dropdown-item" asp-page="/Lists">Lists</a></li>
+                                <li>
+                                    <form method="post" action="/Logout">
+                                        <button type="submit" class="nav-link btn btn-link"
+                                            style="color: inherit; text-decoration: none;">Sign Out</button>
+                                    </form>
+                                </li>
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -74,10 +80,30 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Lists">Lists</a>
                         </li>
-                        <form method="post" action="/Logout">
-                            <button type="submit" class="nav-link btn btn-link"
-                                style="color: inherit; text-decoration: none;">Sign Out</button>
+                        <form class="d-flex align-items-center gap-2 ms-auto" role="search" style="max-width: 280px;">
+                            <input class="form-control input-glass rounded-pill" type="search" placeholder="Search..."
+                                aria-label="Search">
+                            <button class="btn btn-outline-light button-glass-blue"  type="submit">
+                                <i class="fa solid fa-magnifying-glass"></i>
+                            </button>
                         </form>
+
+
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success button-glass-blue">
+                                <i class="fas fa-plus"></i> LOG
+                            </button>
+                            <button type="button"
+                                class="btn btn-success dropdown-toggle dropdown-toggle-split button-glass-blue"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu glassy-dropdown">
+                                <li><a class=" dropdown-item" href="#" style="color: black;">New List</a></li>
+                            </ul>
+                        </div>
+
 
                     </ul>
                 </div>

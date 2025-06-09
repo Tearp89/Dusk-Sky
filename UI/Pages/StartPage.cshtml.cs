@@ -115,6 +115,7 @@ public class StartPageModel : PageModel
 {
     private readonly ILogger<StartPageModel> _logger;
     private readonly IAuthService _authService;
+    private readonly IGameService _gameService;
     [BindProperty]
     public AuthRequestDto LoginData { get; set; } = new();
 
@@ -124,12 +125,14 @@ public class StartPageModel : PageModel
     public string? ErrorMessage { get; set; }
 
     public Dictionary<string, List<Juego>> SeccionesJuegos { get; set; }
+    public List<GamePreviewDTO> Games { get; set; }
     // private readonly IHttpClientFactory _httpClientFactory; // Comentado por ahora
 
-    public StartPageModel(ILogger<StartPageModel> logger, IAuthService authService) // Comentado por ahora
+    public StartPageModel(ILogger<StartPageModel> logger, IAuthService authService, IGameService gameService) // Comentado por ahora
     {
         _logger = logger;
         _authService = authService;
+        _gameService = gameService;
         // _httpClientFactory = httpClientFactory; // Comentado por ahora
         Juegos = new List<Juego>(); // Inicializa la lista para evitar NullReferenceException
         Comentarios = new List<Comentario>(); // Inicializa la lista de comentarios
@@ -202,25 +205,11 @@ public class StartPageModel : PageModel
 
     public async Task OnGetAsync()
     {
-        // Simulación de datos de juegos
-        var juegosSimulados = new List<Juego>()
-        {
-            new Juego { Titulo = "The Last of Us Part II", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Una intensa historia de venganza." },
-            new Juego { Titulo = "Ghost of Tsushima", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Un samurái en la isla de Tsushima." },
-            new Juego { Titulo = "Marvel's Spider-Man: Miles Morales", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "La nueva aventura de Spider-Man." },
-            new Juego { Titulo = "Horizon Forbidden West", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Aloy viaja al oeste prohibido." },
-            new Juego { Titulo = "Elden Ring", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Un nuevo mundo de fantasía oscura." },
-            new Juego { Titulo = "Cyberpunk 2077", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Un RPG de mundo abierto en Night City." },
-            new Juego { Titulo = "God of War Ragnarök", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "La continuación de la saga nórdica." },
-            new Juego { Titulo = "Gran Turismo 7", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "La experiencia de conducción real." },
-            new Juego { Titulo = "Returnal", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Un shooter roguelike en un planeta hostil." },
-            new Juego { Titulo = "Ratchet & Clank: Rift Apart", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Una aventura interdimensional." },
-            new Juego { Titulo = "Final Fantasy VII Remake Intergrade", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Una reimaginación del clásico RPG." },
-            new Juego { Titulo = "Stray", ImagenUrl = "https://th.bing.com/th/id/OIP.5BMB4SugaGRv0v7doXR1AgHaEK?rs=1&pid=ImgDetMain", DescripcionCorta = "Un gato perdido en una ciudad cibernética." },
-            // Puedes agregar más juegos si quieres verlos en las siguientes secciones
-        };
+        var previews = await _gameService.GetGamePreviewsAsync();
+        var top6 = previews.Take(24).ToList();
 
-        Juegos = juegosSimulados.Take(12).ToList(); // Tomamos los primeros 12 para las dos primeras secciones
+        
+       
 
         // Simulación de comentarios
         var comentariosSimulados = new List<Comentario>

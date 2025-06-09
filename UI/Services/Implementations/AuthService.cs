@@ -14,7 +14,7 @@ public class AuthService : IAuthService
     var response = await _httpClient.PostAsJsonAsync("login/", request);
 
     if (response.IsSuccessStatusCode)
-    {
+    {   
         var options = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true
