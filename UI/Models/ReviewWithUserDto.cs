@@ -8,7 +8,11 @@ public class ReviewWithUserDto
     public DateTime CreatedAt { get; set; }
     public float Rating { get; set; }
     public string UserName { get; set; } = "Usuario desconocido";
-    public string ProfileImageUrl { get; set; } = "/Images/noImage.png"; 
+    public string ProfileImageUrl { get; set; } = "/Images/noImage.png";
 
     public string GameImageUrl { get; set; } = "/Images/noImage.png";
+
+    public List<string> LikedBy { get; set; }
+
+    public bool UserLiked { get; set; }
 }

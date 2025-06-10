@@ -11,6 +11,7 @@
 
 <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
 
+<script src="~/js/site.js"></script>
 
 
 <div class="index-text">
@@ -162,36 +163,51 @@
         </div>
 
         <div style="flex: 1;" class="d-flex flex-column gap-4">
-            @foreach (var review in Model.ReviewCards)
-            {
-                <div class="card mb-3 card-glossy d-flex flex-row">
-                    <div class="flex-1">
-                        <img src="@review.GameImageUrl"
-                             class="img-fluid rounded-start" alt="Juego asociado">
+    @foreach (var review in Model.ReviewCards)
+    {
+        <div class="card mb-3 card-glossy d-flex flex-row" id="review-card-@review.Id">
+            <div class="flex-1">
+                <img src="@review.GameImageUrl"
+                     class="img-fluid rounded-start" alt="Juego asociado">
+            </div>
+            <div class="flex-3 p-3 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title">
+                        @review.Content.Substring(0, Math.Min(30, review.Content.Length))...
+                        <span class="year">@review.CreatedAt.ToString("yyyy")</span>
+                    </h5>
+                    <div class="d-flex align-items-center user-info mb-2">
+                        <img src="@review.ProfileImageUrl" alt="@review.UserName" class="user-avatar">
+                        <span><strong>@review.UserName</strong></span>
+                        <span class="stars">❤️ @review.Likes</span>
                     </div>
-                    <div class="flex-3 p-3 d-flex flex-column justify-content-between">
-                        <div>
-                            <h5 class="card-title">
-                                @review.Content.Substring(0, Math.Min(30, review.Content.Length))...
-                                <span class="year">@review.CreatedAt.ToString("yyyy")</span>
-                            </h5>
-                            <div class="d-flex align-items-center user-info mb-2">
-                                <img src="@review.ProfileImageUrl" alt="@review.UserName" class="user-avatar">
-                                <span><strong>@review.UserName</strong></span>
-                                <span class="stars">❤️ @review.Likes</span>
-                            </div>
-                            <p class="card-text">@review.Content</p>
-                            <p class="card-text">
-                                <small class="text-muted">Publicado el @review.CreatedAt.ToString("dd MMM")}"></small>
-                            </p>
-                        </div>
-                        <div class="likes">
-                            <i class="bi bi-heart-fill"></i> @review.Likes likes
-                        </div>
-                    </div>
+                    <p class="card-text">@review.Content</p>
+                    <p class="card-text">
+                        <small class="text-muted">Publicado el @review.CreatedAt.ToString("dd MMM")</small>
+                    </p>
                 </div>
-            }
+                <div class="d-flex justify-content-between mt-2">
+                    <!-- Botón para comentar -->
+                    <a href="/Comentarios/Crear?reviewId=@review.Id" class="btn btn-outline-primary">
+                        <i class="bi bi-chat-left-text"></i> Comentar
+                    </a>
+
+                    <!-- Botón para dar like -->
+                    <form method="post" asp-page-handler="ToggleLike" class="like-form" data-review-id="@review.Id">
+    <input type="hidden" name="ReviewId" value="@review.Id" />
+    <input type="hidden" name="UserId" value="@Model.UserId" />
+    <button type="button" class="btn @(review.UserLiked ? "btn-danger" : "btn-outline-danger") btn-like">
+        <i class="bi @(review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
+        <span class="like-text">@(review.UserLiked ? "Quitar like" : "Me gusta")</span> (<span class="like-count">@review.Likes</span>) </button>
+</form>
+
+
+                </div>
+            </div>
         </div>
+    }
+</div>
+
     </div>
 </div>
 

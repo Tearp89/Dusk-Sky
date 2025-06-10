@@ -6,10 +6,10 @@ public class ReviewService : IReviewService
     private readonly HttpClient _http;
 
     private static readonly JsonSerializerOptions _camelOptions = new()
-{
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    PropertyNameCaseInsensitive = true
-};
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
 
 
     public ReviewService(HttpClient http)
@@ -25,13 +25,13 @@ public class ReviewService : IReviewService
 
     public async Task<bool> LikeReviewAsync(string reviewId, string userId)
     {
-        var response = await _http.PutAsync($"/{reviewId}/like?user_id={userId}", null);
+        var response = await _http.PutAsync($"/reviews/{reviewId}/like?user_id={userId}", null);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> UnlikeReviewAsync(string reviewId, string userId)
     {
-        var response = await _http.PutAsync($"/{reviewId}/unlike?user_id={userId}", null);
+        var response = await _http.PutAsync($"/reviews/{reviewId}/unlike?user_id={userId}", null);
         return response.IsSuccessStatusCode;
     }
 
@@ -79,6 +79,27 @@ public class ReviewService : IReviewService
         return await _http.GetFromJsonAsync<List<ReviewDTO>>($"/game/{gameId}/friends{query}") ?? new();
     }
 
+    public async Task<ReviewDTO?> GetReviewByIdAsync(string reviewId)
+    {
+        var response = await _http.GetAsync($"/{reviewId}");
+        if (!response.IsSuccessStatusCode) return null;
+
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ReviewDTO>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+    }
+
+    public async Task<bool> HasUserLikedAsync(string reviewId, string userId)
+    {
+        var review = await GetReviewByIdAsync(reviewId);
+        return review?.LikedBy?.Contains(userId) ?? false;
+    }
+
+
+    
+
     private static string BuildQuery(string key, List<string> values, int limit)
     {
         var query = HttpUtility.ParseQueryString(string.Empty);
@@ -89,4 +110,7 @@ public class ReviewService : IReviewService
         query.Add("limit", limit.ToString());
         return "?" + query.ToString();
     }
+    
+   
+
 }

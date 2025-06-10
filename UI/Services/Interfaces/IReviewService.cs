@@ -11,4 +11,5 @@ public interface IReviewService
     Task<List<ReviewDTO>> GetRecentReviewsByGameAsync(string gameId, int limit = 10);
     Task<List<ReviewDTO>> GetTopReviewsByGameAsync(string gameId, int limit = 10);
     Task<List<ReviewDTO>> GetFriendsReviewsByGameAsync(string gameId, List<string> friendIds, int limit = 10);
+    Task<bool> HasUserLikedAsync(string reviewId, string userId);
 }

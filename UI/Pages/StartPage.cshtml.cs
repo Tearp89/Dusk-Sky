@@ -233,6 +233,7 @@ public class StartPageModel : PageModel
             
             ReviewCards.Add(new ReviewWithUserDto
             {
+                Id = review.Id,
                 Content = review.Content,
                 Likes = review.Likes,
                 Rating = review.Rating,
