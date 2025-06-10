@@ -1,8 +1,16 @@
+using System.Text.Json;
 using System.Web;
 
 public class ReviewService : IReviewService
 {
     private readonly HttpClient _http;
+
+    private static readonly JsonSerializerOptions _camelOptions = new()
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    PropertyNameCaseInsensitive = true
+};
+
 
     public ReviewService(HttpClient http)
     {
@@ -36,7 +44,7 @@ public class ReviewService : IReviewService
 
     public async Task<List<ReviewDTO>> GetRecentReviewsAsync(int limit = 10)
     {
-        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"/recent?limit={limit}") ?? new();
+        return await _http.GetFromJsonAsync<List<ReviewDTO>>("/reviews/recent", _camelOptions) ?? new();
     }
 
     public async Task<List<ReviewDTO>> GetTopReviewsAsync(int limit = 10)

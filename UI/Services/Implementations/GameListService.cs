@@ -38,4 +38,11 @@ public class GameListService : IGameListService
         var response = await _http.DeleteAsync($"/lists/{id}");
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<List<GameListDTO>> GetRecentListsAsync()
+{
+    return await _http.GetFromJsonAsync<List<GameListDTO>>("/lists/recent")
+           ?? new List<GameListDTO>();
+}
+
 }

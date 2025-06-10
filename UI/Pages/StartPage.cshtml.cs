@@ -1,78 +1,3 @@
-/*using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-
-namespace UI.Pages;
-
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-
-public class StartPageModel : PageModel
-{
-    private readonly ILogger<StartPageModel> _logger;
-    private readonly IHttpClientFactory _httpClientFactory;
-
-    public StartPageModel(ILogger<StartPageModel> logger, IHttpClientFactory httpClientFactory)
-    {
-        _logger = logger;
-        _httpClientFactory = httpClientFactory;
-    }
-
-    public List<Juego> Juegos { get; set; }
-
-    public async Task OnGetAsync()
-    {
-        
-        string apiUrl = "https://jsonplaceholder.typicode.com/todos/1"; // Reemplaza con la URL real
-
-        var httpClient = _httpClientFactory.CreateClient();
-
-        try
-        {
-            var response = await httpClient.GetAsync(apiUrl);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonString = await response.Content.ReadAsStringAsync();
-                var juegosDesdeApi = JsonSerializer.Deserialize<List<Juego>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (juegosDesdeApi != null)
-                {
-                    Juegos = juegosDesdeApi.Take(6).ToList();
-                }
-                else
-                {
-                    Juegos = new List<Juego>();
-                    _logger.LogWarning("La respuesta de la API de juegos fue vacía o no se pudo deserializar.");
-                }
-            }
-            else
-            {
-                Juegos = new List<Juego>();
-                _logger.LogError($"Error al llamar a la API de juegos. Status Code: {response.StatusCode}");
-                // Puedes agregar más detalles del error si la API los proporciona
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            Juegos = new List<Juego>();
-            _logger.LogError($"Error de conexión al servicio de juegos: {ex.Message}");
-        } 
-    }
-}
-
-// Define la clase Juego (asegúrate de que coincida con la estructura de tu API)
-public class Juego
-{
-    public string Titulo { get; set; }
-    public string ImagenUrl { get; set; }
-    public string DescripcionCorta { get; set; }
-    // ... otras propiedades que devuelva tu API
-}*/
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -83,39 +8,18 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-public class Juego
-{
-    public string Titulo { get; set; }
-    public string ImagenUrl { get; set; }
-    public string DescripcionCorta { get; set; }
-
-    public string Usuario { get; set; }
-
-    public string AvatarUrl { get; set; } = "https://i.pravatar.cc/32";
-    // ... otras propiedades que devuelva tu API
-}
-
-public class Comentario
-{
-    public string Usuario { get; set; }
-    public string Texto { get; set; }
-    public DateTime Fecha { get; set; }
-    public string AvatarUrl { get; set; } = "https://i.pravatar.cc/32";
-    public int Likes { get; set; }
-}
-
-public class Usuario {
-    public string NombreUsuario { get; set; }
-    public string AvatarUrl { get; set; } = "https://i.pravatar.cc/32";
-
-
-}
-
 public class StartPageModel : PageModel
 {
     private readonly ILogger<StartPageModel> _logger;
     private readonly IAuthService _authService;
     private readonly IGameService _gameService;
+    private readonly IGameListService _gameListService;
+    private readonly IGameListItemService _gameListItemService;
+
+
+    private readonly IUserManagerService _userService;
+
+    private readonly IReviewService _reviewService;
     [BindProperty]
     public AuthRequestDto LoginData { get; set; } = new();
 
@@ -124,18 +28,22 @@ public class StartPageModel : PageModel
 
     public string? ErrorMessage { get; set; }
 
-    public Dictionary<string, List<Juego>> SeccionesJuegos { get; set; }
     public List<GamePreviewDTO> Games { get; set; }
-    // private readonly IHttpClientFactory _httpClientFactory; // Comentado por ahora
+    public List<ReviewDTO> Reviews { get; set; }
 
-    public StartPageModel(ILogger<StartPageModel> logger, IAuthService authService, IGameService gameService) // Comentado por ahora
+    public List<ReviewWithUserDto> ReviewCards {get; set;}
+    public List<GameListWithUserDto> RecentLists { get; set; }
+
+    public List<ImageReviewDto> ReviewImages { get; set; }
+    public StartPageModel(ILogger<StartPageModel> logger, IAuthService authService, IGameService gameService, IReviewService reviewService, IUserManagerService userService, IGameListItemService gameListItemService, IGameListService gameListService) 
     {
         _logger = logger;
         _authService = authService;
         _gameService = gameService;
-        // _httpClientFactory = httpClientFactory; // Comentado por ahora
-        Juegos = new List<Juego>(); // Inicializa la lista para evitar NullReferenceException
-        Comentarios = new List<Comentario>(); // Inicializa la lista de comentarios
+        _reviewService = reviewService;
+        _userService = userService;
+        _gameListItemService = gameListItemService;
+        _gameListService = gameListService;
     }
 
    public async Task<IActionResult> OnPostLoginAsync()
@@ -146,18 +54,17 @@ public class StartPageModel : PageModel
     {
         var cookieOptions = new CookieOptions
         {
-            HttpOnly = true,               // evita acceso desde JS
-            Secure = false,                 // solo se envía por HTTPS
-            SameSite = SameSiteMode.Strict, // previene CSRF
-            Expires = DateTime.UtcNow.AddDays(7) // duración de la sesión
+            HttpOnly = true,               
+            Secure = false,                
+            SameSite = SameSiteMode.Strict, 
+            Expires = DateTime.UtcNow.AddDays(7) 
         };
 
         Response.Cookies.Append("DuskSkyToken", result.AccessToken, cookieOptions);
 
-        // Puedes guardar el refresh token también si lo usas
-        // Response.Cookies.Append("DuskSkyRefresh", result.RefreshToken, cookieOptions);
+       
 
-        return RedirectToPage("/Homepage/Index"); // o tu página principal logueado
+        return RedirectToPage("/Homepage/Index"); 
     }
 
     ErrorMessage = "Email or password incorrect.";
@@ -170,7 +77,6 @@ public class StartPageModel : PageModel
     var registerResult = await _authService.RegisterAsync(RegisterData);
     if (registerResult != null)
     {
-        // Login automático usando los datos del registro
         var loginRequest = new AuthRequestDto
         {
             Username = RegisterData.Username,
@@ -199,56 +105,120 @@ public class StartPageModel : PageModel
     return Page();
 }
 
-
-    public List<Juego> Juegos { get; set; }
-    public List<Comentario> Comentarios { get; set; }
-
     public async Task OnGetAsync()
     {
         var previews = await _gameService.GetGamePreviewsAsync();
-        var top6 = previews.Take(24).ToList();
+        foreach (var preview in previews)
+        {
+        }
+        Games = previews.Take(24).ToList();
+
+        var recentReviews = await _reviewService.GetRecentReviewsAsync();
+        var top10 = recentReviews.Take(10).ToList();
+
+        ReviewImages = new();
+
+        var seen = new HashSet<Guid>(); // o string si tu ID es string
+
+        foreach (var review in top10)
+        {
+            if (!seen.Add(review.GameId)) // Add devuelve false si ya existía
+                continue;
+
+            var game = await _gameService.GetGamePreviewByIdAsync(review.GameId);
+            if (game != null)
+            {
+                ReviewImages.Add(new ImageReviewDto
+                {
+                    HeaderUrl = game.HeaderUrl
+                });
+            }
+        }
+
+        var recentReviewsCards = await _reviewService.GetRecentReviewsAsync(6);
+        ReviewCards = new List<ReviewWithUserDto>();
+
+
+        foreach (var review in recentReviewsCards)
+        {
+            var user = await _userService.GetProfileAsync(review.UserId); // 👈 aquí llamas al método
+            var game = await _gameService.GetGamePreviewByIdAsync(review.GameId);
+            ReviewCards.Add(new ReviewWithUserDto
+            {
+                Content = review.Content,
+                Likes = review.Likes,
+                Rating = review.Rating,
+                GameId = review.GameId,
+                UserName = user?.Username ?? "Usuario desconocido",
+                ProfileImageUrl = user?.AvatarUrl ?? "/Images/noImage.png",
+                GameImageUrl = game.HeaderUrl ?? "/Images/noImage.png"
+            });
+        }
+
+        int minCards = 10;
+
+        while (ReviewImages.Count < minCards)
+        {
+            ReviewImages.Add(new ImageReviewDto
+            {
+                HeaderUrl = "/Images/noImage.png"
+            });
+
+        }
+
+        RecentLists = new List<GameListWithUserDto>();
+
+var lists = await _gameListService.GetRecentListsAsync();
+
+foreach (var list in lists)
+{
+    var userTask = _userService.GetProfileAsync(list.UserId);
+    var itemsTask = _gameListItemService.GetItemsByListIdAsync(list.Id);
+
+    await Task.WhenAll(userTask, itemsTask);
+
+    var user = userTask.Result;
+    var items = itemsTask.Result;
+
+    var headersUrl = new List<string>();
+
+    // ✅ Agregamos varias imágenes (máximo 4 para no saturar visualmente)
+    foreach (var item in items.Take(4))
+    {
+        var game = await _gameService.GetGamePreviewByIdAsync(item.GameId);
+        if (!string.IsNullOrEmpty(game?.HeaderUrl))
+            headersUrl.Add(game.HeaderUrl);
+        else
+            headersUrl.Add("/Images/noImage.png");
+    }
+
+    // En caso de que no haya imágenes (lista vacía), agregamos una por defecto
+    if (headersUrl.Count == 0)
+        headersUrl.Add("/Images/noImage.png");
+
+    RecentLists.Add(new GameListWithUserDto
+    {
+        Id = list.Id,
+        Name = list.Name,
+        Description = list.Description,
+        IsPublic = list.IsPublic,
+        UserId = list.UserId,
+        Date = list.CreatedAt,
+        UserName = user?.Username ?? "Usuario desconocido",
+        AvatarUrl = user?.AvatarUrl ?? "/Images/noImage.png",
+        GameHeaders = headersUrl
+    });
+}
+
+
+
+    
 
         
-       
-
-        // Simulación de comentarios
-        var comentariosSimulados = new List<Comentario>
-{
-    new Comentario { Usuario = "Usuario1", Texto = "¡Me encantó este juego!", Fecha = DateTime.Now.AddDays(-2), Likes = 134 },
-    new Comentario { Usuario = "GamerPro", Texto = "Gráficos impresionantes y jugabilidad fluida.", Fecha = DateTime.Now.AddDays(-5), Likes = 87 },
-    new Comentario { Usuario = "CriticoGamer", Texto = "Una experiencia inmersiva.", Fecha = DateTime.Now.AddDays(-1), Likes = 192 },
-    new Comentario { Usuario = "JugadorCasual", Texto = "Muy divertido para pasar el rato.", Fecha = DateTime.Now.AddDays(-7), Likes = 65 },
-    new Comentario { Usuario = "FanDeLaSaga", Texto = "¡El mejor de la serie!", Fecha = DateTime.Now.AddDays(-3), Likes = 220 },
-    new Comentario { Usuario = "NuevoJugador", Texto = "Recién lo empiezo y ya me gusta.", Fecha = DateTime.Now.AddDays(-4), Likes = 47 },
-    new Comentario { Usuario = "Experto4K", Texto = "Se ve increíble en mi TV 4K.", Fecha = DateTime.Now.AddDays(-6), Likes = 76 },
-    new Comentario { Usuario = "Velocista", Texto = "La historia te atrapa desde el principio.", Fecha = DateTime.Now.AddDays(-8), Likes = 58 },
-    new Comentario { Usuario = "Explorador", Texto = "El mundo es enorme y lleno de secretos.", Fecha = DateTime.Now.AddDays(-9), Likes = 82 },
-    new Comentario { Usuario = "MultiplayerFan", Texto = "Las opciones multijugador son geniales.", Fecha = DateTime.Now.AddDays(-10), Likes = 105 },
-};
 
 
 
-        Comentarios = comentariosSimulados.OrderByDescending(c => c.Fecha).Take(10).ToList(); // Tomamos los 10 comentarios más recientes
-        SeccionesJuegos = new Dictionary<string, List<Juego>>
-        {
-            ["Top Ventas"] = new List<Juego>
-            {
-                new Juego { Titulo = "Elden Ring", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
-                new Juego { Titulo = "God of War", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
-                new Juego { Titulo = "Zelda TOTK", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" }
-            },
-            ["Nuevos Lanzamientos"] = new List<Juego>
-            {
-                new Juego { Titulo = "Starfield", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
-                new Juego { Titulo = "Spider-Man 2", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
-                new Juego { Titulo = "Hogwarts Legacy", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" }
-            },
-            ["Favoritos de la comunidad"] = new List<Juego>
-            {
-                new Juego { Titulo = "The Witcher 3", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" },
-                new Juego { Titulo = "Cyberpunk 2077", ImagenUrl = "https://th.bing.com/th/id/R.b1370f1b7368d8e876d64e159e5f1d56?rik=NTY44blNsUxi%2fA&pid=ImgRaw&r=0" }
-            }
-        };
+        
     }
 
     

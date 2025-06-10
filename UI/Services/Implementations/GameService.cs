@@ -3,8 +3,9 @@
     using System.Threading.Tasks;
     using System.Collections.Generic;
     using System;
+using System.Text.Json;
 
-    public class GameService : IGameService
+public class GameService : IGameService
     {
         private readonly HttpClient _http;
 
@@ -12,12 +13,19 @@
         {
             _http = http;
         }
+        
+        private static readonly JsonSerializerOptions _camelOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
+
 
         public async Task<List<GamePreviewDTO>> GetGamePreviewsAsync()
-        {
-            return await _http.GetFromJsonAsync<List<GamePreviewDTO>>("previews")
-                ?? new List<GamePreviewDTO>();
-        }
+    {
+        return await _http.GetFromJsonAsync<List<GamePreviewDTO>>("previews")
+            ?? new List<GamePreviewDTO>();
+    }
 
         public async Task<GameDetailsDTO?> GetGameByIdAsync(Guid id)
         {
@@ -47,7 +55,15 @@
             var result = await response.Content.ReadFromJsonAsync<ImportSuccessResponse>();
             return (true, result?.message, result?.gameId);
         }
+
+        public async Task<GamePreviewDTO?> GetGamePreviewByIdAsync(Guid id)
+        {
+            return await _http.GetFromJsonAsync<GamePreviewDTO>($"preview/{id}")
+                    ?? new GamePreviewDTO();
+        }
+
         
+            
        
 
         private class ConflictResponse

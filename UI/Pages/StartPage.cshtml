@@ -92,16 +92,16 @@
     </div>
 
     <div class="main-content">
-            <div class="card-group custom-card">
+        <div class="card-group custom-card">
             @if (Model.Games != null && Model.Games.Count > 0)
             {
                 @foreach (var game in Model.Games.Take(6))
                 {
                     <div class="card">
-                        <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title">
+                        <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title">
                     </div>
                 }
-                @for (int i = Model.Juegos.Count; i < 6; i++)
+                @for (int i = Model.Games.Count; i < 6; i++)
                 {
                     <div class="card">
                         <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
@@ -117,15 +117,14 @@
                     </div>
                 }
             }
-    </div>
+        </div>
     <div class="card-group ">
         @if (Model.Games != null && Model.Games.Count > 6)
         {
             @foreach (var game in Model.Games.Skip(6).Take(6))
             {   
                 <div class="card">
-                    <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title">
-                     <p>@game.Title</p> 
+                    <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title">
                 </div>
             }
             @for (int i = Model.Games.Count - 6; i < 6 && Model.Games.Count < 12; i++)
@@ -140,10 +139,11 @@
             @foreach (var game in Model.Games.Skip(6))
             {
                 <div class="card">
-                    <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title">
+                    <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title">
                 </div>
             }
-            @for (int i = Model.Juegos.Count; i < 12; i++)
+        
+            @for (int i = Model.Games.Count; i < 12; i++)
             {
                 <div class="card">
                     <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
@@ -257,19 +257,19 @@
         <h6>Just Reviewed</h6>
         <hr>
         <div class="card-group custom-card-reviewed">
-            @if (Model.Juegos != null && Model.Juegos.Count > 0)
+            @if (Model.ReviewImages != null && Model.ReviewImages.Count > 0)
             {
-                @foreach (var imagen in Model.Juegos.Take(6))
+                @foreach (var review in Model.ReviewImages.Take(6))
                 {
                     <div class="card">
                         <div class="card-body">
-
-                            <img src=@imagen.ImagenUrl class="card-img-top">
+                            
+                            <img src="@review.HeaderUrl" class="card-img-top">
                         </div>
                     </div>
                 }
-                if(Model.Comentarios != null){
-                    @for (int i = Model.Comentarios.Count; i < 10; i++)
+                if(Model.ReviewImages != null){
+                    @for (int i = Model.ReviewImages.Count; i < 10; i++)
                 {
                     <div class="card">
                         <div class="card-body">
@@ -301,34 +301,34 @@
         
         <!-- COLUMNA IZQUIERDA: Comentarios -->
         <div style="flex: 3;" class="d-flex flex-column gap-3">
-            @foreach (var comentario in Model.Comentarios)
+            @foreach (var review in Model.ReviewCards)
             {
                 <div class="card mb-3 card-glossy d-flex flex-row">
                     <div class="flex-1">
-                        <img src="https://th.bing.com/th/id/OIP.YYA1QSw8shFEvZFpR1QsEAHaEK?rs=1&pid=ImgDetMain"
+                        <img src="@review.GameImageUrl" 
                              class="img-fluid rounded-start"  alt="Juego asociado">
                     </div>
                     <div class="flex-3 p-3 d-flex flex-column justify-content-between">
                         <div>
                             <h5 class="card-title">
-                                @comentario.Texto.Substring(0, Math.Min(30, comentario.Texto.Length))...
-                                <span class="year">@comentario.Fecha.ToString("yyyy")</span>
+                                @review.Content.Substring(0, Math.Min(30, review.Content.Length))...
+                                <span class="year">@review.CreatedAt.ToString("yyyy")</span>
                             </h5>
 
                             <div class="d-flex align-items-center user-info mb-2">
-                                <img src="@comentario.AvatarUrl" alt="@comentario.Usuario" class="user-avatar">
-                                <span><strong>@comentario.Usuario</strong></span>
-                                <span class="stars">❤️ @comentario.Likes</span>
+                                <img src="@review.ProfileImageUrl" alt="@review.UserName" class="user-avatar">
+                                <span><strong>@review.UserName</strong></span>
+                                <span class="stars">❤️ @review.Likes</span>
                             </div>
 
-                            <p class="card-text">@comentario.Texto</p>
+                            <p class="card-text">@review.Content</p>
                             <p class="card-text">
-                                <small class="text-muted">Publicado el @comentario.Fecha.ToString("dd MMM yyyy")</small>
+                                <small class="text-muted">Publicado el @review.CreatedAt.ToString("dd MMM yyyy")</small>
                             </p>
                         </div>
 
                         <div class="likes">
-                            <i class="bi bi-heart-fill"></i> @comentario.Likes likes
+                            <i class="bi bi-heart-fill"></i> @review.Likes likes
                         </div>
                     </div>
                 </div>
@@ -338,11 +338,11 @@
         <!-- COLUMNA DERECHA: Juegos con collage -->
         <div style="flex: 2;" class="d-flex flex-column gap-4">
             
-            @if (Model.SeccionesJuegos != null){
-                @foreach (var seccion in Model.SeccionesJuegos)
+            @if (Model.RecentLists != null){
+                @foreach (var list in Model.RecentLists)
             {
                 var id = $"collage-{index++}";
-                var json = JsonSerializer.Serialize(seccion.Value, new JsonSerializerOptions
+                var json = JsonSerializer.Serialize(list.GameHeaders, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
@@ -350,18 +350,16 @@
                 <div class="card mb-3 card-glossy-light">
                     <div id="@id" class="poster-collage"></div>
                     <div class="card-body">
-                        <h5 class="card-title">@seccion.Key</h5>
+                        <h5 class="card-title">@list.Name</h5>
 
-                        @foreach (var juego in seccion.Value)
-                        {
+                        
                             <div class="juego-info mb-2">
-                                <strong>@juego.Titulo</strong><br />
-                                <span class="text-muted">@juego.DescripcionCorta</span>
+                                <span class="text-muted">@list.Description</span>
                             </div>  
-                        }
+                        
                         <div class="d-flex align-items-center user-info mb-2">
-                            <img src="https://th.bing.com/th/id/R.3bf8be93ae6cd787ff90521a21d62fdf?rik=yTxsI786yWT4KA&pid=ImgRaw&r=0" alt="uSUARIO" class="user-avatar">
-                            <span><strong>uSUARIO 123</strong></span>
+                            <img src="@list.AvatarUrl" alt="uSUARIO" class="user-avatar">
+                            <span><strong>@list.UserName</strong></span>
                         </div>
                             
                         
@@ -378,8 +376,8 @@
                         if (cont && pelis) {
                             pelis.forEach((peli, i) => {
                                 const img = document.createElement('img');
-                                img.src = peli.imagenUrl;
-                                img.alt = peli.titulo;
+                                img.src = peli;
+                                img.alt = "Imagen del juego";
                                 img.classList.add('poster');
                                 img.style.left = `${i * 65}px`;
                                 cont.appendChild(img);

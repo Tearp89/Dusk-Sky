@@ -617,3 +617,18 @@ html, body {
   margin: 0 50px;
 }
 
+.badge {
+        font-size: 0.9rem;
+    }
+
+    h4 {
+        font-weight: 600;
+    }
+
+    .list-group-item {
+        cursor: pointer;
+    }
+
+    .list-group-item:hover {
+        background-color: #f1f1f1;
+    }

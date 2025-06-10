@@ -26,12 +26,12 @@ builder.Services.AddHttpClient<IFriendshipService, FriendshipService>(client =>
 });
 builder.Services.AddHttpClient<IGameListService, GameListService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8004"); // Ajusta según tu puerto real
+    client.BaseAddress = new Uri("http://gamelistservice.local/"); // Ajusta según tu puerto real
 });
 
 builder.Services.AddHttpClient<IGameListItemService, GameListItemService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8004");
+    client.BaseAddress = new Uri("http://gamelistservice.local/lists");
 });
 
 builder.Services.AddHttpClient<IModerationReportService, ModerationReportService>(client =>
@@ -46,12 +46,14 @@ builder.Services.AddHttpClient<IModerationSanctionService, ModerationSanctionSer
 
 builder.Services.AddHttpClient<IReviewService, ReviewService>(client =>
 {
-    client.BaseAddress = new Uri("https://review.local/"); // o http://localhost:PORT/
+    client.BaseAddress = new Uri("http://review.local/");
 });
+
+
 
 builder.Services.AddHttpClient<IUserManagerService, UserManagerService>(client =>
 {
-    client.BaseAddress = new Uri("https://usermanager.local/"); // o http://localhost:8003/
+    client.BaseAddress = new Uri("http://usermanagerservice.local/"); 
 });
 
 
