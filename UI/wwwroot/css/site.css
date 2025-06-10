@@ -632,3 +632,7 @@ html, body {
     .list-group-item:hover {
         background-color: #f1f1f1;
     }
+
+.navbar .rounded-circle {
+    object-fit: cover;
+}

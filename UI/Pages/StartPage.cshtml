@@ -301,6 +301,8 @@
         
         <!-- COLUMNA IZQUIERDA: Comentarios -->
         <div style="flex: 3;" class="d-flex flex-column gap-3">
+            @if (Model.ReviewCards != null && Model.ReviewCards.Count > 0)
+{
             @foreach (var review in Model.ReviewCards)
             {
                 <div class="card mb-3 card-glossy d-flex flex-row">
@@ -332,6 +334,7 @@
                         </div>
                     </div>
                 </div>
+            }
             }
         </div>
 
@@ -442,6 +445,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
                 <form method="post" asp-page-handler="Login">
                     <div class="mb-3">
                         <label asp-for="LoginData.Username" class="form-label">Email or Username</label>

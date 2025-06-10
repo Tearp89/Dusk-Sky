@@ -53,7 +53,7 @@ builder.Services.AddHttpClient<IReviewService, ReviewService>(client =>
 
 builder.Services.AddHttpClient<IUserManagerService, UserManagerService>(client =>
 {
-    client.BaseAddress = new Uri("http://usermanagerservice.local/"); 
+    client.BaseAddress = new Uri("http://usermanager.local/"); 
 });
 
 
@@ -61,24 +61,38 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.MinimumSameSitePolicy = SameSiteMode.Strict;
 });
+builder.Services.AddScoped<UserSessionManager>(); 
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/StartPage"; // o donde esté tu login
+        options.AccessDeniedPath = "/AccessDenied"; // opcional
+    });
+
+builder.Services.AddAuthorization();
+
+
 
 var app = builder.Build(); // ✅ Ahora sí construyes la app
 
 // Middleware
 if (!app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-}
-else
-{
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+else
+{
+    app.UseDeveloperExceptionPage();
+}
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseCookiePolicy();
+app.UseAuthentication(); // 👈 Obligatorio
+app.UseAuthorization();
 
 app.MapGet("/", () => Results.Redirect("/StartPage"));
 app.MapRazorPages();

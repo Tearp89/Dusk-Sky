@@ -4,7 +4,7 @@ public class UserSessionManager
 
     public static UserSessionManager Instance => _instance.Value;
 
-    private UserSessionManager() { }
+    public UserSessionManager() { }
 
     public string? Token { get; private set; }
     public string? Username { get; private set; }

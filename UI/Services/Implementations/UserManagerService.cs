@@ -9,7 +9,7 @@ public class UserManagerService : IUserManagerService
 
     public async Task<UserProfileDTO?> GetProfileAsync(string userId)
     {
-        var response = await _http.GetAsync($"/profiles/{userId}");
+        var response = await _http.GetAsync($"profiles/{userId}");
         return response.IsSuccessStatusCode
             ? await response.Content.ReadFromJsonAsync<UserProfileDTO>()
             : null;
@@ -17,20 +17,20 @@ public class UserManagerService : IUserManagerService
 
     public async Task<bool> CreateProfileAsync(string userId, UserProfileCreateDTO payload)
     {
-        var response = await _http.PutAsJsonAsync($"/profiles/{userId}", payload);
+        var response = await _http.PutAsJsonAsync($"profiles/{userId}", payload);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> DeleteProfileAsync(string userId)
     {
-        var response = await _http.DeleteAsync($"/profiles/{userId}");
+        var response = await _http.DeleteAsync($"profiles/{userId}");
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> ChangeUsernameAsync(string userId, string newUsername)
     {
         var request = new { new_username = newUsername };
-        var response = await _http.PatchAsJsonAsync($"/profiles/{userId}/username", request);
+        var response = await _http.PatchAsJsonAsync($"profiles/{userId}/username", request);
         return response.IsSuccessStatusCode;
     }
 
