@@ -60,7 +60,7 @@ builder.Services.AddHttpClient<IUserManagerService, UserManagerService>(client =
 
 builder.Services.AddHttpClient<IGameTrackingService, GameTrackingService>(client =>
 {
-    client.BaseAddress = new Uri("http://track.local/"); 
+    client.BaseAddress = new Uri("http://track.local/track/"); 
 });
 
 

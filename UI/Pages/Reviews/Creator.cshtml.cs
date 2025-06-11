@@ -1,22 +1,26 @@
-using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Globalization;
 
 [Authorize]
 public class CreatorModel : PageModel
 {
     private readonly IGameService _gameService;
     private readonly IReviewService _reviewService;
-    private readonly IAuthService _authService;
+    private readonly IGameTrackingService _trackingService;
     private readonly IUserManagerService _userService;
 
-    public CreatorModel(IGameService gameService, IReviewService reviewService, IAuthService authService, IUserManagerService userManager)
+    public CreatorModel(
+        IGameService gameService,
+        IReviewService reviewService,
+        IGameTrackingService trackingService,
+        IUserManagerService userManager)
     {
         _gameService = gameService;
         _reviewService = reviewService;
-        _authService = authService;
+        _trackingService = trackingService;
         _userService = userManager;
     }
 
@@ -26,9 +30,19 @@ public class CreatorModel : PageModel
     [BindProperty]
     public ReviewDTO Review { get; set; } = new();
 
-    public GamePreviewDTO? Game { get; set; }
+    [BindProperty]
+    public GameTrackingDto Tracking { get; set; } = new();
 
-    [TempData]
+    [BindProperty]
+    public bool Watched { get; set; }
+
+    [BindProperty]
+    public bool WatchedBefore { get; set; }
+
+    [BindProperty]
+    public DateTime? WatchedOn { get; set; }
+
+    public GamePreviewDTO? Game { get; set; }
     public string? SuccessMessage { get; set; }
 
     public async Task<IActionResult> OnGetAsync()
@@ -38,40 +52,58 @@ public class CreatorModel : PageModel
 
         Game = await _gameService.GetGamePreviewByIdAsync(GameId);
         Review.GameId = GameId;
+        Tracking.GameId = GameId.ToString();
 
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        // Re-cargar datos del juego para el formulario
         Game = await _gameService.GetGamePreviewByIdAsync(GameId);
 
-        // Forzar cultura a Invariant para parsing correcto
         var ratingStr = Request.Form["Review.Rating"];
-        if (double.TryParse(ratingStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedRating))
+        if (double.TryParse(ratingStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedRating))
         {
             Review.Rating = parsedRating;
         }
         else
         {
-            ModelState.AddModelError("Review.Rating", "Rating must be a number between 0.5 and 5.");
+            ModelState.AddModelError("Review.Rating", "Invalid rating value.");
         }
 
         if (!ModelState.IsValid)
-        {
             return Page();
-        }
 
+        // Obtener ID del usuario actual
+        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "demo";
+
+        // Rellenar campos de la review
         Review.GameId = GameId;
         Review.CreatedAt = DateTime.UtcNow;
-        Review.UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "demo";
+        Review.UserId = userId;
         Review.Likes = 0;
         Review.LikedBy = new List<string>();
 
         await _reviewService.CreateReviewAsync(Review);
 
-        SuccessMessage = "Review submitted successfully!";
-        return RedirectToPage("/Reviews/Creator", new { gameId = GameId });
+        // Rellenar campos del tracking
+        Tracking.GameId = GameId.ToString();
+        Tracking.UserId = userId;
+        Tracking.Liked = Tracking.Liked;
+
+        // Determinar estado
+        if (Watched || WatchedBefore)
+        {
+            Tracking.Status = "played";
+        }
+        else
+        {
+            Tracking.Status = "backlog"; // o puedes dejarlo vacío si lo prefieres
+        }
+
+        await _trackingService.CreateAsync(Tracking);
+
+        SuccessMessage = "Review and tracking saved successfully!";
+        return Page();
     }
 }

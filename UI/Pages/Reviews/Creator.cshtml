@@ -7,8 +7,8 @@
 
 @if (Model.Game != null)
 {
-    <div class="container log-review-container py-4">
-        <h2 class="mb-4">Log a Game</h2>
+    <div class="container log-review-container py-4 shadow rounded p-4 bg-white bg-opacity-75" style="margin-top: 120px; max-width: 850px;">
+        <h2 class="mb-4 fw-bold">Log a Game</h2>
 
         @if (!string.IsNullOrEmpty(Model.SuccessMessage))
         {
@@ -29,7 +29,7 @@
 
             <div class="d-flex flex-column flex-md-row gap-4 mb-4 align-items-start">
                 <img src="@Model.Game.HeaderUrl" alt="Game Image" class="rounded shadow"
-                    style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
+                     style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
 
                 <div class="flex-grow-1">
                     <h4 class="fw-bold">@Model.Game.Title</h4>
@@ -43,7 +43,7 @@
                     <div class="mb-3">
                         <label class="form-label">Rating</label>
                         <div class="half-star-rating">
-                            @for (int i = 10; i >= 1; i--) // de 5 a 0.5
+                            @for (int i = 10; i >= 1; i--)
                             {
                                 var value = (i * 0.5).ToString(System.Globalization.CultureInfo.InvariantCulture);
                                 var id = $"star-{value.Replace(".", "_")}";
@@ -62,24 +62,35 @@
                                             </clipPath>
                                         </defs>
                                         <path d="M12 17.27L18.18 21 16.54 13.97
-                                 22 9.24 14.81 8.63 12 2
-                                 9.19 8.63 2 9.24 7.46 13.97
-                                 5.82 21z" class="star-base" clip-path="url(#@clipId)" />
+                                                 22 9.24 14.81 8.63 12 2
+                                                 9.19 8.63 2 9.24 7.46 13.97
+                                                 5.82 21z" class="star-base" clip-path="url(#@clipId)" />
                                     </svg>
                                 </label>
                             }
                         </div>
-
-
-
-
-
-
                         <span asp-validation-for="Review.Rating" class="text-danger"></span>
                     </div>
 
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="Watched" class="form-check-input" type="checkbox" id="watchedToggle" />
+                            <label class="form-check-label" for="watchedToggle">Watched on</label>
+                        </div>
+                        <input type="date" asp-for="WatchedOn" class="form-control mt-2" id="watchedDate" style="max-width: 200px; display: none;" />
 
-                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                        <div class="form-check mt-2" id="watchedBeforeGroup" style="display: none;">
+                            <input asp-for="WatchedBefore" class="form-check-input" type="checkbox" id="watchedBefore" />
+                            <label class="form-check-label" for="watchedBefore">I've watched this before</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input asp-for="Tracking.Liked" class="form-check-input" type="checkbox" id="likedCheckbox" />
+                        <label class="form-check-label" for="likedCheckbox">Like</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary button-glass-blue">Submit Review</button>
                 </div>
             </div>
         </form>
@@ -92,4 +103,18 @@ else
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const watchedToggle = document.getElementById("watchedToggle");
+        const watchedDate = document.getElementById("watchedDate");
+        const watchedBefore = document.getElementById("watchedBeforeGroup");
+
+        function toggleWatchedFields() {
+            const show = watchedToggle.checked;
+            watchedDate.style.display = show ? "block" : "none";
+            watchedBefore.style.display = show ? "block" : "none";
+        }
+
+        watchedToggle.addEventListener("change", toggleWatchedFields);
+        toggleWatchedFields();
+    </script>
 }
