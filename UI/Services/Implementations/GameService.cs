@@ -62,11 +62,29 @@ public class GameService : IGameService
                     ?? new GamePreviewDTO();
         }
 
-        
-            
-       
+public async Task<List<GameDetailsDTO>> SearchGameDetailsByNameAsync(string name)
+{
+    var response = await _http.GetAsync($"search?name={Uri.EscapeDataString(name)}");
+    if (!response.IsSuccessStatusCode)
+        return new List<GameDetailsDTO>();
 
-        private class ConflictResponse
+    return await response.Content.ReadFromJsonAsync<List<GameDetailsDTO>>() ?? new List<GameDetailsDTO>();
+}
+
+
+public async Task<List<GamePreviewDTO>> SearchGamePreviewsByNameAsync(string name)
+{
+    var response = await _http.GetAsync($"search/preview?name={Uri.EscapeDataString(name)}");
+    if (!response.IsSuccessStatusCode)
+        return new List<GamePreviewDTO>();
+
+    return await response.Content.ReadFromJsonAsync<List<GamePreviewDTO>>() ?? new List<GamePreviewDTO>();
+}
+
+
+
+
+    private class ConflictResponse
     {
         public string message { get; set; } = string.Empty;
         public Guid gameId { get; set; }

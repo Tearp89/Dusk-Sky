@@ -1,0 +1,78 @@
+@page
+@model CreatorModel
+@{
+    ViewData["Title"] = "Create a review";
+    ViewData["ShowBackground"] = false;
+    
+}
+
+@if (Model.Game != null)
+{
+    <div class="container log-review-container py-4">
+        <h2 class="mb-4">Log a Game</h2>
+
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @Model.SuccessMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">Please correct the errors in the form.</div>
+        }
+
+        <form method="post">
+            <!-- Ocultos para que GameId se envíe -->
+            <input type="hidden" asp-for="GameId" />
+            <input type="hidden" asp-for="Review.GameId" />
+
+            <div class="d-flex flex-column flex-md-row gap-4 mb-4 align-items-start">
+                <img src="@Model.Game.HeaderUrl" alt="Game Image" class="rounded shadow"
+                     style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
+
+                <div class="flex-grow-1">
+                    <h4 class="fw-bold">@Model.Game.Title</h4>
+
+                    <div class="mb-3">
+                        <label asp-for="Review.Content" class="form-label">Review</label>
+                        <textarea asp-for="Review.Content" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Review.Content" class="text-danger"></span>
+                    </div>
+
+                    <!-- Rating con radio buttons -->
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @for (double i = 0.5; i <= 5; i += 0.5)
+                            {
+                                var ratingStr = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio"
+                                           id="rating-@ratingStr"
+                                           name="Review.Rating"
+                                           value="@ratingStr"
+                                           @(Model.Review.Rating == i ? "checked" : "") />
+                                    <label class="form-check-label" for="rating-@ratingStr">@ratingStr ⭐</label>
+                                </div>
+                            }
+                        </div>
+                        <span asp-validation-for="Review.Rating" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </div>
+        </form>
+    </div>
+}
+else
+{
+    <p class="text-danger">No se pudo cargar la información del juego.</p>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

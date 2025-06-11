@@ -1,3 +1,5 @@
+using System.Globalization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ✅ Agrega servicios ANTES de Build
@@ -70,6 +72,8 @@ builder.Services.AddAuthentication("Cookies")
     });
 
 builder.Services.AddAuthorization();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole(); // o AddDebug si lo prefieres
 
 
 
@@ -85,6 +89,12 @@ else
 {
     app.UseDeveloperExceptionPage();
 }
+
+var cultureInfo = new System.Globalization.CultureInfo("en-US");
+cultureInfo.NumberFormat.NumberDecimalSeparator = ".";
+
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 
 app.UseHttpsRedirection();

@@ -94,7 +94,8 @@
                             </form>
 
                             <div class="btn-group">
-                                <button type="button" class="btn btn-success button-glass-blue">
+                                <button type="button" class="btn btn-success button-glass-blue" data-bs-toggle="modal"
+                                    data-bs-target="#logGameModal">
                                     <i class="fas fa-plus"></i> LOG
                                 </button>
                                 <button type="button"
@@ -155,6 +156,97 @@
         }
     </header>
 
+    <div class="modal fade " id="logGameModal" tabindex="-1" aria-labelledby="logGameModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow glassy-modal">
+                <div class="modal-header bg-primary text-white button-glass-blue">
+                    <h5 class="modal-title" id="logGameModalLabel">Log a Game</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="gameSearchInput" class="form-control mb-3"
+                        placeholder="Search for a game..." />
+                    <ul class="list-group" id="gameListContainer">
+                        <!-- Juegos se renderizan dinámicamente -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="logGameFormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content glassy-modal p-4 rounded-4 border-0 shadow-lg text-white">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="modal">
+                        ← Back
+                    </button>
+                    <h5 class="modal-title fw-bold ms-3" id="gameLogTitle">I played...</h5>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body d-flex flex-column flex-md-row gap-4 align-items-start">
+
+                    <!-- Imagen -->
+                    <img id="logGameImage" src="/Images/noImage.png" class="rounded shadow"
+                        style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
+
+
+                    <!-- Detalles -->
+                    <div class="flex-grow-1">
+                        <h4 id="logGameName" class="fw-bold">Game Title</h4>
+
+                        <!-- Fecha -->
+                        <div class="form-check mt-2 mb-3">
+                            <input class="form-check-input" type="checkbox" id="playedCheck" checked />
+                            <label class="form-check-label" for="playedCheck">
+                                Played on
+                            </label>
+                            <input type="date" class="form-control form-control-sm d-inline-block w-auto ms-2"
+                                id="playedDate" />
+                        </div>
+
+                        <!-- Reseña -->
+                        <textarea id="gameReviewText" class="form-control mb-3" placeholder="Add a review..."
+                            rows="4"></textarea>
+
+                        <!-- Tags y rating -->
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <div class="flex-grow-1">
+                                <label class="form-label small mb-1">Tags</label>
+                                <input type="text" class="form-control" id="tagInput"
+                                    placeholder="e.g. indie, Steam Deck..." />
+                            </div>
+
+                            <div class="rating-stars d-flex gap-1 mb-3">
+                                <i class="bi bi-star" data-value="1"></i>
+                                <i class="bi bi-star" data-value="2"></i>
+                                <i class="bi bi-star" data-value="3"></i>
+                                <i class="bi bi-star" data-value="4"></i>
+                                <i class="bi bi-star" data-value="5"></i>
+                            </div>
+                            <input type="hidden" id="selectedRating" name="rating" value="0" />
+
+
+                            <div>
+                                <label class="form-label small mb-1">Like</label><br />
+                                <i id="gameLikeToggle" class="bi bi-heart fs-4" role="button"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button class="btn btn-success px-4 button-glass-blue" id="saveGameLogBtn">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 
     <!-- Contenido principal -->
     <div class="container">
@@ -175,6 +267,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/site.js"></script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

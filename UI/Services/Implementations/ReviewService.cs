@@ -19,19 +19,19 @@ public class ReviewService : IReviewService
 
     public async Task<bool> CreateReviewAsync(ReviewDTO review)
     {
-        var response = await _http.PostAsJsonAsync("/", review);
+        var response = await _http.PostAsJsonAsync("reviews/", review);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> LikeReviewAsync(string reviewId, string userId)
     {
-        var response = await _http.PutAsync($"/reviews/{reviewId}/like?user_id={userId}", null);
+        var response = await _http.PutAsync($"reviews/{reviewId}/like?user_id={userId}", null);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> UnlikeReviewAsync(string reviewId, string userId)
     {
-        var response = await _http.PutAsync($"/reviews/{reviewId}/unlike?user_id={userId}", null);
+        var response = await _http.PutAsync($"reviews/{reviewId}/unlike?user_id={userId}", null);
         return response.IsSuccessStatusCode;
     }
 
@@ -81,7 +81,7 @@ public class ReviewService : IReviewService
 
     public async Task<ReviewDTO?> GetReviewByIdAsync(string reviewId)
     {
-        var response = await _http.GetAsync($"/{reviewId}");
+        var response = await _http.GetAsync($"reviews/{reviewId}");
         if (!response.IsSuccessStatusCode) return null;
 
         var content = await response.Content.ReadAsStringAsync();
@@ -110,7 +110,6 @@ public class ReviewService : IReviewService
         query.Add("limit", limit.ToString());
         return "?" + query.ToString();
     }
-    
-   
 
+    
 }

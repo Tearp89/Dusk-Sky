@@ -6,7 +6,7 @@ public class ReviewWithUserDto
     public string Content { get; set; } = string.Empty;
     public int Likes { get; set; }
     public DateTime CreatedAt { get; set; }
-    public float Rating { get; set; }
+    public double Rating { get; set; }
     public string UserName { get; set; } = "Usuario desconocido";
     public string ProfileImageUrl { get; set; } = "/Images/noImage.png";
 

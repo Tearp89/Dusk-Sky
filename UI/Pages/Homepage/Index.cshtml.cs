@@ -37,29 +37,33 @@ public class IndexModel : PageModel
     }
 
 public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
+{
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var userLiked = await _reviewService.HasUserLikedAsync(ReviewId, userId);
+
+    bool nowLiked;
+
+    if (userLiked)
     {
-        var UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var userLiked = await _reviewService.HasUserLikedAsync(ReviewId, UserId);
-
-
-        if (userLiked)
-        {
-            await _reviewService.UnlikeReviewAsync(ReviewId, UserId);
-            _logger.LogInformation($"User {UserId} unliked review {ReviewId}.");
-        }
-            
-        else
-            await _reviewService.LikeReviewAsync(ReviewId, UserId);
-
-        return RedirectToPage();
+        await _reviewService.UnlikeReviewAsync(ReviewId, userId);
+        nowLiked = false;
     }
+    else
+    {
+        await _reviewService.LikeReviewAsync(ReviewId, userId);
+        nowLiked = true;
+    }
+
+    return new JsonResult(new { liked = nowLiked });
+}
+
     
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var username = User.FindFirst(ClaimTypes.Name)?.Value;
-        var avatar = User.FindFirst("avatar_url")?.Value;
+            var UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var avatar = User.FindFirst("avatar_url")?.Value;
 
         // Puedes guardar esto en el ViewData o en un DTO y pasarlo al Razor
 

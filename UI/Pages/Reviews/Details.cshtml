@@ -1,0 +1,53 @@
+@page
+@model ReviewDetailsModel
+
+@{
+    ViewData["Title"] = "ReviewDetails";
+    ViewData["ShowBackground"] = false;
+}
+
+<div class="container py-4" style="background-color: whitesmoke; min-height: 100vh;">
+    <div class="d-flex gap-4 mb-4">
+        <img src="@Model.Review.GameImageUrl" class="rounded shadow" style="width: 150px; height: auto;" alt="Portada del juego">
+
+        <div class="flex-grow-1">
+            <p class="text-muted mb-1">Reseña por <strong>@Model.Review.UserName</strong></p>
+            <h3 class="fw-bold mb-2">@Model.Review.Content.Substring(0, Math.Min(40, Model.Review.Content.Length))... 
+                <small class="text-muted">@Model.Review.CreatedAt.ToString("yyyy")</small></h3>
+            
+            <div class="mb-2">
+                <span class="text-primary fs-4">★ @Model.Review.Rating</span>
+                <span class="text-muted ms-3">@Model.Review.CreatedAt.ToString("dd MMMM yyyy")</span>
+            </div>
+
+            <p class="lead">@Model.Review.Content</p>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap mb-4">
+        <form method="post" asp-page-handler="ToggleLike" class="d-inline">
+            <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
+            <button type="submit" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-heart-fill"></i> Me gusta
+            </button>
+        </form>
+        <button class="btn btn-sm btn-outline-secondary">Agregar a lista</button>
+        <button class="btn btn-sm btn-outline-secondary">Compartir</button>
+    </div>
+
+    <div id="comentarios" class="mt-5">
+        <h5 class="border-bottom pb-2 mb-4 text-dark">Comentarios (@Model.Comments.Count)</h5>
+
+        @foreach (var comment in Model.Comments)
+        {
+            <div class="mb-3 p-3 bg-white rounded shadow-sm">
+                <div class="d-flex align-items-center mb-1">
+                    <img src="@comment.UserAvatarUrl" class="rounded-circle me-2" width="32" height="32" />
+                    <strong>@comment.UserName</strong>
+                    <span class="text-muted ms-2 small">@comment.CreatedAt.ToString("dd MMM yyyy")</span>
+                </div>
+                <p class="mb-0">@comment.Content</p>
+            </div>
+        }
+    </div>
+</div>
