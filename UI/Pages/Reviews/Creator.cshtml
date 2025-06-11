@@ -42,32 +42,38 @@
 
                     <div class="mb-3">
                         <label class="form-label">Rating</label>
-                        <div class="star-rating-svg">
-                            @for (int i = 10; i >= 1; i--)
+                        <div class="half-star-rating">
+                            @for (int i = 10; i >= 1; i--) // de 5 a 0.5
                             {
                                 var value = (i * 0.5).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                                var id = $"rating-{value.Replace(".", "_")}";
-                                var gradientId = $"gradient-{id}";
-                                var isLeft = i % 2 == 0;
-                                var clipClass = isLeft ? "clip-left" : "clip-right";
+                                var id = $"star-{value.Replace(".", "_")}";
+                                var isLeft = i % 2 == 1;
+                                var clipId = isLeft ? $"left-{i}" : $"right-{i}";
 
-                                <input type="radio" id="@id" name="Review.Rating" value="@value" @(Model.Review.Rating == i *
-                                                                                                                             0.5 ? "checked" : "") />
-                        <label for="@id">
-                            <svg width="24" height="24" viewBox="0 0 24 24" class="star-svg @clipClass">
-                                <defs>
-                                    <linearGradient id="@gradientId" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="50%" stop-color="gray" />
-                                        <stop offset="50%" stop-color="transparent" />
-                                    </linearGradient>
-                                </defs>
-                                <path fill="url(#@gradientId)" d="M12 17.27L18.18 21l-1.64-7.03
-                         L22 9.24l-7.19-.61L12 2 9.19 8.63
-                         2 9.24l5.46 4.73L5.82 21z" />
-                            </svg>
-                        </label>
-                                                }
+                                <input type="radio" name="Review.Rating" id="@id" value="@value" />
+                                <label for="@id">
+                                    <svg viewBox="0 0 24 24" class="star-svg">
+                                        <defs>
+                                            <clipPath id="left-@i">
+                                                <rect x="0" y="0" width="12" height="24" />
+                                            </clipPath>
+                                            <clipPath id="right-@i">
+                                                <rect x="12" y="0" width="12" height="24" />
+                                            </clipPath>
+                                        </defs>
+                                        <path d="M12 17.27L18.18 21 16.54 13.97
+                                 22 9.24 14.81 8.63 12 2
+                                 9.19 8.63 2 9.24 7.46 13.97
+                                 5.82 21z" class="star-base" clip-path="url(#@clipId)" />
+                                    </svg>
+                                </label>
+                            }
                         </div>
+
+
+
+
+
 
                         <span asp-validation-for="Review.Rating" class="text-danger"></span>
                     </div>
