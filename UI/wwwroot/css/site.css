@@ -848,3 +848,74 @@ label + label {
     object-fit: cover;
 }
 
+
+
+    .glossy-box {
+        background-color: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .glossy-box-input {
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 1px solid #ccc;
+    }
+
+.heart-label {
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.heart-icon {
+    width: 32px;
+    height: 32px;
+    fill: #ccc;
+    transition: fill 0.3s ease, transform 0.3s ease;
+}
+
+#likedCheckbox:checked + .heart-label .heart-icon {
+    fill: crimson;
+    transform: scale(1.15);
+}
+
+
+.glassy {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.watched-box {
+    transition: all 0.3s ease;
+    border-radius: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.watched-box label {
+    font-weight: 500;
+    color: #333;
+}
+
+.glossy-box-input {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+}
+
+.heart-icon {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: #dc3545;
+    stroke-width: 2;
+    cursor: pointer;
+    transition: fill 0.2s ease;
+}
+
+input[type="checkbox"]#likedCheckbox:checked + label .heart-icon {
+    fill: #dc3545;
+}

@@ -90,6 +90,7 @@ public class CreatorModel : PageModel
         Tracking.GameId = GameId.ToString();
         Tracking.UserId = userId;
         Tracking.Liked = Tracking.Liked;
+        Tracking.Status = Tracking.Status;
 
         // Determinar estado
         if (Watched || WatchedBefore)
