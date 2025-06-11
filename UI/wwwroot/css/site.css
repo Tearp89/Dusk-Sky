@@ -869,3 +869,102 @@ textarea:focus {
 .star-rating label:hover ~ label {
     color: #ffd700;
 }  }
+
+.rating-container {
+    display: inline-flex;
+    flex-direction: row;
+    gap: 2px;
+    direction: rtl; /* para marcar desde la derecha */
+}
+
+.rating-container input[type="radio"] {
+    display: none;
+}
+
+.star {
+    width: 24px;
+    height: 24px;
+    background: url('/images/star-empty.svg') no-repeat center/contain;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.star.half {
+    background: url('/images/star-half.svg') no-repeat center/contain;
+}
+
+.rating-container input[type="radio"]:checked ~ label .star,
+.rating-container input[type="radio"]:checked + label .star {
+    background: url('/images/star-fill.svg') no-repeat center/contain;
+}
+
+.star-rating {
+    display: inline-block;
+    font-size: 0;
+    position: relative;
+    unicode-bidi: bidi-override;
+    direction: rtl;
+}
+
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+.star-rating label {
+    display: inline-block;
+    font-size: 32px;
+    color: #ccc;
+    cursor: pointer;
+    position: relative;
+    width: 1.1em;
+    padding: 0;
+    margin: 0;
+}
+
+.star-rating label::before {
+    content: "\2605"; /* estrella */
+    position: absolute;
+    left: 0;
+}
+
+.star-rating label.half {
+    width: 0.55em;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.star-rating input[type="radio"]:checked ~ label::before,
+.star-rating label:hover::before,
+.star-rating label:hover ~ label::before {
+    color: gold;
+}
+
+.rating-stars {
+    display: inline-block;
+    font-size: 0;
+    direction: rtl;
+}
+
+.rating-stars input[type="radio"] {
+    display: none;
+}
+
+.rating-stars label {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: gray;
+    mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z'/%3E%3C/svg%3E") no-repeat center;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: cover;
+    -webkit-mask-size: cover;
+    cursor: pointer;
+    background-color: #ccc;
+}
+
+.rating-stars input[type="radio"]:checked ~ label,
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    background-color: gold;
+}
+

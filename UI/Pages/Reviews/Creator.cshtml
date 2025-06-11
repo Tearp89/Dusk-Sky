@@ -24,7 +24,6 @@
         }
 
         <form method="post">
-            <!-- IDs necesarios -->
             <input type="hidden" asp-for="GameId" />
             <input type="hidden" asp-for="Review.GameId" />
 
@@ -41,17 +40,17 @@
                         <span asp-validation-for="Review.Content" class="text-danger"></span>
                     </div>
 
-                    <!-- ⭐ Estrellas visuales como radio buttons -->
                     <div class="mb-3">
-                        <label class="form-label">Rating</label>
-                        <div class="star-rating">
-                            @for (double i = 5; i >= 0.5; i -= 0.5)
+                        <label class="form-label d-block">Rating</label>
+                        <div class="rating-stars">
+                            @for (int i = 10; i >= 1; i--)
                             {
-                                var id = $"star-{i.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
-                                var valueStr = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                                <input type="radio" id="@id" name="Review.Rating" value="@valueStr"
-                                       @(Model.Review.Rating == i ? "checked" : "") />
-                                <label for="@id" title="@valueStr stars">&#9733;</label>
+                                var value = (i * 0.5).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                var id = $"rating_{value.Replace(".", "_")}";
+                                <input type="radio" id="@id" name="Review.Rating" value="@value" @(Model.Review.Rating == i * 0.5 ? "checked" : "") />
+                                <label for="@id" title="@value">
+                                    <i class="bi bi-star-fill"></i>
+                                </label>
                             }
                         </div>
                         <span asp-validation-for="Review.Rating" class="text-danger"></span>
@@ -62,34 +61,6 @@
             </div>
         </form>
     </div>
-
-    <!-- ⭐ Estilo visual -->
-    <style>
-        .star-rating {
-            direction: rtl;
-            display: inline-flex;
-            font-size: 32px;
-        }
-
-        .star-rating input[type="radio"] {
-            display: none;
-        }
-
-        .star-rating label {
-            color: #ccc;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .star-rating input[type="radio"]:checked ~ label {
-            color: gold;
-        }
-
-        .star-rating label:hover,
-        .star-rating label:hover ~ label {
-            color: #ffd700;
-        }
-    </style>
 }
 else
 {
@@ -99,3 +70,27 @@ else
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+    .rating-stars {
+        direction: rtl;
+        display: inline-flex;
+    }
+
+    .rating-stars input[type="radio"] {
+        display: none;
+    }
+
+    .rating-stars label {
+        color: #ccc;
+        font-size: 24px;
+        cursor: pointer;
+        margin: 0 1px;
+    }
+
+    .rating-stars input[type="radio"]:checked ~ label i,
+    .rating-stars label:hover ~ label i,
+    .rating-stars label:hover i {
+        color: gold;
+    }
+</style>
