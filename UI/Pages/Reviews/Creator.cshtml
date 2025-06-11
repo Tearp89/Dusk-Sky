@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Create a review";
     ViewData["ShowBackground"] = false;
-    
 }
 
 @if (Model.Game != null)
@@ -25,7 +24,7 @@
         }
 
         <form method="post">
-            <!-- Ocultos para que GameId se envíe -->
+            <!-- IDs necesarios -->
             <input type="hidden" asp-for="GameId" />
             <input type="hidden" asp-for="Review.GameId" />
 
@@ -42,21 +41,17 @@
                         <span asp-validation-for="Review.Content" class="text-danger"></span>
                     </div>
 
-                    <!-- Rating con radio buttons -->
+                    <!-- ⭐ Estrellas visuales como radio buttons -->
                     <div class="mb-3">
                         <label class="form-label">Rating</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            @for (double i = 0.5; i <= 5; i += 0.5)
+                        <div class="star-rating">
+                            @for (double i = 5; i >= 0.5; i -= 0.5)
                             {
-                                var ratingStr = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio"
-                                           id="rating-@ratingStr"
-                                           name="Review.Rating"
-                                           value="@ratingStr"
-                                           @(Model.Review.Rating == i ? "checked" : "") />
-                                    <label class="form-check-label" for="rating-@ratingStr">@ratingStr ⭐</label>
-                                </div>
+                                var id = $"star-{i.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+                                var valueStr = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                <input type="radio" id="@id" name="Review.Rating" value="@valueStr"
+                                       @(Model.Review.Rating == i ? "checked" : "") />
+                                <label for="@id" title="@valueStr stars">&#9733;</label>
                             }
                         </div>
                         <span asp-validation-for="Review.Rating" class="text-danger"></span>
@@ -67,6 +62,34 @@
             </div>
         </form>
     </div>
+
+    <!-- ⭐ Estilo visual -->
+    <style>
+        .star-rating {
+            direction: rtl;
+            display: inline-flex;
+            font-size: 32px;
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .star-rating input[type="radio"]:checked ~ label {
+            color: gold;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #ffd700;
+        }
+    </style>
 }
 else
 {

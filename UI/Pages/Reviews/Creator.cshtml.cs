@@ -1,8 +1,8 @@
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Globalization;
 
 [Authorize]
 public class CreatorModel : PageModel
@@ -28,6 +28,7 @@ public class CreatorModel : PageModel
 
     public GamePreviewDTO? Game { get; set; }
 
+    [TempData]
     public string? SuccessMessage { get; set; }
 
     public async Task<IActionResult> OnGetAsync()
@@ -43,25 +44,24 @@ public class CreatorModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
+        // Re-cargar datos del juego para el formulario
         Game = await _gameService.GetGamePreviewByIdAsync(GameId);
 
-        var ratingStr = Request.Form["RatingHack"];
-        if (double.TryParse(ratingStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedRating))
+        // Forzar cultura a Invariant para parsing correcto
+        var ratingStr = Request.Form["Review.Rating"];
+        if (double.TryParse(ratingStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedRating))
         {
             Review.Rating = parsedRating;
         }
         else
         {
-            ModelState.AddModelError("Review.Rating", "Invalid rating value.");
+            ModelState.AddModelError("Review.Rating", "Rating must be a number between 0.5 and 5.");
         }
 
-        Console.WriteLine("📥 RatingHack: " + ratingStr);
-        Console.WriteLine("📥 Review.Rating: " + Review.Rating);
-        Console.WriteLine($"📥 Review.Rating: {Review.Rating}");
-
-
-        //if (!ModelState.IsValid)
-         //   return Page();
+        if (!ModelState.IsValid)
+        {
+            return Page();
+        }
 
         Review.GameId = GameId;
         Review.CreatedAt = DateTime.UtcNow;
@@ -72,6 +72,6 @@ public class CreatorModel : PageModel
         await _reviewService.CreateReviewAsync(Review);
 
         SuccessMessage = "Review submitted successfully!";
-        return Page();
+        return RedirectToPage("/Reviews/Creator", new { gameId = GameId });
     }
 }
