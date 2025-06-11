@@ -58,6 +58,11 @@ builder.Services.AddHttpClient<IUserManagerService, UserManagerService>(client =
     client.BaseAddress = new Uri("http://usermanager.local/"); 
 });
 
+builder.Services.AddHttpClient<IGameTrackingService, GameTrackingService>(client =>
+{
+    client.BaseAddress = new Uri("http://track.local/"); 
+});
+
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {

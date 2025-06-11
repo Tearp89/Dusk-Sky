@@ -29,7 +29,7 @@
 
             <div class="d-flex flex-column flex-md-row gap-4 mb-4 align-items-start">
                 <img src="@Model.Game.HeaderUrl" alt="Game Image" class="rounded shadow"
-                     style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
+                    style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
 
                 <div class="flex-grow-1">
                     <h4 class="fw-bold">@Model.Game.Title</h4>
@@ -41,20 +41,37 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label d-block">Rating</label>
-                        <div class="rating-stars">
+                        <label class="form-label">Rating</label>
+                        <div class="star-rating-svg">
                             @for (int i = 10; i >= 1; i--)
                             {
                                 var value = (i * 0.5).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                                var id = $"rating_{value.Replace(".", "_")}";
-                                <input type="radio" id="@id" name="Review.Rating" value="@value" @(Model.Review.Rating == i * 0.5 ? "checked" : "") />
-                                <label for="@id" title="@value">
-                                    <i class="bi bi-star-fill"></i>
-                                </label>
-                            }
+                                var id = $"rating-{value.Replace(".", "_")}";
+                                var gradientId = $"gradient-{id}";
+                                var isLeft = i % 2 == 0;
+                                var clipClass = isLeft ? "clip-left" : "clip-right";
+
+                                <input type="radio" id="@id" name="Review.Rating" value="@value" @(Model.Review.Rating == i *
+                                                                                                                             0.5 ? "checked" : "") />
+                        <label for="@id">
+                            <svg width="24" height="24" viewBox="0 0 24 24" class="star-svg @clipClass">
+                                <defs>
+                                    <linearGradient id="@gradientId" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="50%" stop-color="gray" />
+                                        <stop offset="50%" stop-color="transparent" />
+                                    </linearGradient>
+                                </defs>
+                                <path fill="url(#@gradientId)" d="M12 17.27L18.18 21l-1.64-7.03
+                         L22 9.24l-7.19-.61L12 2 9.19 8.63
+                         2 9.24l5.46 4.73L5.82 21z" />
+                            </svg>
+                        </label>
+                                                }
                         </div>
+
                         <span asp-validation-for="Review.Rating" class="text-danger"></span>
                     </div>
+
 
                     <button type="submit" class="btn btn-primary">Submit Review</button>
                 </div>
@@ -70,27 +87,3 @@ else
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-
-<style>
-    .rating-stars {
-        direction: rtl;
-        display: inline-flex;
-    }
-
-    .rating-stars input[type="radio"] {
-        display: none;
-    }
-
-    .rating-stars label {
-        color: #ccc;
-        font-size: 24px;
-        cursor: pointer;
-        margin: 0 1px;
-    }
-
-    .rating-stars input[type="radio"]:checked ~ label i,
-    .rating-stars label:hover ~ label i,
-    .rating-stars label:hover i {
-        color: gold;
-    }
-</style>
