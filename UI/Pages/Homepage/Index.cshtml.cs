@@ -68,7 +68,7 @@ public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
         // Puedes guardar esto en el ViewData o en un DTO y pasarlo al Razor
 
 
-        var recentReviewsCards = await _reviewService.GetRecentReviewsAsync(6);
+        var recentReviewsCards = await _reviewService.GetRecentReviewsAsync(20);
         ReviewCards = new List<ReviewWithUserDto>();
 
 

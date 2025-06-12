@@ -139,7 +139,7 @@
     <hr>
     <div style="display: flex; gap: 20px; align-items: flex-start;">
         <div style="flex: 1;" class="d-flex flex-column gap-3">
-@foreach (var review in Model.ReviewCards)
+@foreach (var review in Model.ReviewCards.Take(10))
 {
     <div class="card mb-4 rounded-3 shadow-sm border-0" clickable-review-card data-href="/Reviews/Details?reviewId=@review.Id"
      style="cursor: pointer;" >
@@ -204,9 +204,10 @@
         </div>
 
         <div style="flex: 1;" class="d-flex flex-column gap-4">
-@foreach (var review in Model.ReviewCards)
+@foreach (var review in Model.ReviewCards.Take(20))
 {
-    <div class="card mb-4 rounded-3 shadow-sm border-0">
+    <div class="card mb-4 rounded-3 shadow-sm border-0" clickable-review-card data-href="/Reviews/Details?reviewId=@review.Id"
+     style="cursor: pointer;" >
         <div class="row g-0">
             <!-- Imagen del juego -->
             <div class="col-md-4 position-relative">
@@ -240,16 +241,19 @@
 
                 <!-- Botones -->
                 <div class="d-flex justify-content-between mt-3">
-                    <a href="/Comentarios/Crear?reviewId=@review.Id" class="btn btn-outline-primary">
-                        <i class="bi bi-chat-left-text"></i> Comentar
-                    </a>
+                    <a href="/Reviews/Details?reviewId=@review.Id#comentarios"
+   class="btn btn-outline-primary"
+   onclick="event.stopPropagation();">
+   <i class="bi bi-chat-left-text"></i> Comentar
+</a>
+
 
                     <form method="post" asp-page-handler="ToggleLike" class="like-form" data-review-id="@review.Id">
     <input type="hidden" name="ReviewId" value="@review.Id" />
     <input type="hidden" name="UserId" value="@Model.UserId" />
     <button type="button"
         class="btn btn-sm @(review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
-        onclick="toggleLike(this)">
+        onclick="event.stopPropagation(); toggleLike(this);">
         <i class="bi @(review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
         <span class="like-text">@(review.UserLiked ? "Quitar like" : "Me gusta")</span>
         <span class="like-count visually-hidden">@review.Likes</span>

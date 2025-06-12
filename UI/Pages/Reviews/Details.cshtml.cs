@@ -32,24 +32,25 @@ public class ReviewDetailsModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public string ReviewId { get; set; } = string.Empty;
- 
+    [TempData]
+    public string? SuccessMessage { get; set; }
+
 
     public ReviewWithUserDto? Review { get; set; }
     public List<CommentViewModel> Comments { get; set; } = new();
     public GameTrackingDto Tracking { get; set; } = new();
-    public GamePreviewDTO GamePreview { get; set; } 
+    public GamePreviewDTO GamePreview { get; set; } = new();
+    public ReviewDTO ReviewDTO { get; set; } = new();
     
     public bool IsWatched => Tracking?.Status == "played"; 
     public bool IsInWatchlist => Tracking?.Status == "backlog";
     public bool IsLiked => Tracking?.Liked == true;
     public string UserId { get; set; }
+    
+
     public async Task<IActionResult> OnGetAsync()
     {
         var UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-
-
-
 
         if (string.IsNullOrWhiteSpace(ReviewId))
             return NotFound();
@@ -135,6 +136,147 @@ public async Task<IActionResult> OnPostAgregarComentarioAsync(string reviewId, s
 
     return RedirectToPage("/Reviews/Details", new { reviewId });
 }
+
+    public async Task<IActionResult> OnPostToggleTrackingAsync(string reviewId, string trackingType)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return RedirectToPage("/Reviews/Details", new { reviewId });
+
+        var review = await _reviewService.GetReviewByIdAsync(reviewId);
+        if (review is null)
+            return RedirectToPage("/Reviews/Details", new { reviewId });
+
+        var currentTracking = await _gameTrackingService.GetByUserAndGameAsync(userId, review.GameId.ToString());
+        currentTracking ??= new GameTrackingDto
+        {
+            UserId = userId,
+            GameId = review.GameId.ToString(),
+            Liked = false,
+            Status = null
+        };
+
+        switch (trackingType)
+        {
+            case "watch":
+                currentTracking.Status = currentTracking.Status == "played" ? null : "played";
+                break;
+
+            case "watchlist":
+                currentTracking.Status = currentTracking.Status == "backlog" ? null : "backlog";
+                break;
+
+            case "like":
+                currentTracking.Liked = !currentTracking.Liked;
+                break;
+        }
+
+        await _gameTrackingService.UpdateAsync(currentTracking.Id, currentTracking);
+
+        return RedirectToPage("/Reviews/Details", new { reviewId });
+    }
+
+    public async Task<IActionResult> OnPostToggleTrackingAjaxAsync([FromBody] TrackingRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return new JsonResult(new { success = false });
+
+        var review = await _reviewService.GetReviewByIdAsync(request.ReviewId);
+        if (review is null)
+            return new JsonResult(new { success = false });
+
+        var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, review.GameId.ToString()) ?? new GameTrackingDto
+        {
+            UserId = userId,
+            GameId = review.GameId.ToString()
+        };
+
+        switch (request.Type)
+        {
+            case "watch":
+                tracking.Status = tracking.Status == "played" ? null : "played";
+                break;
+            case "watchlist":
+                tracking.Status = tracking.Status == "backlog" ? null : "backlog";
+                break;
+            case "like":
+                tracking.Liked = !tracking.Liked;
+                break;
+        }
+
+        await _gameTrackingService.UpdateAsync(tracking.Id, tracking);
+
+        return new JsonResult(new
+        {
+            success = true,
+            type = request.Type,
+            isActive = request.Type switch
+            {
+                "watch" => tracking.Status == "played",
+                "watchlist" => tracking.Status == "backlog",
+                "like" => tracking.Liked == true,
+                _ => false
+            }
+        });
+    }
+
+public async Task<IActionResult> OnPostLogReviewWithTrackingAsync(Guid GameId, string Content, double Rating, DateTime? WatchedOn, bool PlayedBefore, bool Like)
+{
+    Console.WriteLine("Entró al handler LogReviewWithTracking");
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return RedirectToPage("/StartPage");
+    Console.WriteLine("REVIEW CONTENT: " + Content);
+
+    var review = new ReviewDTO
+    {
+        GameId = GameId,
+        UserId = userId,
+        Content = Content,
+        Rating = Rating,
+        CreatedAt = DateTime.UtcNow
+    };
+     await _reviewService.CreateReviewAsync(review);
+
+    var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, GameId.ToString());
+
+    if (tracking == null)
+    {
+        tracking = new GameTrackingDto
+        {
+            UserId = userId,
+            GameId = GameId.ToString()
+        };
+    }
+
+    if (WatchedOn.HasValue || PlayedBefore)
+    {
+        tracking.Status = "played";
+        tracking.Liked = Like;
+    }
+
+    if (string.IsNullOrEmpty(tracking.Id.ToString()))
+        await _gameTrackingService.CreateAsync(tracking);
+    else
+        await _gameTrackingService.UpdateAsync(tracking.Id, tracking);
+
+    SuccessMessage = "Your review was successfully saved.";
+    await OnGetAsync();
+    return Page();
+}
+
+
+
+
+
+
+    public class TrackingRequest
+    {
+        public string ReviewId { get; set; } = "";
+        public string Type { get; set; } = "";
+    }
+
+
 
 
     public class CommentViewModel

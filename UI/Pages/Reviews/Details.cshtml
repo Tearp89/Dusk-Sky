@@ -82,43 +82,125 @@
             <div class="bg-light border rounded p-3 shadow-sm">
                 <!-- Fila con Watch, Like, Watchlist -->
                 <div class="d-flex justify-content-between mb-3 gap-2">
-                    <!-- Watch -->
-                    <button
-                        class="btn @(Model.IsWatched ? "btn-secondary" : "btn-outline-secondary") flex-fill d-flex align-items-center justify-content-center gap-2"
-                        data-tracking-type="watch" data-active="@(Model.IsWatched.ToString().ToLower())"
-                        onclick="toggleTracking(this)">
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2" id="btn-watch"
+                        data-review-id="@Model.Review.Id" data-tracking-type="watch"
+                        data-active="@Model.IsWatched.ToString().ToLower()" onclick="toggleTracking(this)">
                         <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i>
                         <span>@(Model.IsWatched ? "Watched" : "Watch")</span>
                     </button>
 
-                    <!-- Like -->
-                    <button
-                        class="btn @(Model.IsLiked ? "btn-secondary" : "btn-outline-secondary") flex-fill d-flex align-items-center justify-content-center gap-2"
-                        data-tracking-type="like" data-active="@(Model.IsLiked.ToString().ToLower())"
-                        onclick="toggleTracking(this)">
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2" id="btn-like"
+                        data-review-id="@Model.Review.Id" data-tracking-type="like"
+                        data-active="@Model.IsLiked.ToString().ToLower()" onclick="toggleTracking(this)">
                         <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i>
                         <span>@(Model.IsLiked ? "Liked" : "Like")</span>
                     </button>
 
-                    <!-- Watchlist -->
-                    <button
-                        class="btn @(Model.IsInWatchlist ? "btn-secondary" : "btn-outline-secondary") flex-fill d-flex align-items-center justify-content-center gap-2"
-                        data-tracking-type="watchlist" data-active="@(Model.IsInWatchlist.ToString().ToLower())"
-                        onclick="toggleTracking(this)">
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2"
+                        id="btn-watchlist" data-review-id="@Model.Review.Id" data-tracking-type="watchlist"
+                        data-active="@Model.IsInWatchlist.ToString().ToLower()" onclick="toggleTracking(this)">
                         <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i>
                         <span>@(Model.IsInWatchlist ? "Saved" : "Watchlist")</span>
                     </button>
                 </div>
 
+
                 <!-- Lista de botones debajo -->
                 <div class="d-flex flex-column gap-2">
                     <button class="btn btn-outline-secondary w-100">Show your activity</button>
                     <button class="btn btn-outline-secondary w-100">Show @Model.Review.UserName's activity</button>
-                    <button class="btn btn-outline-secondary w-100">Review or log…</button>
+                    <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal"
+                        data-bs-target="#reviewModal">
+                        Review or log...
+                    </button>
+
                     <button class="btn btn-outline-secondary w-100">Add this film to lists…</button>
                     <button class="btn btn-outline-secondary w-100">Share this review</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="LogReviewWithTracking">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title">I watched...</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body d-flex gap-4">
+                        <!-- Imagen -->
+                        <img src="@Model.GamePreview.HeaderUrl" alt="Game cover" style="height: 220px;"
+                            class="rounded shadow" />
+
+                        <!-- Campos -->
+                        <div class="flex-grow-1">
+                            <h4 class="fw-bold">@Model.GamePreview.Title <span
+                                    class="text-muted">@Model.Review.CreatedAt.Year</span></h4>
+
+                            <div class="d-flex align-items-center mb-2 gap-3">
+                                <input class="form-check-input" type="checkbox" name="WatchedOnEnabled"
+                                    id="WatchedOnEnabled" checked onchange="togglePlayedBefore()" />
+                                <label class="form-label mb-0" for="WatchedOnEnabled">Watched on</label>
+                                <input type="date" name="WatchedOn" class="form-control form-control-sm w-auto"
+                                    value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            </div>
+
+                            <div class="form-check mb-3" id="playedBeforeContainer">
+                                <input class="form-check-input" type="checkbox" name="PlayedBefore" id="PlayedBefore" />
+                                <label class="form-check-label" for="PlayedBefore">I've played this before</label>
+                            </div>
+
+                            <div class="mb-3">
+                                <textarea name="Content" class="form-control" placeholder="Add a review..."
+                                    rows="4"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Tags</label>
+                                <input type="text" class="form-control" name="Tags" placeholder="e.g. steam, indie" />
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3">
+                                <label class="form-label mb-0">Rating</label>
+                                <input type="number" step="0.5" min="0" max="5" name="Rating"
+                                    class="form-control w-auto" />
+                                <div class="form-check ms-auto">
+                                    <input class="form-check-input" type="checkbox" name="Like" id="Like" />
+                                    <label class="form-check-label" for="Like"><i class="bi bi-heart"></i></label>
+                                </div>
+                            </div>
+
+                            @if (Model.GamePreview != null)
+                            {
+                                <input type="hidden" name="GameId" value="@Model.GamePreview.Id.ToString()" />
+                            }
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">SAVE</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @Model.SuccessMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+
+
 </div>

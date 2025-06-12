@@ -161,7 +161,7 @@ function openLogGameModal(game) {
 
 
 
-
+/*
     function toggleTracking(button) {
         const icon = button.querySelector('i');
         const span = button.querySelector('span');
@@ -209,10 +209,52 @@ function openLogGameModal(game) {
         });
     }
 
+*/
 
+async function toggleTracking(button) {
+        const reviewId = button.dataset.reviewId;
+        const type = button.dataset.trackingType;
+
+        const response = await fetch("?handler=ToggleTrackingAjax", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ reviewId, type })
+        });
+
+        const result = await response.json();
+        if (!result.success) return;
+
+        // Update button style
+        button.dataset.active = result.isActive.toString();
+        const icon = button.querySelector("i");
+        const span = button.querySelector("span");
+
+        if (type === "watch") {
+            icon.className = result.isActive ? "bi bi-eye-fill" : "bi bi-eye";
+            span.textContent = result.isActive ? "Watched" : "Watch";
+        } else if (type === "like") {
+            icon.className = result.isActive ? "bi bi-heart-fill" : "bi bi-heart";
+            span.textContent = result.isActive ? "Liked" : "Like";
+        } else if (type === "watchlist") {
+            icon.className = result.isActive ? "bi bi-bookmark-check-fill" : "bi bi-bookmark-plus";
+            span.textContent = result.isActive ? "Saved" : "Watchlist";
+        }
+
+        button.classList.toggle("btn-secondary", result.isActive);
+        button.classList.toggle("btn-outline-secondary", !result.isActive);
+    }
 
  
 
+function togglePlayedBefore() {
+        const watchedOn = document.getElementById("WatchedOnEnabled");
+        const playedBeforeContainer = document.getElementById("playedBeforeContainer");
+        playedBeforeContainer.style.display = watchedOn.checked ? "block" : "none";
+    }
 
+    document.addEventListener("DOMContentLoaded", togglePlayedBefore);
 
 
