@@ -18,7 +18,7 @@ builder.Services.AddHttpClient<IGameService, GameService>(client =>
 
 builder.Services.AddHttpClient<ICommentService, CommentService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8008/comments"); 
+    client.BaseAddress = new Uri("http://commentservice.local/comments"); 
 });
 
 builder.Services.AddHttpClient<IFriendshipService, FriendshipService>(client =>

@@ -3,10 +3,18 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 public class CommentService : ICommentService
 {
     private readonly HttpClient _http;
+
+    // Opciones de serialización para enums como strings (e.g., "visible")
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    };
 
     public CommentService(HttpClient http)
     {
@@ -15,7 +23,7 @@ public class CommentService : ICommentService
 
     public async Task<List<CommentDTO>> GetAllCommentsAsync()
     {
-        return await _http.GetFromJsonAsync<List<CommentDTO>>("/comments") ?? new();
+        return await _http.GetFromJsonAsync<List<CommentDTO>>("/comments", _jsonOptions) ?? new();
     }
 
     public async Task<CommentDTO?> GetCommentByIdAsync(string id)
@@ -24,21 +32,22 @@ public class CommentService : ICommentService
         if (!response.IsSuccessStatusCode)
             return null;
 
-        return await response.Content.ReadFromJsonAsync<CommentDTO>();
+        return await response.Content.ReadFromJsonAsync<CommentDTO>(_jsonOptions);
     }
 
     public async Task<CommentDTO?> CreateCommentAsync(CommentDTO comment)
     {
-        var response = await _http.PostAsJsonAsync("/comments", comment);
+        var response = await _http.PostAsJsonAsync("/comments", comment, _jsonOptions);
+
         if (!response.IsSuccessStatusCode)
             return null;
 
-        return await response.Content.ReadFromJsonAsync<CommentDTO>();
+        return await response.Content.ReadFromJsonAsync<CommentDTO>(_jsonOptions);
     }
 
     public async Task<bool> UpdateCommentStatusAsync(string id, CommentStatus status)
     {
-        var response = await _http.PutAsJsonAsync($"/comments/{id}", status);
+        var response = await _http.PutAsJsonAsync($"/comments/{id}", status, _jsonOptions);
         return response.IsSuccessStatusCode;
     }
 
@@ -50,6 +59,7 @@ public class CommentService : ICommentService
 
     public async Task<List<CommentDTO>> GetCommentsByReviewIdAsync(string reviewId)
     {
-        return await _http.GetFromJsonAsync<List<CommentDTO>>($"/comments/review/{reviewId}") ?? new();
+        return await _http.GetFromJsonAsync<List<CommentDTO>>($"/comments/review/{reviewId}", _jsonOptions)
+               ?? new();
     }
 }

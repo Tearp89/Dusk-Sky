@@ -1,4 +1,5 @@
 @page
+@using System.Security.Claims
 @model ReviewDetailsModel
 
 @{
@@ -7,47 +8,117 @@
 }
 
 <div class="container py-4" style="background-color: whitesmoke; min-height: 100vh;">
-    <div class="d-flex gap-4 mb-4">
-        <img src="@Model.Review.GameImageUrl" class="rounded shadow" style="width: 150px; height: auto;" alt="Portada del juego">
+    <div class="row mt-5">
+        <!-- Columna izquierda (reseña principal) -->
+        <div class="col-md-8 mb-4">
+            <div class="d-flex gap-4 mb-4">
+                <img src="@Model.Review.GameImageUrl" class="rounded shadow" style="width: 160px; height: auto;"
+                    alt="Game Cover">
 
-        <div class="flex-grow-1">
-            <p class="text-muted mb-1">Reseña por <strong>@Model.Review.UserName</strong></p>
-            <h3 class="fw-bold mb-2">@Model.Review.Content.Substring(0, Math.Min(40, Model.Review.Content.Length))... 
-                <small class="text-muted">@Model.Review.CreatedAt.ToString("yyyy")</small></h3>
-            
-            <div class="mb-2">
-                <span class="text-primary fs-4">★ @Model.Review.Rating</span>
-                <span class="text-muted ms-3">@Model.Review.CreatedAt.ToString("dd MMMM yyyy")</span>
-            </div>
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Review by <strong>@Model.Review.UserName</strong></p>
+                    <h2 class="fw-bold mb-2">
+                        @Model.GamePreview.Title
+                        <small class="text-muted">@Model.Review.CreatedAt.ToString("yyyy")</small>
+                    </h2>
 
-            <p class="lead">@Model.Review.Content</p>
-        </div>
-    </div>
+                    <p class="text-muted mb-2">Watched @Model.Review.CreatedAt.ToString("dd MMM yyyy")</p>
+                    <p class="lead" style="white-space: pre-wrap;">@Model.Review.Content</p>
 
-    <div class="d-flex gap-2 flex-wrap mb-4">
-        <form method="post" asp-page-handler="ToggleLike" class="d-inline">
-            <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
-            <button type="submit" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-heart-fill"></i> Me gusta
-            </button>
-        </form>
-        <button class="btn btn-sm btn-outline-secondary">Agregar a lista</button>
-        <button class="btn btn-sm btn-outline-secondary">Compartir</button>
-    </div>
+                    <div class="d-flex gap-2 flex-wrap mt-3">
+                        @if (Model.Review.UserId != @User.FindFirstValue(ClaimTypes.NameIdentifier))
+                        {
+                            <form method="post" asp-page-handler="ToggleLike">
+                                <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
+                                <button type="submit" class="btn btn-outline-dark btn-sm">
+                                    <i class="bi bi-heart"></i> Like review
+                                </button>
+                            </form>
+                        }
 
-    <div id="comentarios" class="mt-5">
-        <h5 class="border-bottom pb-2 mb-4 text-dark">Comentarios (@Model.Comments.Count)</h5>
 
-        @foreach (var comment in Model.Comments)
-        {
-            <div class="mb-3 p-3 bg-white rounded shadow-sm">
-                <div class="d-flex align-items-center mb-1">
-                    <img src="@comment.UserAvatarUrl" class="rounded-circle me-2" width="32" height="32" />
-                    <strong>@comment.UserName</strong>
-                    <span class="text-muted ms-2 small">@comment.CreatedAt.ToString("dd MMM yyyy")</span>
+
+
+                        <button class="btn btn-outline-dark btn-sm">Add to list</button>
+                        <button class="btn btn-outline-dark btn-sm">Share</button>
+                    </div>
                 </div>
-                <p class="mb-0">@comment.Content</p>
             </div>
-        }
+
+            <hr class="my-5" />
+
+            <div id="comentarios">
+                <h5 class="mb-4">Comments (@Model.Comments.Count)</h5>
+
+                @foreach (var comment in Model.Comments)
+                {
+                    <div class="mb-3 p-3 bg-white rounded shadow-sm border">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="@comment.UserAvatarUrl" class="rounded-circle me-2" width="32" height="32" />
+                            <strong>@comment.UserName</strong>
+                            <span class="text-muted ms-2 small">@comment.CreatedAt.ToString("dd MMM yyyy")</span>
+                        </div>
+                        <p class="mb-0">@comment.Content</p>
+                    </div>
+                }
+
+                <!-- Formulario para nuevo comentario -->
+                <div class="mt-4">
+                    <form method="post" asp-page-handler="AgregarComentario" asp-route-reviewId="@Model.Review.Id">
+                        <div class="mb-3">
+                            <label for="nuevoComentario" class="form-label">Leave a comment</label>
+                            <textarea id="nuevoComentario" name="nuevoComentario" class="form-control" rows="3"
+                                placeholder="Write your thoughts here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-dark">Post comment</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Columna derecha (panel lateral) -->
+        <div class="col-md-4">
+            <div class="bg-light border rounded p-3 shadow-sm">
+                <!-- Fila con Watch, Like, Watchlist -->
+                <div class="d-flex justify-content-between mb-3 gap-2">
+                    <!-- Watch -->
+                    <button
+                        class="btn @(Model.IsWatched ? "btn-secondary" : "btn-outline-secondary") flex-fill d-flex align-items-center justify-content-center gap-2"
+                        data-tracking-type="watch" data-active="@(Model.IsWatched.ToString().ToLower())"
+                        onclick="toggleTracking(this)">
+                        <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i>
+                        <span>@(Model.IsWatched ? "Watched" : "Watch")</span>
+                    </button>
+
+                    <!-- Like -->
+                    <button
+                        class="btn @(Model.IsLiked ? "btn-secondary" : "btn-outline-secondary") flex-fill d-flex align-items-center justify-content-center gap-2"
+                        data-tracking-type="like" data-active="@(Model.IsLiked.ToString().ToLower())"
+                        onclick="toggleTracking(this)">
+                        <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                        <span>@(Model.IsLiked ? "Liked" : "Like")</span>
+                    </button>
+
+                    <!-- Watchlist -->
+                    <button
+                        class="btn @(Model.IsInWatchlist ? "btn-secondary" : "btn-outline-secondary") flex-fill d-flex align-items-center justify-content-center gap-2"
+                        data-tracking-type="watchlist" data-active="@(Model.IsInWatchlist.ToString().ToLower())"
+                        onclick="toggleTracking(this)">
+                        <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i>
+                        <span>@(Model.IsInWatchlist ? "Saved" : "Watchlist")</span>
+                    </button>
+                </div>
+
+                <!-- Lista de botones debajo -->
+                <div class="d-flex flex-column gap-2">
+                    <button class="btn btn-outline-secondary w-100">Show your activity</button>
+                    <button class="btn btn-outline-secondary w-100">Show @Model.Review.UserName's activity</button>
+                    <button class="btn btn-outline-secondary w-100">Review or log…</button>
+                    <button class="btn btn-outline-secondary w-100">Add this film to lists…</button>
+                    <button class="btn btn-outline-secondary w-100">Share this review</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

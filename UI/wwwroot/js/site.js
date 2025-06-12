@@ -161,7 +161,54 @@ function openLogGameModal(game) {
 
 
 
- 
+
+    function toggleTracking(button) {
+        const icon = button.querySelector('i');
+        const span = button.querySelector('span');
+        const type = button.dataset.trackingType;
+        const isActive = button.dataset.active === "true";
+        const gameId = "@Model.Review.GameId"; // o usa Review.GameId directamente
+
+        // Cambiar visualmente
+        let newIcon = "", newText = "";
+        switch (type) {
+            case "watch":
+                newIcon = isActive ? "bi-eye" : "bi-eye-fill";
+                newText = isActive ? "Watch" : "Watched";
+                break;
+            case "like":
+                newIcon = isActive ? "bi-heart" : "bi-heart-fill";
+                newText = isActive ? "Like" : "Liked";
+                break;
+            case "watchlist":
+                newIcon = isActive ? "bi-bookmark-plus" : "bi-bookmark-check-fill";
+                newText = isActive ? "Watchlist" : "Saved";
+                break;
+        }
+
+        icon.className = "bi " + newIcon;
+        span.textContent = newText;
+        button.dataset.active = (!isActive).toString();
+
+        // Cambiar estilo visual
+        button.classList.toggle("btn-secondary", !isActive);
+        button.classList.toggle("btn-outline-secondary", isActive);
+
+        // Enviar cambio al backend
+        fetch("/GameTracking/Toggle", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": document.querySelector("input[name='__RequestVerificationToken']").value
+            },
+            body: JSON.stringify({
+                gameId: gameId,
+                type: type,
+                active: !isActive
+            })
+        });
+    }
+
 
 
  
