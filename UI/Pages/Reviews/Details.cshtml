@@ -6,27 +6,36 @@
     ViewData["Title"] = "ReviewDetails";
     ViewData["ShowBackground"] = false;
 }
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div id="reviewSuccessMessage" class="alert alert-success mt-3 text-center">
+        @Model.SuccessMessage
+    </div>
+}
+else
+{
+    <div id="reviewSuccessMessage" class="alert alert-success d-none mt-3 text-center">
+        Tu reseña fue guardada exitosamente.
+    </div>
+}
 
 <div class="container py-4" style="background-color: whitesmoke; min-height: 100vh;">
     <div class="row mt-5">
-        <!-- Columna izquierda (reseña principal) -->
+        <!-- Columna izquierda -->
         <div class="col-md-8 mb-4">
             <div class="d-flex gap-4 mb-4">
-                <img src="@Model.Review.GameImageUrl" class="rounded shadow" style="width: 160px; height: auto;"
-                    alt="Game Cover">
-
+                <img src="@Model.Review.GameImageUrl" class="rounded shadow" style="width: 160px;" alt="Game Cover">
                 <div class="flex-grow-1">
                     <p class="text-muted mb-1">Review by <strong>@Model.Review.UserName</strong></p>
                     <h2 class="fw-bold mb-2">
                         @Model.GamePreview.Title
                         <small class="text-muted">@Model.Review.CreatedAt.ToString("yyyy")</small>
                     </h2>
-
                     <p class="text-muted mb-2">Watched @Model.Review.CreatedAt.ToString("dd MMM yyyy")</p>
                     <p class="lead" style="white-space: pre-wrap;">@Model.Review.Content</p>
 
                     <div class="d-flex gap-2 flex-wrap mt-3">
-                        @if (Model.Review.UserId != @User.FindFirstValue(ClaimTypes.NameIdentifier))
+                        @if (Model.Review.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                         {
                             <form method="post" asp-page-handler="ToggleLike">
                                 <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
@@ -35,10 +44,6 @@
                                 </button>
                             </form>
                         }
-
-
-
-
                         <button class="btn btn-outline-dark btn-sm">Add to list</button>
                         <button class="btn btn-outline-dark btn-sm">Share</button>
                     </div>
@@ -49,7 +54,6 @@
 
             <div id="comentarios">
                 <h5 class="mb-4">Comments (@Model.Comments.Count)</h5>
-
                 @foreach (var comment in Model.Comments)
                 {
                     <div class="mb-3 p-3 bg-white rounded shadow-sm border">
@@ -62,7 +66,6 @@
                     </div>
                 }
 
-                <!-- Formulario para nuevo comentario -->
                 <div class="mt-4">
                     <form method="post" asp-page-handler="AgregarComentario" asp-route-reviewId="@Model.Review.Id">
                         <div class="mb-3">
@@ -74,13 +77,11 @@
                     </form>
                 </div>
             </div>
-
         </div>
 
-        <!-- Columna derecha (panel lateral) -->
+        <!-- Columna derecha -->
         <div class="col-md-4">
             <div class="bg-light border rounded p-3 shadow-sm">
-                <!-- Fila con Watch, Like, Watchlist -->
                 <div class="d-flex justify-content-between mb-3 gap-2">
                     <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2" id="btn-watch"
                         data-review-id="@Model.Review.Id" data-tracking-type="watch"
@@ -104,8 +105,6 @@
                     </button>
                 </div>
 
-
-                <!-- Lista de botones debajo -->
                 <div class="d-flex flex-column gap-2">
                     <button class="btn btn-outline-secondary w-100">Show your activity</button>
                     <button class="btn btn-outline-secondary w-100">Show @Model.Review.UserName's activity</button>
@@ -113,18 +112,42 @@
                         data-bs-target="#reviewModal">
                         Review or log...
                     </button>
+                    <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#listModal">
+                        Add this film to lists
+                    </button>
 
-                    <button class="btn btn-outline-secondary w-100">Add this film to lists…</button>
                     <button class="btn btn-outline-secondary w-100">Share this review</button>
                 </div>
             </div>
+            <div class="d-flex gap-2 flex-wrap">
+                @if (Model.UserReviews != null && Model.UserReviews.Count > 0)
+                {
+                    <h5 class="mt-5 mb-3">Other games you reviewed</h5>
+                    <div class="horizontal-scroll-container">
+                        @foreach (var review in Model.UserReviews)
+                        {
+                            <a href="/Reviews/Details?reviewId=@review.ReviewId" class="me-3 text-decoration-none">
+                                <img src="@review.GameImageUrl" alt="@review.GameTitle" class="rounded shadow"
+                                    style="width: 220px; height: 120px; object-fit: cover;" />
+                            </a>
+                        }
+                    </div>
+                }
+
+            </div>
+
         </div>
+
+
     </div>
 
+
+    <!-- Modal para Review -->
     <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <form method="post" asp-page-handler="LogReviewWithTracking">
+                <form id="logReviewForm" method="post" asp-page-handler="LogReviewWithTracking">
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title">I watched...</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
@@ -132,18 +155,16 @@
                     </div>
 
                     <div class="modal-body d-flex gap-4">
-                        <!-- Imagen -->
                         <img src="@Model.GamePreview.HeaderUrl" alt="Game cover" style="height: 220px;"
                             class="rounded shadow" />
 
-                        <!-- Campos -->
                         <div class="flex-grow-1">
                             <h4 class="fw-bold">@Model.GamePreview.Title <span
                                     class="text-muted">@Model.Review.CreatedAt.Year</span></h4>
 
                             <div class="d-flex align-items-center mb-2 gap-3">
                                 <input class="form-check-input" type="checkbox" name="WatchedOnEnabled"
-                                    id="WatchedOnEnabled" checked onchange="togglePlayedBefore()" />
+                                    id="WatchedOnEnabled" checked />
                                 <label class="form-label mb-0" for="WatchedOnEnabled">Watched on</label>
                                 <input type="date" name="WatchedOn" class="form-control form-control-sm w-auto"
                                     value="@DateTime.Today.ToString("yyyy-MM-dd")" />
@@ -178,7 +199,6 @@
                             {
                                 <input type="hidden" name="GameId" value="@Model.GamePreview.Id.ToString()" />
                             }
-
                         </div>
                     </div>
 
@@ -190,17 +210,115 @@
         </div>
     </div>
 
+<div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <form id="createListForm" method="post" asp-page-handler="CreateList">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Add ‘@Model.GamePreview.Title’ to lists</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
 
-</div>
+                <div class="px-3 pb-3">
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="IsPublic" id="publicTab" value="true" autocomplete="off" checked>
+                        <label class="btn btn-outline-light" for="publicTab">Public</label>
 
-@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @Model.SuccessMessage
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <input type="radio" class="btn-check" name="IsPublic" id="privateTab" value="false" autocomplete="off">
+                        <label class="btn btn-outline-light" for="privateTab">Private</label>
+                    </div>
+                </div>
+
+                <div class="px-3 d-flex gap-2 align-items-center mb-3">
+                    <input type="text" name="NewListName" id="newListName" class="form-control bg-secondary text-white border-0" placeholder="+ New list…" />
+                    <button type="submit" class="btn btn-success">ADD</button>
+                </div>
+
+                <input type="hidden" name="GameId" value="@Model.GamePreview.Id" />
+            </form>
+        </div>
     </div>
-}
+</div>
 
+<!-- Mensaje de éxito para listas -->
+<div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
+    List created and game added successfully!
+</div>
+
+
+
+    
 
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('logReviewForm');
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const gameId = form.querySelector('input[name="GameId"]')?.value;
+
+            const response = await fetch('?handler=LogReviewWithTracking', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const modalElement = document.getElementById('reviewModal');
+                let modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (!modalInstance) modalInstance = new bootstrap.Modal(modalElement);
+                modalInstance.hide();
+
+                const successMessage = document.getElementById('reviewSuccessMessage');
+                successMessage?.classList.remove('d-none');
+
+                setTimeout(() => successMessage?.classList.add('d-none'), 4000);
+
+                form.reset();
+                if (gameId) form.querySelector('input[name="GameId"]').value = gameId;
+            } else {
+                console.error("Error:", await response.text());
+            }
+        });
+    });
+
+      function switchTab(tabId) {
+        document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('d-none'));
+        document.querySelector(`#${tabId}`).classList.remove('d-none');
+
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const createListForm = document.getElementById('createListForm');
+
+    createListForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(createListForm);
+        const response = await fetch('?handler=CreateList', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('listModal'));
+            if (modal) modal.hide();
+
+            const msg = document.getElementById('listSuccessMessage');
+            msg?.classList.remove('d-none');
+            setTimeout(() => msg?.classList.add('d-none'), 4000);
+
+            createListForm.reset();
+        } else {
+            alert("Error creating list");
+        }
+    });
+});
+</script>

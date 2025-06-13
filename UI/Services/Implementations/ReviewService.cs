@@ -37,7 +37,7 @@ public class ReviewService : IReviewService
 
     public async Task<bool> DeleteReviewAsync(string reviewId, string userId)
     {
-        var requestUri = $"/{reviewId}?user_id={userId}";
+        var requestUri = $"reviews/{reviewId}?user_id={userId}";
         var response = await _http.DeleteAsync(requestUri);
         return response.IsSuccessStatusCode;
     }
@@ -49,34 +49,34 @@ public class ReviewService : IReviewService
 
     public async Task<List<ReviewDTO>> GetTopReviewsAsync(int limit = 10)
     {
-        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"/top?limit={limit}") ?? new();
+        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"reviews/top?limit={limit}") ?? new();
     }
 
     public async Task<List<ReviewDTO>> GetFriendsReviewsAsync(List<string> friendIds, int limit = 10)
     {
         var query = BuildQuery("friend_ids", friendIds, limit);
-        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"/friends{query}") ?? new();
+        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"reviews/friends{query}") ?? new();
     }
 
     public async Task<List<ReviewDTO>> GetReviewsByGameAsync(string gameId)
     {
-        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"/game/{gameId}") ?? new();
+        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"reviews/game/{gameId}") ?? new();
     }
 
     public async Task<List<ReviewDTO>> GetRecentReviewsByGameAsync(string gameId, int limit = 10)
     {
-        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"/game/{gameId}/recent?limit={limit}") ?? new();
+        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"reviews/game/{gameId}/recent?limit={limit}") ?? new();
     }
 
     public async Task<List<ReviewDTO>> GetTopReviewsByGameAsync(string gameId, int limit = 10)
     {
-        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"/game/{gameId}/top?limit={limit}") ?? new();
+        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"reviews/game/{gameId}/top?limit={limit}") ?? new();
     }
 
     public async Task<List<ReviewDTO>> GetFriendsReviewsByGameAsync(string gameId, List<string> friendIds, int limit = 10)
     {
         var query = BuildQuery("friend_ids", friendIds, limit);
-        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"/game/{gameId}/friends{query}") ?? new();
+        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"reviews/game/{gameId}/friends{query}") ?? new();
     }
 
     public async Task<ReviewDTO?> GetReviewByIdAsync(string reviewId)

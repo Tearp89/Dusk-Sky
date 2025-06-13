@@ -919,3 +919,43 @@ label + label {
 input[type="checkbox"]#likedCheckbox:checked + label .heart-icon {
     fill: #dc3545;
 }
+
+
+.horizontal-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: #888 transparent;
+    }
+
+    .horizontal-scroll-container::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .horizontal-scroll-container::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 4px;
+    }
+
+    .horizontal-scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .tab-button {
+        background-color: #2f3944;
+        border: none;
+        padding: 10px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .tab-button.active {
+        background-color: #a4b0be;
+        color: #000;
+        border-radius: 999px;
+    }
+
+    .tab-content input {
+        margin-top: 8px;
+    }

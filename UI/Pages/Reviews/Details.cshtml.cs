@@ -12,7 +12,9 @@ public class ReviewDetailsModel : PageModel
     private readonly IGameService _gameService;
     private readonly IAuthService _authService;
     private readonly IGameTrackingService _gameTrackingService;
-    
+    private readonly IGameListItemService _gameListItemService;
+    private readonly IGameListService _gameListService;
+
 
     public ReviewDetailsModel(
         IReviewService reviewService,
@@ -20,7 +22,9 @@ public class ReviewDetailsModel : PageModel
         IUserManagerService userService,
         IGameService gameService,
         IAuthService authService,
-        IGameTrackingService gameTrackingService)
+        IGameTrackingService gameTrackingService,
+        IGameListItemService gameListItemService,
+        IGameListService gameListService)
     {
         _reviewService = reviewService;
         _commentService = commentService;
@@ -28,6 +32,8 @@ public class ReviewDetailsModel : PageModel
         _gameService = gameService;
         _authService = authService;
         _gameTrackingService = gameTrackingService;
+        _gameListItemService = gameListItemService;
+        _gameListService = gameListService;
     }
 
     [BindProperty(SupportsGet = true)]
@@ -41,16 +47,20 @@ public class ReviewDetailsModel : PageModel
     public GameTrackingDto Tracking { get; set; } = new();
     public GamePreviewDTO GamePreview { get; set; } = new();
     public ReviewDTO ReviewDTO { get; set; } = new();
-    
-    public bool IsWatched => Tracking?.Status == "played"; 
+    public List<ReviewWithGameDto> UserReviews { get; set; } = new();
+
+
+    public bool IsWatched => Tracking?.Status == "played";
     public bool IsInWatchlist => Tracking?.Status == "backlog";
     public bool IsLiked => Tracking?.Liked == true;
     public string UserId { get; set; }
-    
+    public List<string> UserIds { get; set; } = new();
+
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
 
         if (string.IsNullOrWhiteSpace(ReviewId))
             return NotFound();
@@ -92,10 +102,6 @@ public class ReviewDetailsModel : PageModel
         Tracking = await _gameTrackingService.GetByUserAndGameAsync(UserId, Review.GameId.ToString());
         Tracking ??= new GameTrackingDto();
 
-
-
-
-        // Obtener comentarios asociados a la review
         var commentList = await _commentService.GetCommentsByReviewIdAsync(ReviewId);
         foreach (var comment in commentList)
         {
@@ -110,32 +116,54 @@ public class ReviewDetailsModel : PageModel
             });
         }
 
+        UserReviews = new List<ReviewWithGameDto>();
+        UserIds.Add(UserId);
+
+        var userReviews = await _reviewService.GetFriendsReviewsAsync(UserIds);
+
+        foreach (var review in userReviews)
+        {
+            var gameReview = await _gameService.GetGamePreviewByIdAsync(review.GameId);
+
+            if (gameReview != null)
+            {
+                UserReviews.Add(new ReviewWithGameDto
+                {
+                    ReviewId = review.Id, 
+                    GameId = review.GameId.ToString(),
+                    GameTitle = gameReview.Title,
+                    GameImageUrl = gameReview.HeaderUrl
+                });
+            }
+        }
+
+
         return Page();
     }
 
 
 
-public async Task<IActionResult> OnPostAgregarComentarioAsync(string reviewId, string nuevoComentario)
-{
-    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    Console.WriteLine("Comentario recibido: " + nuevoComentario);
-
-    if (string.IsNullOrWhiteSpace(nuevoComentario) || string.IsNullOrWhiteSpace(userId))
-        return RedirectToPage("/Reviews/Details", new { reviewId });
-
-    var nuevo = new CommentDTO
+    public async Task<IActionResult> OnPostAgregarComentarioAsync(string reviewId, string nuevoComentario)
     {
-        ReviewId = reviewId,
-        AuthorId = userId,
-        Text = nuevoComentario,
-        CreatedAt = DateTime.UtcNow,
-        Status = CommentStatus.Visible
-    };
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Console.WriteLine("Comentario recibido: " + nuevoComentario);
 
-    await _commentService.CreateCommentAsync(nuevo);
+        if (string.IsNullOrWhiteSpace(nuevoComentario) || string.IsNullOrWhiteSpace(userId))
+            return RedirectToPage("/Reviews/Details", new { reviewId });
 
-    return RedirectToPage("/Reviews/Details", new { reviewId });
-}
+        var nuevo = new CommentDTO
+        {
+            ReviewId = reviewId,
+            AuthorId = userId,
+            Text = nuevoComentario,
+            CreatedAt = DateTime.UtcNow,
+            Status = CommentStatus.Visible
+        };
+
+        await _commentService.CreateCommentAsync(nuevo);
+
+        return RedirectToPage("/Reviews/Details", new { reviewId });
+    }
 
     public async Task<IActionResult> OnPostToggleTrackingAsync(string reviewId, string trackingType)
     {
@@ -221,49 +249,105 @@ public async Task<IActionResult> OnPostAgregarComentarioAsync(string reviewId, s
         });
     }
 
-public async Task<IActionResult> OnPostLogReviewWithTrackingAsync(Guid GameId, string Content, double Rating, DateTime? WatchedOn, bool PlayedBefore, bool Like)
-{
-    Console.WriteLine("Entró al handler LogReviewWithTracking");
-    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    if (string.IsNullOrEmpty(userId)) return RedirectToPage("/StartPage");
-    Console.WriteLine("REVIEW CONTENT: " + Content);
-
-    var review = new ReviewDTO
+    public async Task<IActionResult> OnPostLogReviewWithTrackingAsync(Guid GameId, string Content, double Rating, DateTime? WatchedOn, bool PlayedBefore, bool Like)
     {
-        GameId = GameId,
+        Console.WriteLine("Entró al handler LogReviewWithTracking");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return RedirectToPage("/StartPage");
+        Console.WriteLine("REVIEW CONTENT: " + Content);
+
+        var review = new ReviewDTO
+        {
+            GameId = GameId,
+            UserId = userId,
+            Content = Content,
+            Rating = Rating,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _reviewService.CreateReviewAsync(review);
+
+        var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, GameId.ToString());
+
+        if (tracking == null)
+        {
+            tracking = new GameTrackingDto
+            {
+                UserId = userId,
+                GameId = GameId.ToString()
+            };
+        }
+
+        if (WatchedOn.HasValue || PlayedBefore)
+        {
+            tracking.Status = "played";
+            tracking.Liked = Like;
+        }
+
+        if (string.IsNullOrEmpty(tracking.Id.ToString()))
+            await _gameTrackingService.CreateAsync(tracking);
+        else
+            await _gameTrackingService.UpdateAsync(tracking.Id, tracking);
+
+        return new JsonResult(new { success = true });
+    }
+    
+    [BindProperty]
+public string NewListName { get; set; } = "";
+
+[BindProperty]
+public bool IsPublic { get; set; }
+
+public async Task<IActionResult> OnPostCreateListAsync(string NewListName, bool IsPublic, Guid GameId)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return new JsonResult(new { success = false, message = "User not found." });
+
+    var newList = new GameListDTO
+    {
+        Id = Guid.NewGuid().ToString(),
         UserId = userId,
-        Content = Content,
-        Rating = Rating,
+        Name = NewListName,
+        IsPublic = IsPublic,
+        Description = "",
         CreatedAt = DateTime.UtcNow
     };
-     await _reviewService.CreateReviewAsync(review);
 
-    var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, GameId.ToString());
+    var created = await _gameListService.CreateListAsync(newList);
+    if (!created)
+        return new JsonResult(new { success = false, message = "Failed to create list." });
 
-    if (tracking == null)
+    var userLists = await _gameListService.GetUserListsAsync(userId);
+    var list = userLists.FirstOrDefault(l => l.Name == NewListName);
+
+    if (list == null)
+        return new JsonResult(new { success = false, message = "List not found after creation." });
+
+    var item = new GameListItemDTO
     {
-        tracking = new GameTrackingDto
-        {
-            UserId = userId,
-            GameId = GameId.ToString()
-        };
-    }
+        GameId = GameId,
+        ListId = list.Id
+    };
 
-    if (WatchedOn.HasValue || PlayedBefore)
-    {
-        tracking.Status = "played";
-        tracking.Liked = Like;
-    }
+    var added = await _gameListItemService.AddItemAsync(item);
+    if (!added)
+        return new JsonResult(new { success = false, message = "Failed to add game to list." });
 
-    if (string.IsNullOrEmpty(tracking.Id.ToString()))
-        await _gameTrackingService.CreateAsync(tracking);
-    else
-        await _gameTrackingService.UpdateAsync(tracking.Id, tracking);
-
-    SuccessMessage = "Your review was successfully saved.";
-    await OnGetAsync();
-    return Page();
+    return new JsonResult(new { success = true });
 }
+
+
+
+
+    
+
+public class CreateListRequest
+    {
+        public string Name { get; set; } = "";
+        public bool IsPrivate { get; set; }
+        public string GameId { get; set; } = "";
+    }
+
 
 
 

@@ -14,7 +14,7 @@ public class GameListItemService : IGameListItemService
 
     public async Task<bool> AddItemAsync(GameListItemDTO item)
     {
-        var response = await _http.PostAsJsonAsync("/lists/items", item);
+        var response = await _http.PostAsJsonAsync($"/lists/{item.ListId}/items", item); // ✅ usa la ruta con listId
         return response.IsSuccessStatusCode;
     }
 
