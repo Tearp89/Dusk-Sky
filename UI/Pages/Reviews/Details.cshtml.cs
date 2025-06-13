@@ -340,12 +340,60 @@ public async Task<IActionResult> OnPostCreateListAsync(string NewListName, bool 
     return new JsonResult(new { success = true });
 }
 
+    public async Task<IActionResult> OnPostAddGameToListAsync(string ListId, Guid GameId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return new JsonResult(new { success = false, message = "Usuario no autenticado." });
+
+        var alreadyExists = await _gameListItemService.ExistsAsync(ListId.ToString(), GameId);
+        if (alreadyExists)
+            return new JsonResult(new { success = false, message = "Game already in the list." });
+
+        var dto = new GameListItemDTO
+        {
+            Id = Guid.NewGuid().ToString(),
+            GameId = GameId,
+            ListId = ListId
+        };
+
+        var success = await _gameListItemService.AddItemAsync(dto);
+
+        if (!success)
+            return new JsonResult(new { success = false, message = "No se pudo agregar el juego a la lista." });
+
+        return new JsonResult(new { success = true });
+    }
+
+public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
+{
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var userLiked = await _reviewService.HasUserLikedAsync(ReviewId, userId);
+
+    bool nowLiked;
+
+    if (userLiked)
+    {
+        await _reviewService.UnlikeReviewAsync(ReviewId, userId);
+        nowLiked = false;
+    }
+    else
+    {
+        await _reviewService.LikeReviewAsync(ReviewId, userId);
+        nowLiked = true;
+    }
+
+    return new JsonResult(new { liked = nowLiked });
+}
 
 
 
-    
 
-public class CreateListRequest
+
+
+
+
+    public class CreateListRequest
     {
         public string Name { get; set; } = "";
         public bool IsPrivate { get; set; }

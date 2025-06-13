@@ -4,4 +4,5 @@ public interface IGameListItemService
     Task<bool> AddItemAsync(GameListItemDTO item);
     Task<bool> UpdateItemAsync(GameListItemDTO item);
     Task<bool> DeleteItemAsync(string itemId);
+    Task<bool> ExistsAsync(string listId, Guid gameId);
 }

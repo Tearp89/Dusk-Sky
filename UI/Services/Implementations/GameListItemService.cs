@@ -29,4 +29,11 @@ public class GameListItemService : IGameListItemService
         var response = await _http.DeleteAsync($"/lists/items/{itemId}");
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<bool> ExistsAsync(string listId, Guid gameId)
+{
+    var items = await GetItemsByListIdAsync(listId);
+    return items.Any(i => i.GameId == gameId);
+}
+
 }

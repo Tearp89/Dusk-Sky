@@ -1,0 +1,57 @@
+@page
+@model ListCreatorModel
+
+@{
+    ViewData["Title"] = "New List";
+}
+
+<div class="container mt-5 p-4 rounded bg-dark text-light shadow" style="max-width: 900px;">
+    <h2 class="mb-4">New List</h2>
+
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input asp-for="@Model.ListName" class="form-control bg-dark text-light border-secondary" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tags</label>
+            <input asp-for="Tags" class="form-control bg-dark text-light border-secondary" placeholder="eg. top 10" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Who can view</label>
+            <select asp-for="Visibility" class="form-select bg-dark text-light border-secondary">
+                <option value="private">You (private list)</option>
+                <option value="public">Everyone (public list)</option>
+            </select>
+        </div>
+
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" asp-for="Ranked" id="rankedCheck" />
+            <label class="form-check-label" for="rankedCheck">
+                Ranked list <small class="text-muted">Show position for each film.</small>
+            </label>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control bg-dark text-light border-secondary" rows="5"></textarea>
+        </div>
+
+        <div class="mb-4 d-flex align-items-center">
+            <button type="button" class="btn btn-success me-2">Add a Film</button>
+            <input type="text" class="form-control bg-dark text-light border-secondary me-2" placeholder="Enter name of film..." style="max-width: 300px;" />
+            <button type="button" class="btn btn-secondary">Import</button>
+        </div>
+
+        <div class="bg-secondary bg-opacity-25 p-3 rounded d-flex align-items-center justify-content-between mb-4">
+            <span class="fw-bold">No films added yet.</span>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a asp-page="/Index" class="btn btn-outline-light">Cancel</a>
+        </div>
+    </form>
+</div>

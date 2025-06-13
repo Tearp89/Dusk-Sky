@@ -6,6 +6,8 @@ public interface IGameListService
     Task<bool> UpdateListAsync(string id, GameListDTO list);
     Task<bool> DeleteListAsync(string id);
     Task<List<GameListDTO>> GetRecentListsAsync();
+    
+
 
     
 }

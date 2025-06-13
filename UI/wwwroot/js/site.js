@@ -250,12 +250,12 @@ async function toggleTracking(button) {
  
 
 function togglePlayedBefore() {
-        const watchedOn = document.getElementById("WatchedOnEnabled");
-        const playedBeforeContainer = document.getElementById("playedBeforeContainer");
-        playedBeforeContainer.style.display = watchedOn.checked ? "block" : "none";
-    }
+    const watchedOn = document.getElementById("WatchedOnEnabled");
+    const playedBeforeContainer = document.getElementById("playedBeforeContainer");
 
-    document.addEventListener("DOMContentLoaded", togglePlayedBefore);
+    if (!watchedOn || !playedBeforeContainer) return;
 
+    playedBeforeContainer.style.display = watchedOn.checked ? "block" : "none";
+}
 
     
