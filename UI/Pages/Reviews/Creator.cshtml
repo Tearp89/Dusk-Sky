@@ -1,0 +1,167 @@
+@page
+@model CreatorModel
+@{
+    ViewData["Title"] = "Create a review";
+    ViewData["ShowBackground"] = false;
+}
+
+@if (Model.Game != null)
+{
+    <div class="container log-review-container py-4 shadow rounded p-4 bg-white bg-opacity-75 glossy-card"
+         style="margin-top: 120px; max-width: 850px;">
+        <h2 class="mb-4 fw-bold">Log a Game</h2>
+
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @Model.SuccessMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">Please correct the errors in the form.</div>
+        }
+
+        <form method="post">
+            <input type="hidden" asp-for="GameId" />
+            <input type="hidden" asp-for="Review.GameId" />
+
+            <div class="d-flex flex-column flex-md-row gap-4 mb-4 align-items-start">
+                <img src="@Model.Game.HeaderUrl" alt="Game Image" class="rounded shadow"
+                     style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
+
+                <div class="flex-grow-1">
+                    <h4 class="fw-bold">@Model.Game.Title</h4>
+
+                    <div class="mb-3 d-flex align-items-center gap-2">
+                        <input type="radio" name="Tracking.Liked" id="likedTrue" value="true" class="d-none" />
+                        <input type="radio" name="Tracking.Liked" id="likedFalse" value="false" checked class="d-none" />
+
+                        <label for="likedTrue" class="heart-label" style="cursor: pointer;">
+                            <svg class="heart-icon" viewBox="0 0 24 24">
+                                <path id="heartPath"
+                                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                                       2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09
+                                       C13.09 3.81 14.76 3 16.5 3
+                                       19.58 3 22 5.42 22 8.5
+                                       c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                        </label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Review.Content" class="form-label">Review</label>
+                        <textarea asp-for="Review.Content" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Review.Content" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="half-star-rating">
+                            @for (int i = 10; i >= 1; i--)
+                            {
+                                var value = (i * 0.5).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                var id = $"star-{value.Replace(".", "_")}";
+                                var isLeft = i % 2 == 1;
+                                var clipId = isLeft ? $"left-{i}" : $"right-{i}";
+
+                                <input type="radio" name="Review.Rating" id="@id" value="@value" />
+                                <label for="@id">
+                                    <svg viewBox="0 0 24 24" class="star-svg">
+                                        <defs>
+                                            <clipPath id="left-@i">
+                                                <rect x="0" y="0" width="12" height="24" />
+                                            </clipPath>
+                                            <clipPath id="right-@i">
+                                                <rect x="12" y="0" width="12" height="24" />
+                                            </clipPath>
+                                        </defs>
+                                        <path d="M12 17.27L18.18 21 16.54 13.97
+                                                 22 9.24 14.81 8.63 12 2
+                                                 9.19 8.63 2 9.24 7.46 13.97
+                                                 5.82 21z" class="star-base" clip-path="url(#@clipId)" />
+                                    </svg>
+                                </label>
+                            }
+                        </div>
+                        <span asp-validation-for="Review.Rating" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3 watched-box glassy p-3 rounded-4 shadow-sm">
+                        <div class="form-check form-switch mb-2">
+                            <input asp-for="Watched" class="form-check-input" type="checkbox" id="watchedToggle" />
+                            <label class="form-check-label fw-semibold" for="watchedToggle">Watched on</label>
+                        </div>
+                        <input type="date" asp-for="WatchedOn" class="form-control mt-2 glossy-box-input"
+                               id="watchedDate" style="max-width: 220px; display: none;" />
+
+                        <div class="form-check mt-3" id="watchedBeforeGroup" style="display: none;">
+                            <input asp-for="WatchedBefore" class="form-check-input" type="checkbox" id="watchedBefore" />
+                            <label class="form-check-label" for="watchedBefore">I've watched this before</label>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary button-glass-blue">Submit Review</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+}
+else
+{
+    <p class="text-danger">No se pudo cargar la información del juego.</p>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const watchedToggle = document.getElementById("watchedToggle");
+        const watchedDate = document.getElementById("watchedDate");
+        const watchedBefore = document.getElementById("watchedBeforeGroup");
+
+        function toggleWatchedFields() {
+            const show = watchedToggle.checked;
+            watchedDate.style.display = show ? "block" : "none";
+            watchedBefore.style.display = show ? "block" : "none";
+        }
+
+        watchedToggle.addEventListener("change", toggleWatchedFields);
+        toggleWatchedFields();
+
+        const heartIcon = document.querySelector(".heart-icon");
+        const likeRadioTrue = document.getElementById("likedTrue");
+        const likeRadioFalse = document.getElementById("likedFalse");
+
+        document.querySelector(".heart-label").addEventListener("click", function () {
+            if (likeRadioTrue.checked) {
+                likeRadioFalse.checked = true;
+                likeRadioTrue.checked = false;
+                heartIcon.style.fill = "none";
+            } else {
+                likeRadioTrue.checked = true;
+                likeRadioFalse.checked = false;
+                heartIcon.style.fill = "#dc3545";
+            }
+        });
+
+        // If "likedTrue" is pre-checked (e.g., edit mode), show it filled
+        if (likeRadioTrue.checked) {
+            heartIcon.style.fill = "#dc3545";
+        }
+    </script>
+}
+
+<style>
+    .heart-icon {
+        width: 28px;
+        height: 28px;
+        fill: none;
+        stroke: #dc3545;
+        stroke-width: 2;
+        transition: fill 0.3s ease;
+    }
+</style>

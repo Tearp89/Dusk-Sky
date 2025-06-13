@@ -1,52 +1,277 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - UI</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Dusk Sky</title>
+
+    <!-- Bootstrap & CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/UI.styles.css" asp-append-version="true" />
+
+    <!-- Fuente Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+
 </head>
+
 <body>
+    @{
+        string? currentPage = ViewContext.RouteData.Values["page"]?.ToString()?.ToLower();
+        string navbarClass = currentPage switch
+        {
+            "/homepage/index" => "navbar-home",
+            "/profile" => "navbar-profile",
+            _ => "navbar-default"
+        };
+    }
+
+    @if (ViewData["ShowBackground"] as bool? == true)
+    {
+        <div class="container-img">
+            <img src="@ViewData["BackgroundImage"]" alt="Fondo" />
+        </div>
+    }
+
+
+    <!-- NAVBAR -->
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">UI</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <!-- NAVBAR PARA USUARIO LOGUEADO -->
+            <nav class="navbar navbar-expand-lg custom-navbar-layout @navbarClass">
+                <div class="container-fluid">
+                    <a class="navbar-brand text-white" asp-area="" asp-page="/Index">
+                        <img src="~/Images/logo_dusk.png" alt="Logo Dusk Sky" height="40" />
+                        Dusk Sky
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNavDropdown">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse justify-content-center" id="navbarNavDropdown">
+                        <ul class="navbar-nav gap-3">
+                            @{
+                                var userName = User.Identity?.Name ?? "User";
+                                var avatarUrl = User.FindFirst("avatar_url")?.Value ??
+                                Url.Content("~/Images/default_avatar.png");
+                            }
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="@avatarUrl" alt="Avatar" class="rounded-circle" width="32" height="32">
+                                    @userName
+                                </a>
+                                <ul class="dropdown-menu glassy-dropdown">
+                                    <li><a class="dropdown-item" asp-page="/Index">Home</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Users/Profile">Profile</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Films">Films</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Reviews">Reviews</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Lists">Lists</a></li>
+                                    <li>
+                                        <form method="post" action="/Logout">
+                                            <button type="submit" class="nav-link btn btn-link"
+                                                style="color: inherit; text-decoration: none;">Sign Out</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/Games">Games</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/Lists">Lists</a></li>
+
+                            <form class="d-flex align-items-center gap-2 ms-auto" role="search" style="max-width: 280px;">
+                                <input class="form-control input-glass rounded-pill" type="search" placeholder="Search..."
+                                    aria-label="Search">
+                                <button class="btn btn-outline-light button-glass-blue" type="submit">
+                                    <i class="fa solid fa-magnifying-glass"></i>
+                                </button>
+                            </form>
+
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-success button-glass-blue" data-bs-toggle="modal"
+                                    data-bs-target="#logGameModal">
+                                    <i class="fas fa-plus"></i> LOG
+                                </button>
+                                <button type="button"
+                                    class="btn btn-success dropdown-toggle dropdown-toggle-split button-glass-blue"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu glassy-dropdown">
+                                    <li><a class="dropdown-item" href="#" style="color: black;">New List</a></li>
+                                </ul>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        }
+        else
+        {
+            <!-- NAVBAR PARA USUARIO NO LOGUEADO -->
+            <nav class="custom-navbar navbar navbar-expand-lg">
+                <div class="container-fluid position-relative">
+                    <a class="navbar-brand" href="#" style="color: whitesmoke;">
+                        <img src="~/Images/logo_dusk.png" alt="Logo" height="40"> Dusk Sky
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse justify-content-center" id="navbarNavDropdown">
+                        <ul class="navbar-nav">
+                            <li class="nav-item"><a class="nav-link active" href="#">Lists</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Members</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Journals</a></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">Access</a>
+                                <ul class="dropdown-menu glassy-dropdown">
+                                    <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal"
+                                            data-bs-target="#signInModal">Sign In</button></li>
+                                    <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal"
+                                            data-bs-target="#createAccountModal">Create Account</button></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <form class="d-flex" role="search">
+                                    <input class="form-control me-2 searchInput input-glass" type="search"
+                                        placeholder="Search" aria-label="Search">
+                                    <button class="btn btn-outline-primary button-glass-blue" type="submit">Search</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        }
+    </header>
+
+    <div class="modal fade " id="logGameModal" tabindex="-1" aria-labelledby="logGameModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow glassy-modal">
+                <div class="modal-header bg-primary text-white button-glass-blue">
+                    <h5 class="modal-title" id="logGameModalLabel">Log a Game</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="gameSearchInput" class="form-control mb-3"
+                        placeholder="Search for a game..." />
+                    <ul class="list-group" id="gameListContainer">
+                        <!-- Juegos se renderizan dinámicamente -->
                     </ul>
                 </div>
             </div>
-        </nav>
-    </header>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="logGameFormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content glassy-modal p-4 rounded-4 border-0 shadow-lg text-white">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="modal">
+                        ← Back
+                    </button>
+                    <h5 class="modal-title fw-bold ms-3" id="gameLogTitle">I played...</h5>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body d-flex flex-column flex-md-row gap-4 align-items-start">
+
+                    <!-- Imagen -->
+                    <img id="logGameImage" src="/Images/noImage.png" class="rounded shadow"
+                        style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
+
+
+                    <!-- Detalles -->
+                    <div class="flex-grow-1">
+                        <h4 id="logGameName" class="fw-bold">Game Title</h4>
+
+                        <!-- Fecha -->
+                        <div class="form-check mt-2 mb-3">
+                            <input class="form-check-input" type="checkbox" id="playedCheck" checked />
+                            <label class="form-check-label" for="playedCheck">
+                                Played on
+                            </label>
+                            <input type="date" class="form-control form-control-sm d-inline-block w-auto ms-2"
+                                id="playedDate" />
+                        </div>
+
+                        <!-- Reseña -->
+                        <textarea id="gameReviewText" class="form-control mb-3" placeholder="Add a review..."
+                            rows="4"></textarea>
+
+                        <!-- Tags y rating -->
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <div class="flex-grow-1">
+                                <label class="form-label small mb-1">Tags</label>
+                                <input type="text" class="form-control" id="tagInput"
+                                    placeholder="e.g. indie, Steam Deck..." />
+                            </div>
+
+                            <div class="rating-stars d-flex gap-1 mb-3">
+                                <i class="bi bi-star" data-value="1"></i>
+                                <i class="bi bi-star" data-value="2"></i>
+                                <i class="bi bi-star" data-value="3"></i>
+                                <i class="bi bi-star" data-value="4"></i>
+                                <i class="bi bi-star" data-value="5"></i>
+                            </div>
+                            <input type="hidden" id="selectedRating" name="rating" value="0" />
+
+
+                            <div>
+                                <label class="form-label small mb-1">Like</label><br />
+                                <i id="gameLikeToggle" class="bi bi-heart fs-4" role="button"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button class="btn btn-success px-4 button-glass-blue" id="saveGameLogBtn">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- Contenido principal -->
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
+    <!-- Footer -->
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - UI - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2025 - Dusk Sky - <a asp-page="/Privacy">Privacy</a>
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/site.js"></script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

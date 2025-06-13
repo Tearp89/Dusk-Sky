@@ -1,0 +1,484 @@
+@page
+@using System.Text.Json
+@model StartPageModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Página de inicio"; // Esto asegura que no se use el layout predeterminado
+    int index = 0;
+    
+}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dusk sky</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+        crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
+   <nav class="custom-navbar navbar navbar-expand-lg">
+    <div class="container-fluid position-relative">
+
+        <!-- Logo (a la izquierda) -->
+        <a class="navbar-brand" href="#" style="color: whitesmoke;">
+             <img src="~/Images/logo_dusk.png" alt="Logo" height="40">
+            Dusk Sky
+        </a>
+           
+
+        <!-- Botón hamburguesa para móviles -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Menú centrado -->
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active" href="#">Lists</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Members</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Journals</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Access
+                    </a>
+                    <ul class="dropdown-menu glassy-dropdown">
+                        <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#signInModal">Sign In</button></li>
+                        <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createAccountModal">Create Account</button></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <form class="d-flex" role="search">
+                        <input class="form-control me-2 searchInput input-glass" type="search" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-primary button-glass-blue" type="submit">Search</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</nav>
+
+
+    <div class="container-img">
+        <img src="../Images/startpage.png" alt="...">
+    </div>
+    <div class="container-quote">
+        <h2>
+            Track games you’ve played. <br>
+            Save those you want to play. <br>
+            Tell your friends what’s good. <br>
+        </h2>
+        <p></p>
+        <button type="button" class="btn btn-primary btn-lg button-glass-blue">Get Started - it´s free</button>
+        <p>
+            <br>The social network for gamers.
+        </p>
+    </div>
+
+    <div class="main-content">
+        <div class="card-group custom-card">
+            @if (Model.Games != null && Model.Games.Count > 0)
+            {
+                @foreach (var game in Model.Games.Take(6))
+                {
+                    <div class="card">
+                        <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title">
+                    </div>
+                }
+                @for (int i = Model.Games.Count; i < 6; i++)
+                {
+                    <div class="card">
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                    </div>
+                }
+            }
+            else
+            {
+                @for (int i = 0; i < 6; i++)
+                {
+                    <div class="card">
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                    </div>
+                }
+            }
+        </div>
+    <div class="card-group ">
+        @if (Model.Games != null && Model.Games.Count > 6)
+        {
+            @foreach (var game in Model.Games.Skip(6).Take(6))
+            {   
+                <div class="card">
+                    <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title">
+                </div>
+            }
+            @for (int i = Model.Games.Count - 6; i < 6 && Model.Games.Count < 12; i++)
+            {
+                <div class="card">
+                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                </div>
+            }
+        }
+        else if (Model.Games != null && Model.Games.Count > 0)
+        {
+            @foreach (var game in Model.Games.Skip(6))
+            {
+                <div class="card">
+                    <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title">
+                </div>
+            }
+        
+            @for (int i = Model.Games.Count; i < 12; i++)
+            {
+                <div class="card">
+                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                </div>
+            }
+        }
+        else
+        {
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="card">
+                    <img src="https://via.placeholder.com/150" class="card-img-top" alt="Placeholder">
+                </div>
+            }
+        }
+    </div>
+    <div>
+        <h4>
+            <br>
+            Dusk Sky lets you...
+            <p></p>
+        </h4>
+        <div class="card-group">
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-eye fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Keep track of every game you´ve ever played (or just start from the day
+                                you join)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-heart fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Show some love for your favorite games, lists and reviews with a like
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-align-justify fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Write and share reviews, and follow friends and other Members to read
+                                theirs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-group">
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-star fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Rate each game on a five-star scale (with halves) to record and share
+                                your reaction
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-calendar fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Keep a dairy of your game playing (and upgrade to <b>Pro</b> for
+                                comprehesive status
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3 card-glass-blue">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <i class="fa-solid fa-list fa-6x icon-shadow" style="text-align: center;"></i>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">Compile and share lists of games on any topic and Keep a wishlist of
+                                games to play
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h6>Just Reviewed</h6>
+        <hr>
+        <div class="card-group custom-card-reviewed">
+            @if (Model.ReviewImages != null && Model.ReviewImages.Count > 0)
+            {
+                @foreach (var review in Model.ReviewImages.Take(6))
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            
+                            <img src="@review.HeaderUrl" class="card-img-top">
+                        </div>
+                    </div>
+                }
+                if(Model.ReviewImages != null){
+                    @for (int i = Model.ReviewImages.Count; i < 10; i++)
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Sin Comentarios</h6>
+                            <p class="card-text">No hay comentarios recientes.</p>
+                        </div>
+                    </div>
+                }
+                }
+                
+            }
+            else
+            {
+                @for (int i = 0; i < 10; i++)
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Cargando...</h6>
+                            <p class="card-text">Esperando comentarios.</p>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <div class="container-fluid" style="padding: 20px;">
+    <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: nowrap; ">
+        
+        <!-- COLUMNA IZQUIERDA: Comentarios -->
+        <div style="flex: 3;" class="d-flex flex-column gap-3">
+            @if (Model.ReviewCards != null && Model.ReviewCards.Count > 0)
+{
+            @foreach (var review in Model.ReviewCards)
+            {
+                <div class="card mb-3 card-glossy d-flex flex-row">
+                    <div class="flex-1">
+                        <img src="@review.GameImageUrl" 
+                             class="img-fluid rounded-start"  alt="Juego asociado">
+                    </div>
+                    <div class="flex-3 p-3 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title">
+                                @review.Content.Substring(0, Math.Min(30, review.Content.Length))...
+                                <span class="year">@review.CreatedAt.ToString("yyyy")</span>
+                            </h5>
+
+                            <div class="d-flex align-items-center user-info mb-2">
+                                <img src="@review.ProfileImageUrl" alt="@review.UserName" class="user-avatar">
+                                <span><strong>@review.UserName</strong></span>
+                                <span class="stars">❤️ @review.Likes</span>
+                            </div>
+
+                            <p class="card-text">@review.Content</p>
+                            <p class="card-text">
+                                <small class="text-muted">Publicado el @review.CreatedAt.ToString("dd MMM yyyy")</small>
+                            </p>
+                        </div>
+
+                        <div class="likes">
+                            <i class="bi bi-heart-fill"></i> @review.Likes likes
+                        </div>
+                    </div>
+                </div>
+            }
+            }
+        </div>
+
+        <!-- COLUMNA DERECHA: Juegos con collage -->
+        <div style="flex: 2;" class="d-flex flex-column gap-4">
+            
+            @if (Model.RecentLists != null){
+                @foreach (var list in Model.RecentLists)
+            {
+                var id = $"collage-{index++}";
+                var json = JsonSerializer.Serialize(list.GameHeaders, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                <div class="card mb-3 card-glossy-light">
+                    <div id="@id" class="poster-collage"></div>
+                    <div class="card-body">
+                        <h5 class="card-title">@list.Name</h5>
+
+                        
+                            <div class="juego-info mb-2">
+                                <span class="text-muted">@list.Description</span>
+                            </div>  
+                        
+                        <div class="d-flex align-items-center user-info mb-2">
+                            <img src="@list.AvatarUrl" alt="uSUARIO" class="user-avatar">
+                            <span><strong>@list.UserName</strong></span>
+                        </div>
+                            
+                        
+
+                        <p class="card-text"><small class="text-body-secondary">Última actualización...</small></p>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        const pelis = @Html.Raw(json);
+                        const cont = document.getElementById("@id");
+
+                        if (cont && pelis) {
+                            pelis.forEach((peli, i) => {
+                                const img = document.createElement('img');
+                                img.src = peli;
+                                img.alt = "Imagen del juego";
+                                img.classList.add('poster');
+                                img.style.left = `${i * 65}px`;
+                                cont.appendChild(img);
+                            });
+                        }
+                    });
+                </script>
+            }
+
+            }
+            
+        </div>
+    </div>
+</div>
+
+
+
+   <div class="modal fade" id="createAccountModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Sign Up</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page-handler="Register">
+                    <div class="mb-3">
+                        <label asp-for="RegisterData.Email" class="form-label">Email address</label>
+                        <input asp-for="RegisterData.Email" class="form-control input-glass" type="email" />
+                        <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="RegisterData.Username" class="form-label">Username</label>
+                        <input asp-for="RegisterData.Username" class="form-control input-glass" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="RegisterData.Password" class="form-label">Password</label>
+                        <input asp-for="RegisterData.Password" class="form-control input-glass" type="password" />
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                        <label class="form-check-label" for="exampleCheck1">Remember me</label>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary button-glass-blue">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="modal fade" id="signInModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Sign In</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+                <form method="post" asp-page-handler="Login">
+                    <div class="mb-3">
+                        <label asp-for="LoginData.Username" class="form-label">Email or Username</label>
+                        <input asp-for="LoginData.Username" class="form-control input-glass" type="text" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="LoginData.Password" class="form-label">Password</label>
+                        <input asp-for="LoginData.Password" class="form-control input-glass" type="password" />
+                    </div>
+                    <div class="mb-3">
+                        <a class="form-label" href="/Homepage/Index">Forgotten?</a>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                        <label class="form-check-label" for="exampleCheck1">Remember me</label>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary button-glass-blue">Sign In</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    </div>
+    
+</body>
+
+</html>

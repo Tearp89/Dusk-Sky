@@ -1,0 +1,341 @@
+@page
+@using System.Security.Claims
+@model ReviewDetailsModel
+
+@{
+    ViewData["Title"] = "ReviewDetails";
+    ViewData["ShowBackground"] = false;
+}
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div id="reviewSuccessMessage" class="alert alert-success mt-3 text-center">
+        @Model.SuccessMessage
+    </div>
+}
+else
+{
+    <div id="reviewSuccessMessage" class="alert alert-success d-none mt-3 text-center">
+        Tu reseña fue guardada exitosamente.
+    </div>
+}
+@if (Model.Review == null || Model.GamePreview == null)
+{
+    <div class="alert alert-danger mt-5 text-center">
+        No se pudo cargar la reseña o la información del juego.
+    </div>
+    return;
+}
+
+
+<div class="container py-4" style="background-color: whitesmoke; min-height: 100vh;">
+    <div class="row mt-5">
+        <!-- Columna izquierda -->
+        <div class="col-md-8 mb-4">
+            <div class="d-flex gap-4 mb-4">
+                <img src="@Model.Review.GameImageUrl" class="rounded shadow" style="width: 160px;" alt="Game Cover">
+                <div class="flex-grow-1">
+                    <p class="text-muted mb-1">Review by <strong>@Model.Review.UserName</strong></p>
+                    <h2 class="fw-bold mb-2">
+                        @Model.GamePreview.Title
+                        <small class="text-muted">@Model.Review.CreatedAt.ToString("yyyy")</small>
+                    </h2>
+                    <p class="text-muted mb-2">Watched @Model.Review.CreatedAt.ToString("dd MMM yyyy")</p>
+                    <p class="lead" style="white-space: pre-wrap;">@Model.Review.Content</p>
+
+                    <div class="d-flex gap-2 flex-wrap mt-3">
+                        @if (Model.Review.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+                        {
+                            <form method="post" asp-page-handler="ToggleLike">
+                                <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
+                                <button type="submit" class="btn btn-outline-dark btn-sm">
+                                    <i class="bi bi-heart"></i> Like review
+                                </button>
+                            </form>
+                        }
+                        <button class="btn btn-outline-dark btn-sm">Add to list</button>
+                        <button class="btn btn-outline-dark btn-sm">Share</button>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-5" />
+
+            <div id="comentarios">
+                <h5 class="mb-4">Comments (@Model.Comments.Count)</h5>
+                @foreach (var comment in Model.Comments)
+                {
+                    <div class="mb-3 p-3 bg-white rounded shadow-sm border">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="@comment.UserAvatarUrl" class="rounded-circle me-2" width="32" height="32" />
+                            <strong>@comment.UserName</strong>
+                            <span class="text-muted ms-2 small">@comment.CreatedAt.ToString("dd MMM yyyy")</span>
+                        </div>
+                        <p class="mb-0">@comment.Content</p>
+                    </div>
+                }
+
+                <div class="mt-4">
+                    <form method="post" asp-page-handler="AgregarComentario" asp-route-reviewId="@Model.Review.Id">
+                        <div class="mb-3">
+                            <label for="nuevoComentario" class="form-label">Leave a comment</label>
+                            <textarea id="nuevoComentario" name="nuevoComentario" class="form-control" rows="3"
+                                placeholder="Write your thoughts here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-dark">Post comment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna derecha -->
+        <div class="col-md-4">
+            <div class="bg-light border rounded p-3 shadow-sm">
+                <div class="d-flex justify-content-between mb-3 gap-2">
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2" id="btn-watch"
+                        data-review-id="@Model.Review.Id" data-tracking-type="watch"
+                        data-active="@Model.IsWatched.ToString().ToLower()" onclick="toggleTracking(this)">
+                        <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i>
+                        <span>@(Model.IsWatched ? "Watched" : "Watch")</span>
+                    </button>
+
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2" id="btn-like"
+                        data-review-id="@Model.Review.Id" data-tracking-type="like"
+                        data-active="@Model.IsLiked.ToString().ToLower()" onclick="toggleTracking(this)">
+                        <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                        <span>@(Model.IsLiked ? "Liked" : "Like")</span>
+                    </button>
+
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2"
+                        id="btn-watchlist" data-review-id="@Model.Review.Id" data-tracking-type="watchlist"
+                        data-active="@Model.IsInWatchlist.ToString().ToLower()" onclick="toggleTracking(this)">
+                        <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i>
+                        <span>@(Model.IsInWatchlist ? "Saved" : "Watchlist")</span>
+                    </button>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <button class="btn btn-outline-secondary w-100">Show your activity</button>
+                    <button class="btn btn-outline-secondary w-100">Show @Model.Review.UserName's activity</button>
+                    <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal"
+                        data-bs-target="#reviewModal">
+                        Review or log...
+                    </button>
+                    <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#listModal">
+                        Add this film to lists
+                    </button>
+
+                    <button class="btn btn-outline-secondary w-100">Share this review</button>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                @if (Model.UserReviews != null && Model.UserReviews.Count > 0)
+                {
+                    <h5 class="mt-5 mb-3">Other games you reviewed</h5>
+                    <div class="horizontal-scroll-container">
+                        @foreach (var review in Model.UserReviews)
+                        {
+                            <a href="/Reviews/Details?reviewId=@review.ReviewId" class="me-3 text-decoration-none">
+                                <img src="@review.GameImageUrl" alt="@review.GameTitle" class="rounded shadow"
+                                    style="width: 220px; height: 120px; object-fit: cover;" />
+                            </a>
+                        }
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- Modal para Review -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form id="logReviewForm" method="post" asp-page-handler="LogReviewWithTracking">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title">I watched...</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body d-flex gap-4">
+                        <img src="@Model.GamePreview.HeaderUrl" alt="Game cover" style="height: 220px;"
+                            class="rounded shadow" />
+
+                        <div class="flex-grow-1">
+                            <h4 class="fw-bold">@Model.GamePreview.Title <span
+                                    class="text-muted">@Model.Review.CreatedAt.Year</span></h4>
+
+                            <div class="d-flex align-items-center mb-2 gap-3">
+                                <input class="form-check-input" type="checkbox" name="WatchedOnEnabled"
+                                    id="WatchedOnEnabled" checked />
+                                <label class="form-label mb-0" for="WatchedOnEnabled">Watched on</label>
+                                <input type="date" name="WatchedOn" class="form-control form-control-sm w-auto"
+                                    value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            </div>
+
+                            <div class="form-check mb-3" id="playedBeforeContainer">
+                                <input class="form-check-input" type="checkbox" name="PlayedBefore" id="PlayedBefore" />
+                                <label class="form-check-label" for="PlayedBefore">I've played this before</label>
+                            </div>
+
+                            <div class="mb-3">
+                                <textarea name="Content" class="form-control" placeholder="Add a review..."
+                                    rows="4"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Tags</label>
+                                <input type="text" class="form-control" name="Tags" placeholder="e.g. steam, indie" />
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3">
+                                <label class="form-label mb-0">Rating</label>
+                                <input type="number" step="0.5" min="0" max="5" name="Rating"
+                                    class="form-control w-auto" />
+                                <div class="form-check ms-auto">
+                                    <input class="form-check-input" type="checkbox" name="Like" id="Like" />
+                                    <label class="form-check-label" for="Like"><i class="bi bi-heart"></i></label>
+                                </div>
+                            </div>
+
+                            @if (Model.GamePreview != null)
+                            {
+                                <input type="hidden" name="GameId" value="@Model.GamePreview.Id.ToString()" />
+                            }
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">SAVE</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<<div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Add ‘@Model.GamePreview.Title’ to a list</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body px-4">
+                <!-- Buscador -->
+                <input type="text" id="searchListInput" class="form-control mb-3 bg-secondary text-white border-0"
+                       placeholder="Search for an existing list...">
+
+                <!-- Listas -->
+                <div id="userListsContainer" class="d-flex flex-wrap gap-3 mb-4">
+                    @foreach (var list in Model.UserLists)
+                    {
+                        <form method="post" asp-page-handler="AddGameToList" class="add-list-form">
+                            <input type="hidden" name="ListId" value="@list.Id" />
+                            <input type="hidden" name="GameId" value="@Model.GamePreview.Id" />
+                            <button type="submit" class="btn btn-outline-light">
+                                @list.Name
+                            </button>
+                        </form>
+                    }
+                </div>
+
+                <div class="text-center">
+                    <button class="btn btn-outline-light" onclick="goToCreateListPage()">+ Create new list</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Mensaje de éxito para listas -->
+<div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
+    List created and game added successfully!
+</div>
+
+
+
+    
+
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Review Modal ---
+    const form = document.getElementById('logReviewForm');
+    if (form) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const gameId = form.querySelector('input[name="GameId"]')?.value;
+
+            try {
+                const response = await fetch('?handler=LogReviewWithTracking', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const modalElement = document.getElementById('reviewModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                    modalInstance.hide();
+
+                    const successMessage = document.getElementById('reviewSuccessMessage');
+                    if (successMessage) {
+                        successMessage.classList.remove('d-none');
+                        setTimeout(() => successMessage.classList.add('d-none'), 4000);
+                    }
+
+                    form.reset();
+                    if (gameId) form.querySelector('input[name="GameId"]').value = gameId;
+                } else {
+                    console.error("Error:", result.message || "Error desconocido.");
+                }
+            } catch (err) {
+                console.error("Error en el envío:", err);
+            }
+        });
+    }
+
+    // --- Lista Search ---
+    const input = document.getElementById("searchListInput");
+    const container = document.getElementById("userListsContainer");
+
+    if (input && container) {
+        input.addEventListener("input", () => {
+            const query = input.value.toLowerCase();
+            const buttons = container.querySelectorAll("form");
+
+            buttons.forEach(form => {
+                const text = form.querySelector("button").innerText.toLowerCase();
+                form.style.display = text.includes(query) ? "inline-block" : "none";
+            });
+        });
+    }
+});
+
+// --- Cambio de tab (no necesita estar dentro del DOMContentLoaded) ---
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('d-none'));
+    document.querySelector(`#${tabId}`).classList.remove('d-none');
+
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+function goToCreateListPage() {
+    const title = document.getElementById("searchListInput")?.value || "";
+    const gameId = "@Model.GamePreview.Id";
+    window.location.href = `/Lists/Create?defaultName=${encodeURIComponent(title)}&gameId=${gameId}`;
+}
+</script>

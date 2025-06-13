@@ -1,31 +1,961 @@
+/* --- Fuentes --- */
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/Inter-VariableFont_opsz\,wght.ttf") format("ttf"),
+    url("../fonts/Inter_18pt-ExtraBold.ttf") format("ttf"),
+    url("../fonts/Inter_18pt-Bold.ttf") format("ttf");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "InterBold";
+  src: url("../fonts/Inter-VariableFont_opsz\,wght.ttf") format("ttf");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "InterBolder";
+  src: url("../fonts/Inter_18pt-ExtraBold.ttf") format("ttf");
+  font-weight: bolder;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- Base HTML/Body (Fondo Claro) --- */
 html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
+  font-size: 1rem;
   position: relative;
   min-height: 100%;
 }
 
-body {
-  margin-bottom: 60px;
+@media (min-width: 768px) {
+  html {
+    font-size: 1rem;
+  }
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+body {
+  background-color: whitesmoke; /* ¡Fondo claro! */
+  color: #222; /* Texto oscuro para contraste */
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- Global Focus States (Keep) --- */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem #ccc, 0 0 0 0.25rem #258cfb; /* Sombra de enfoque más clara */
+}
+
+/* --- Form Floating (Keep) --- */
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* --- Overlay/Container Styles (Keep) --- */
+.encima {
+  justify-content: center;
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  z-index: 1;
+  color: white; /* Texto blanco en el overlay oscuro */
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.container-img {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.container-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- Navbar Styles (Adaptado para fondo claro) --- */
+.custom-navbar {
+  background: rgba(255, 255, 255, 0); /* Fondo blanco con transparencia */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: absolute;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  font-weight: bolder;
+  color: #333; /* Texto oscuro */
+  overflow-x: clip;
+  overflow-y: visible;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Separador sutil y oscuro */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Sombra suave hacia abajo */
+}
+
+.container-fluid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.navbar-toggler {
+  position: absolute;
+  right: 10px;
+}
+
+#navbarNavDropdown {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.navbar-nav {
+  gap: 20px;
+}
+
+.nav-link {
+  color: whitesmoke !important; /* Texto oscuro para enlaces */
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.nav-link:hover {
+  color: #258cfb !important; /* Azul de acento al pasar el ratón */
+  text-shadow: 0 0 5px rgba(37, 140, 251, 0.5);
+}
+
+.navbar-toggler {
+  margin-left: 10px;
+}
+
+.container-quote {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  text-align: center;
+  font-weight: bolder;
+  color: white; /* Texto blanco en la cita (asumiendo que está sobre una imagen oscura) */
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 10px;
+}
+
+/* --- Button Glass (Adaptado para fondo claro) --- */
+.custom-button {
+  background-color: #6495ed;
+  border: #6495ed;
+  color: whitesmoke;
+}
+
+.searchInput {
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 0.5); /* Blanco con 50% opacidad */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Borde sutil y oscuro */
+  padding: 8px 12px;
+  color: #333; /* Texto oscuro */
+}
+
+.searchInput::placeholder {
+  color: rgba(0, 0, 0, 0.5); /* Placeholder más oscuro */
+}
+
+.searchInput:focus {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 0.1rem rgba(0, 0, 0, 0.1), 0 0 0 0.25rem #258cfb;
+    color: #000;
+}
+
+
+/* --- Card Styles --- */
+.custom-card {
+  margin-top: 5vh;
+  position: relative;
+}
+
+.custom-card-group {
+  max-width: 540px;
+  background-color: rgba(100, 149, 237, 0.4);
+  border: 0cm;
+  margin: 5px;
+  border-radius: 24px;
+}
+
+.custom-card-reviewed {
+  position: relative;
+}
+
+/* Glassy elements (Adaptado para fondo claro) */
+.custom-modal {
+  background: rgba(255, 255, 255, 0.8); /* Fondo casi blanco con transparencia */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Borde sutil y oscuro */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15); /* Sombra suave */
+  color: #222; /* Texto oscuro */
+}
+
+.input-glass {
+  background: rgba(255, 255, 255, 0.6); /* Transparencia para fondo claro */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: #222; /* Color de texto oscuro */
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.input-glass::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.input-glass:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  color: #000;
+}
+
+.button-glass {
+  background: rgba(255, 255, 255, 0.6); /* Transparencia para fondo claro */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  color: #333; /* Texto oscuro */
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  text-shadow: none; /* Sin sombra de texto */
+  cursor: pointer;
+}
+
+.button-glass:hover {
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+  color: #000;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.button-glass-blue {
+  background: linear-gradient(135deg, rgba(86, 149, 237, 0.6), rgba(0, 102, 255, 0.5)); /* Azules translúcidos */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  color: white; /* Texto blanco para contraste */
+  padding: 10px 15px;
+  font-weight: bold;
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 102, 255, 0.2);
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.button-glass-blue:hover {
+  background: linear-gradient(135deg, rgba(86, 149, 237, 0.8), rgba(0, 102, 255, 0.7));
+  box-shadow: 0 8px 40px rgba(0, 102, 255, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.feature-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(245, 245, 245, 0.6)); /* Fondo blanco claro con transparencia */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  color: #222; /* Texto oscuro */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(245, 245, 245, 0.6)); /* Fondo blanco claro con transparencia */
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: #222; /* Texto oscuro */
+}
+
+.card-glass:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+}
+
+.card-glass-blue { /* Mantengo los colores para contraste con el fondo claro */
+  background: linear-gradient(to bottom, #2a62a7cc, #1c3e70cc); /* azul profundo translúcido */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 102, 255, 0.2);
+  padding: 20px;
+  color: #f0f8ff; /* azul claro casi blanco para buen contraste */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-glass-blue:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 32px rgba(0, 102, 255, 0.3);
+}
+
+.icon-shadow {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)); /* Sombra más clara */
+}
+
+.dropdown-menu.glassy-dropdown {
+  background: rgba(255, 255, 255, 0.8); /* Más claro */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Borde sutil y oscuro */
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  color: #222; /* Texto oscuro */
+}
+
+/* --- Card Glossy (Review Card - Adaptado para fondo claro) --- */
+.card-glossy {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.85), rgba(245, 245, 245, 0.8)); /* Fondo blanco con transparencia */
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  color: #333; /* Texto oscuro */
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); /* Sombra suave */
+  border: 1px solid rgba(0, 0, 0, 0.08); /* Borde sutil */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+} 
+
+.card-glossy:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.card-glossy .poster {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.card-glossy .card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #222; /* Títulos oscuros */
+  margin-bottom: 0.25rem;
+}
+
+.card-glossy .year {
+  color: #777; /* Gris medio */
+  margin-left: 0.5rem;
+  font-weight: 400;
+}
+
+.card-glossy .user-info {
+    font-size: 0.95rem;
+    color: #555; /* Gris un poco más oscuro */
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.card-glossy .user-info img.user-avatar {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 0.6rem;
+  border: 2px solid #aaa; /* Borde más claro */
+}
+
+.card-glossy .stars {
+  color: #FFD700;
+  font-size: 1.1rem;
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.juego-info {
+  padding: 4px 0;
+  font-size: 0.9rem;
+  color: #555; /* Gris más oscuro */
+}
+
+/* --- NUEVOS ESTILOS PARA LA SECCIÓN DE LIKES Y COMENTARIOS (Adaptado para fondo claro) --- */
+.review-actions {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08); /* Separador oscuro y sutil */
+    margin-top: auto;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Estilo base para los botones de acción (like y comentar) */
+.btn-action-like,
+.btn-action-comment {
+    border-radius: 2rem;
+    font-weight: 500;
+    padding: 0.6rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    font-size: 0.9em;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.btn-action-like .bi,
+.btn-action-comment .bi {
+    margin-right: 0.4rem;
+    font-size: 1.1em;
+    vertical-align: middle;
+}
+
+/* Estilo para el botón de 'Me gusta' (cuando no tiene like) */
+.btn-outline-danger {
+    color: #e74c3c; /* Rojo vibrante */
+    border-color: #e74c3c;
+    background-color: transparent;
+}
+
+.btn-outline-danger:hover {
+    background-color: #e74c3c;
+    color: #fff;
+    border-color: #e74c3c;
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.4); /* Sombra roja sutil */
+}
+
+/* Estilo para el botón de 'Quitar like' (cuando tiene like) */
+.btn-danger {
+    background-color: #e74c3c; /* Rojo sólido */
+    border-color: #e74c3c;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+}
+
+.btn-danger:hover {
+    background-color: #c0392b; /* Rojo un poco más oscuro */
+    border-color: #c0392b;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.6);
+}
+
+/* Estilo para el botón de 'Comentar' */
+.btn-outline-primary {
+    color: #3498db; /* Azul vibrante */
+    border-color: #3498db;
+    background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: #3498db;
+    color: #fff;
+    border-color: #3498db;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
+}
+
+.icon-heart, .icon-comment {
+    color: inherit;
+}
+
+/* --- Pulse Animation (Keep as is) --- */
+.pulse {
+    animation: pulse-animation 0.4s ease-in-out;
+}
+
+@keyframes pulse-animation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+/* --- Other Existing Styles (Adaptado para fondo claro) --- */
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.card-glossy-light { /* Será similar a card-glass */
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #222;
+}
+
+
+.poster-collage {
+  position: relative;
+  height: 180px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.poster {
+  position: absolute;
+  height: 100%;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Sombra más clara */
+  transition: transform 0.3s ease;
+}
+
+.poster:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+
+.container {
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+
+.index-text{
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  text-align: center;
+  font-weight: bolder;
+  color: white; /* Asumo que sigue sobre imagen oscura */
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 10px;
+}
+
+.custom-card-index {
+  margin-top: 5vh;
+  position: relative;
+}
+
+.review-card { /* Si esta se usa, ajusta su color */
+  width: 150px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #f8f8f8; /* Fondo claro */
+  color: #333; /* Texto oscuro */
+  margin: 8px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.review-card img.card-img-top {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+}
+
+.avatar-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.rating-stars i {
+  color: #FFD700;
+  font-size: 0.9rem;
+}
+
+.section-container{
+  position: relative;
+  margin-top: 5vh;
+}
+
+.main-profile-content {
+  color: #222; /* Texto oscuro */
+  background-color: #fff; /* Fondo blanco */
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.nav-tabs .nav-link.active {
+    border-color: transparent transparent #258cfb; /* Línea inferior azul */
+    font-weight: bold;
+    color: #222; /* Color de texto oscuro */
+}
+
+.profile-tabs {
+  background-color: #fff; /* Fondo blanco */
+  border: 1px solid #eee;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.profile-tabs .nav-link {
+  color: #555; /* Texto gris */
+  transition: color 0.2s ease;
+}
+
+.profile-tabs .nav-link:hover {
+  color: #000;
+}
+
+.profile-tabs .nav-link.active {
+  background-color: transparent;
+  border-bottom: 2px solid #258cfb; /* Línea azul */
+  color: #000;
+  font-weight: bold;
+}
+
+.main-content{
+  margin: 0 50px;
+}
+
+.badge {
+    font-size: 0.9rem;
+}
+
+h4 {
+    font-weight: 600;
+    color: #222; /* Títulos H4 en oscuro */
+}
+
+.list-group-item {
+    cursor: pointer;
+    background-color: #fff; /* Fondo blanco */
+    color: #333; /* Texto oscuro */
+    border: 1px solid #eee;
+}
+
+.list-group-item:hover {
+    background-color: #f0f0f0; /* Fondo ligeramente más claro al hover */
+    color: #000;
+}
+
+.navbar .rounded-circle {
+    object-fit: cover;
+}
+
+
+.pulse {
+    animation: pulse-animation 0.4s ease-in-out;
+}
+
+@keyframes pulse-animation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.object-fit-cover {
+    object-fit: cover;
+}
+
+@keyframes pulse-badge {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.2); }
+    60% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+.animate-like.pulse-anim {
+    animation: pulse-badge 0.4s ease-in-out;
+}
+
+.btn-like-outline {
+    color: #0d6efd;
+    border: 1px solid #0d6efd;
+    background-color: transparent;
+}
+
+.btn-like-outline:hover {
+    background-color: #e0f0ff;
+}
+
+.btn-like-filled {
+    background-color: #0d6efd;
+    color: white;
+    border: 1px solid #0d6efd;
+}
+
+.btn-like-filled:hover {
+    background-color: #0b5ed7;
+}
+
+.comment-container:hover {
+    background-color: #f0f0f0;
+}
+
+textarea:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.glassy-modal {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    border-radius: 1rem;
+}
+
+.glassy-modal .modal-header,
+.glassy-modal .modal-body {
+    color: #fff;
+}
+
+.glassy-modal input.form-control {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+}
+
+.glassy-modal input.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.glassy-modal .list-group-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: white;
+    transition: background 0.2s ease;
+}
+
+.glassy-modal .list-group-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+}
+
+.half-star-rating {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    direction: ltr;
+    gap: 0;
+}
+
+.half-star-rating input[type="radio"] {
+    display: none;
+}
+
+
+label + label {
+    margin-right: -2px; /* 👈 Se superponen un poquito */
+}
+
+.star-svg {
+    width: 24px;
+    height: 24px;
+    fill: #ccc;
+    transition: fill 0.2s;
+}
+
+/* ✅ LLENA de izquierda a la seleccionada */
+.half-star-rating input[type="radio"]:checked ~ label svg .star-base {
+    fill: gold;
+}
+
+/* ✅ Hover opcional */
+.half-star-rating label:hover ~ label svg .star-base,
+.half-star-rating label:hover svg .star-base {
+    fill: gold;
+}
+
+.review-container{
+  margin-top: 200px ;
+}
+
+.review-container {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    margin-top: 80px;
+}
+
+/* Glassy form inputs */
+.glassy-input {
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+}
+
+/* Game image */
+.game-image {
+    width: 180px;
+    height: auto;
+    max-height: 240px;
+    object-fit: cover;
+}
+
+
+
+    .glossy-box {
+        background-color: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .glossy-box-input {
+        background-color: rgba(255, 255, 255, 0.4);
+        border: 1px solid #ccc;
+    }
+
+.heart-label {
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.heart-icon {
+    width: 32px;
+    height: 32px;
+    fill: #ccc;
+    transition: fill 0.3s ease, transform 0.3s ease;
+}
+
+#likedCheckbox:checked + .heart-label .heart-icon {
+    fill: crimson;
+    transform: scale(1.15);
+}
+
+
+.glassy {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.watched-box {
+    transition: all 0.3s ease;
+    border-radius: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.watched-box label {
+    font-weight: 500;
+    color: #333;
+}
+
+.glossy-box-input {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+}
+
+.heart-icon {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: #dc3545;
+    stroke-width: 2;
+    cursor: pointer;
+    transition: fill 0.2s ease;
+}
+
+input[type="checkbox"]#likedCheckbox:checked + label .heart-icon {
+    fill: #dc3545;
+}
+
+
+.horizontal-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: #888 transparent;
+    }
+
+    .horizontal-scroll-container::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .horizontal-scroll-container::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 4px;
+    }
+
+    .horizontal-scroll-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .tab-button {
+        background-color: #2f3944;
+        border: none;
+        padding: 10px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .tab-button.active {
+        background-color: #a4b0be;
+        color: #000;
+        border-radius: 999px;
+    }
+
+    .tab-content input {
+        margin-top: 8px;
+    }
