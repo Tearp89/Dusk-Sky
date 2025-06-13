@@ -262,6 +262,8 @@ public class StartPageModel : PageModel
         foreach (var list in lists)
         {
             var userTask = _userService.GetProfileAsync(list.UserId);
+            if (string.IsNullOrWhiteSpace(list.Id))
+            continue;
             var itemsTask = _gameListItemService.GetItemsByListIdAsync(list.Id);
             var userWithName = await _authService.SearchUserByIdAsync(list.UserId);
 

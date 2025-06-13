@@ -18,6 +18,14 @@ else
         Tu reseña fue guardada exitosamente.
     </div>
 }
+@if (Model.Review == null || Model.GamePreview == null)
+{
+    <div class="alert alert-danger mt-5 text-center">
+        No se pudo cargar la reseña o la información del juego.
+    </div>
+    return;
+}
+
 
 <div class="container py-4" style="background-color: whitesmoke; min-height: 100vh;">
     <div class="row mt-5">
@@ -210,35 +218,41 @@ else
         </div>
     </div>
 
-<div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<<div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bg-dark text-white">
-            <form id="createListForm" method="post" asp-page-handler="CreateList">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">Add ‘@Model.GamePreview.Title’ to lists</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Add ‘@Model.GamePreview.Title’ to a list</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body px-4">
+                <!-- Buscador -->
+                <input type="text" id="searchListInput" class="form-control mb-3 bg-secondary text-white border-0"
+                       placeholder="Search for an existing list...">
+
+                <!-- Listas -->
+                <div id="userListsContainer" class="d-flex flex-wrap gap-3 mb-4">
+                    @foreach (var list in Model.UserLists)
+                    {
+                        <form method="post" asp-page-handler="AddGameToList" class="add-list-form">
+                            <input type="hidden" name="ListId" value="@list.Id" />
+                            <input type="hidden" name="GameId" value="@Model.GamePreview.Id" />
+                            <button type="submit" class="btn btn-outline-light">
+                                @list.Name
+                            </button>
+                        </form>
+                    }
                 </div>
 
-                <div class="px-3 pb-3">
-                    <div class="btn-group w-100" role="group">
-                        <input type="radio" class="btn-check" name="IsPublic" id="publicTab" value="true" autocomplete="off" checked>
-                        <label class="btn btn-outline-light" for="publicTab">Public</label>
-
-                        <input type="radio" class="btn-check" name="IsPublic" id="privateTab" value="false" autocomplete="off">
-                        <label class="btn btn-outline-light" for="privateTab">Private</label>
-                    </div>
+                <div class="text-center">
+                    <button class="btn btn-outline-light" onclick="goToCreateListPage()">+ Create new list</button>
                 </div>
-
-                <div class="px-3 d-flex gap-2 align-items-center mb-3">
-                    <input type="text" name="NewListName" id="newListName" class="form-control bg-secondary text-white border-0" placeholder="+ New list…" />
-                    <button type="submit" class="btn btn-success">ADD</button>
-                </div>
-
-                <input type="hidden" name="GameId" value="@Model.GamePreview.Id" />
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
 
 <!-- Mensaje de éxito para listas -->
 <div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
@@ -253,72 +267,75 @@ else
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('logReviewForm');
-
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Review Modal ---
+    const form = document.getElementById('logReviewForm');
+    if (form) {
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const formData = new FormData(form);
             const gameId = form.querySelector('input[name="GameId"]')?.value;
 
-            const response = await fetch('?handler=LogReviewWithTracking', {
-                method: 'POST',
-                body: formData
-            });
+            try {
+                const response = await fetch('?handler=LogReviewWithTracking', {
+                    method: 'POST',
+                    body: formData
+                });
 
-            if (response.ok) {
-                const modalElement = document.getElementById('reviewModal');
-                let modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (!modalInstance) modalInstance = new bootstrap.Modal(modalElement);
-                modalInstance.hide();
+                const result = await response.json();
 
-                const successMessage = document.getElementById('reviewSuccessMessage');
-                successMessage?.classList.remove('d-none');
+                if (result.success) {
+                    const modalElement = document.getElementById('reviewModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                    modalInstance.hide();
 
-                setTimeout(() => successMessage?.classList.add('d-none'), 4000);
+                    const successMessage = document.getElementById('reviewSuccessMessage');
+                    if (successMessage) {
+                        successMessage.classList.remove('d-none');
+                        setTimeout(() => successMessage.classList.add('d-none'), 4000);
+                    }
 
-                form.reset();
-                if (gameId) form.querySelector('input[name="GameId"]').value = gameId;
-            } else {
-                console.error("Error:", await response.text());
+                    form.reset();
+                    if (gameId) form.querySelector('input[name="GameId"]').value = gameId;
+                } else {
+                    console.error("Error:", result.message || "Error desconocido.");
+                }
+            } catch (err) {
+                console.error("Error en el envío:", err);
             }
         });
-    });
-
-      function switchTab(tabId) {
-        document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('d-none'));
-        document.querySelector(`#${tabId}`).classList.remove('d-none');
-
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
     }
 
+    // --- Lista Search ---
+    const input = document.getElementById("searchListInput");
+    const container = document.getElementById("userListsContainer");
 
-    document.addEventListener('DOMContentLoaded', () => {
-    const createListForm = document.getElementById('createListForm');
+    if (input && container) {
+        input.addEventListener("input", () => {
+            const query = input.value.toLowerCase();
+            const buttons = container.querySelectorAll("form");
 
-    createListForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const formData = new FormData(createListForm);
-        const response = await fetch('?handler=CreateList', {
-            method: 'POST',
-            body: formData
+            buttons.forEach(form => {
+                const text = form.querySelector("button").innerText.toLowerCase();
+                form.style.display = text.includes(query) ? "inline-block" : "none";
+            });
         });
-
-        if (response.ok) {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('listModal'));
-            if (modal) modal.hide();
-
-            const msg = document.getElementById('listSuccessMessage');
-            msg?.classList.remove('d-none');
-            setTimeout(() => msg?.classList.add('d-none'), 4000);
-
-            createListForm.reset();
-        } else {
-            alert("Error creating list");
-        }
-    });
+    }
 });
+
+// --- Cambio de tab (no necesita estar dentro del DOMContentLoaded) ---
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('d-none'));
+    document.querySelector(`#${tabId}`).classList.remove('d-none');
+
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+function goToCreateListPage() {
+    const title = document.getElementById("searchListInput")?.value || "";
+    const gameId = "@Model.GamePreview.Id";
+    window.location.href = `/Lists/Create?defaultName=${encodeURIComponent(title)}&gameId=${gameId}`;
+}
 </script>

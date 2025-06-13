@@ -48,6 +48,8 @@ public class ReviewDetailsModel : PageModel
     public GamePreviewDTO GamePreview { get; set; } = new();
     public ReviewDTO ReviewDTO { get; set; } = new();
     public List<ReviewWithGameDto> UserReviews { get; set; } = new();
+    public List<GameListDTO> UserLists { get; set; } = new();
+
 
 
     public bool IsWatched => Tracking?.Status == "played";
@@ -136,6 +138,8 @@ public class ReviewDetailsModel : PageModel
                 });
             }
         }
+        UserLists = await _gameListService.GetUserListsAsync(UserId);
+
 
 
         return Page();
