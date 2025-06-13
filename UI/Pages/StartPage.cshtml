@@ -344,6 +344,7 @@
             @if (Model.RecentLists != null){
                 @foreach (var list in Model.RecentLists)
             {
+                if (string.IsNullOrWhiteSpace(list.Id)) continue;
                 var id = $"collage-{index++}";
                 var json = JsonSerializer.Serialize(list.GameHeaders, new JsonSerializerOptions
                 {

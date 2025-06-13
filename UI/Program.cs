@@ -79,6 +79,13 @@ builder.Services.AddAuthentication("Cookies")
 builder.Services.AddAuthorization();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole(); // o AddDebug si lo prefieres
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 
 
 
@@ -105,6 +112,7 @@ CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 app.UseCookiePolicy();
 app.UseAuthentication(); // 👈 Obligatorio
 app.UseAuthorization();

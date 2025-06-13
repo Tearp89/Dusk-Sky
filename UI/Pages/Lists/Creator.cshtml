@@ -5,13 +5,37 @@
     ViewData["Title"] = "New List";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="container mt-5 p-4 rounded bg-dark text-light shadow" style="max-width: 900px;">
     <h2 class="mb-4">New List</h2>
 
-    <form method="post">
+    <!-- 🔍 FORMULARIO DE BÚSQUEDA -->
+    <form method="post" asp-page-handler="Search" class="mb-4 d-flex align-items-center">
+        <input asp-for="GameSearchQuery" name="GameSearchQuery"
+               class="form-control bg-dark text-light border-secondary me-2"
+               placeholder="Enter name of game..." style="max-width: 300px;" />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <!-- ✅ FORMULARIO PRINCIPAL -->
+    <form method="post" asp-page-handler="Create">
         <div class="mb-3">
             <label class="form-label">Name</label>
-            <input asp-for="@Model.ListName" class="form-control bg-dark text-light border-secondary" />
+            <input asp-for="ListName" class="form-control bg-dark text-light border-secondary" />
         </div>
 
         <div class="mb-3">
@@ -30,7 +54,7 @@
         <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" asp-for="Ranked" id="rankedCheck" />
             <label class="form-check-label" for="rankedCheck">
-                Ranked list <small class="text-muted">Show position for each film.</small>
+                Ranked list <small class="text-muted">Show position for each game.</small>
             </label>
         </div>
 
@@ -39,15 +63,44 @@
             <textarea asp-for="Description" class="form-control bg-dark text-light border-secondary" rows="5"></textarea>
         </div>
 
-        <div class="mb-4 d-flex align-items-center">
-            <button type="button" class="btn btn-success me-2">Add a Film</button>
-            <input type="text" class="form-control bg-dark text-light border-secondary me-2" placeholder="Enter name of film..." style="max-width: 300px;" />
-            <button type="button" class="btn btn-secondary">Import</button>
-        </div>
+        <!-- 🎮 Resultados de búsqueda -->
+        @if (Model.SearchResults != null && Model.SearchResults.Any())
+        {
+            <div class="mb-4">
+                <h5>Results:</h5>
+                <div class="d-flex flex-wrap gap-3">
+                    @foreach (var game in Model.SearchResults)
+                    {
+                        <div class="card bg-dark text-light border-secondary" style="width: 12rem;">
+                            <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title" />
+                            <div class="card-body">
+                                <h6 class="card-title">@game.Title</h6>
+                                <form method="post" asp-page-handler="AddGame">
+                                    <input type="hidden" name="gameId" value="@game.Id" />
+                                    <button type="button" class="btn btn-sm btn-success">Add</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
 
-        <div class="bg-secondary bg-opacity-25 p-3 rounded d-flex align-items-center justify-content-between mb-4">
-            <span class="fw-bold">No films added yet.</span>
-        </div>
+        <!-- 🧩 Juegos seleccionados -->
+        @if (Model.SelectedGames != null && Model.SelectedGames.Any())
+        {
+            <div class="mb-4">
+                <h5>Selected Games:</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var game in Model.SelectedGames)
+                    {
+                        <div style="width: 80px; height: 120px; overflow: hidden; border-radius: 6px; border: 1px solid #999;">
+                            <img src="@game.HeaderUrl" alt="@game.Title" style="width: 100%; height: 100%; object-fit: cover;" />
+                        </div>
+                    }
+                </div>
+            </div>
+        }
 
         <div class="d-flex justify-content-end gap-2">
             <button type="submit" class="btn btn-success">Save</button>

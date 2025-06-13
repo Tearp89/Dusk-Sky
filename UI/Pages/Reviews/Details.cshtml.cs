@@ -318,7 +318,7 @@ public async Task<IActionResult> OnPostCreateListAsync(string NewListName, bool 
     };
 
     var created = await _gameListService.CreateListAsync(newList);
-    if (!created)
+    if (created == null)
         return new JsonResult(new { success = false, message = "Failed to create list." });
 
     var userLists = await _gameListService.GetUserListsAsync(userId);

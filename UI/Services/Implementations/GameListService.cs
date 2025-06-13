@@ -21,11 +21,16 @@ public class GameListService : IGameListService
         return await response.Content.ReadFromJsonAsync<GameListDTO>();
     }
 
-    public async Task<bool> CreateListAsync(GameListDTO list)
+    public async Task<string?> CreateListAsync(GameListDTO list)
     {
         var response = await _http.PostAsJsonAsync("/lists", list);
-        return response.IsSuccessStatusCode;
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var created = await response.Content.ReadFromJsonAsync<GameListDTO>();
+        return created?.Id;
     }
+
 
     public async Task<bool> UpdateListAsync(string id, GameListDTO list)
     {
@@ -40,9 +45,28 @@ public class GameListService : IGameListService
     }
 
     public async Task<List<GameListDTO>> GetRecentListsAsync()
-{
-    return await _http.GetFromJsonAsync<List<GameListDTO>>("/lists/recent")
-           ?? new List<GameListDTO>();
-}
+    {
+        return await _http.GetFromJsonAsync<List<GameListDTO>>("/lists/recent")
+               ?? new List<GameListDTO>();
+    }
+
+    public async Task<List<GameListDTO>> GetPopularListsAsync()
+    {
+        return await _http.GetFromJsonAsync<List<GameListDTO>>("/lists/popular")
+               ?? new List<GameListDTO>();
+    }
+
+    public async Task<bool> LikeListAsync(string id)
+    {
+        var response = await _http.PutAsync($"/lists/like/{id}", null);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> UnlikeListAsync(string id)
+    {
+        var response = await _http.PutAsync($"/lists/unlike/{id}", null);
+        return response.IsSuccessStatusCode;
+    }
+
 
 }
