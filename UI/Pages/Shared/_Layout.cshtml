@@ -17,7 +17,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    
+
 
 </head>
 
@@ -87,13 +87,15 @@
                             <li class="nav-item"><a class="nav-link" asp-page="/Games">Games</a></li>
                             <li class="nav-item"><a class="nav-link" asp-page="/Lists">Lists</a></li>
 
-                            <form class="d-flex align-items-center gap-2 ms-auto" role="search" style="max-width: 280px;">
-                                <input class="form-control input-glass rounded-pill" type="search" placeholder="Search..."
-                                    aria-label="Search">
+                            <form method="get" asp-page="/Searcher" class="d-flex align-items-center gap-2 ms-auto"
+                                style="max-width: 280px;">
+                                <input class="form-control input-glass rounded-pill" type="search" name="query"
+                                    placeholder="Search..." aria-label="Search">
                                 <button class="btn btn-outline-light button-glass-blue" type="submit">
                                     <i class="fa solid fa-magnifying-glass"></i>
                                 </button>
                             </form>
+
 
                             <div class="btn-group">
                                 <button type="button" class="btn btn-success button-glass-blue" data-bs-toggle="modal"
@@ -106,7 +108,8 @@
                                     <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <ul class="dropdown-menu glassy-dropdown">
-                                    <li><a class="dropdown-item" asp-page="/Lists/Creator" style="color: black;">New List</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Lists/Creator" style="color: black;">New
+                                            List</a></li>
                                 </ul>
                             </div>
                         </ul>
@@ -145,11 +148,12 @@
                                 </ul>
                             </li>
                             <li class="nav-item">
-                                <form class="d-flex" role="search">
-                                    <input class="form-control me-2 searchInput input-glass" type="search"
-                                        placeholder="Search" aria-label="Search">
-                                    <button class="btn btn-outline-primary button-glass-blue" type="submit">Search</button>
+                                <form method="get" asp-page="/Searcher" class="d-flex" role="search">
+                                    <input type="text" name="query" class="form-control me-2" placeholder="Buscar..." />
+                                    <button type="submit" class="btn btn-outline-light">🔍</button>
                                 </form>
+
+
                             </li>
                         </ul>
                     </div>

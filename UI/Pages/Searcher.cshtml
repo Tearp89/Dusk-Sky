@@ -1,50 +1,114 @@
-@page 
+@page
 @model SearcherModel
 @{
-    ViewData["Title"] = "Search"; // Esto asegura que no se use el layout predeterminado
-    
+    ViewData["Title"] = "Search Results";
 }
-<div class="container mt-4">
-    <div class="row">
-        <!-- Columna principal: resultados -->
-        <div class="col-lg-9">
-            <h2 class="mb-4">Resultados para “@Model</h2>
 
-            @foreach (var game in Model.Games)
+<div id="top"></div>
+
+
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <!-- 🧩 Columna principal con resultados -->
+        <div class="col-md-9">
+            <h4 class="text-primary mb-4">Showing results for: “@Model.Query”</h4>
+
+            <!-- Games -->
+            @if (Model.Games.Any())
             {
-                <div class="row mb-4 p-3 rounded shadow-sm border bg-white">
-                    <div class="col-md-2">
-                        <img src="@game.HeaderUrl" class="img-fluid rounded" alt="@game.Title">
-                    </div>
-                    <div class="col-md-10">
-                        <h4 class="mb-2">@game.Title <small class="text-muted">(@game.Title)</small></h4>
-                        <p class="mb-1">
-                            <strong>Títulos alternativos:</strong> @game.Title
-                        </p>
-                        <p class="mb-0"><strong>Dirigido por:</strong>
-                            @foreach (var director in game.Title)
-                            {
-                                <span class="badge bg-secondary me-1">@director</span>
-                            }
-                        </p>
-                    </div>
+                <h5 id="games" class="text-primary">Games</h5>
+                <div class="scroll-section mb-5">
+                    @foreach (var game in Model.Games)
+                    {
+                        <a href="/Game/Details/@game.Id" class="card-blue-light text-decoration-none me-3">
+                            <img src="@game.HeaderUrl" class="card-img-top rounded-top"
+                                style="height: 200px; object-fit: cover;" />
+                            <div class="p-2">
+                                <strong class="text-dark">@game.Title</strong>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+
+            <!-- Users -->
+            @if (Model.Users.Any())
+            {
+                <h5 id="users" class="text-primary">Users</h5>
+                <div class="scroll-section mb-5">
+                    @foreach (var user in Model.Users)
+                    {
+                        <a href="/Profile/@user.Id"
+                            class="card-blue-light text-decoration-none me-3 d-flex align-items-center p-2"
+                            style="width: 220px;">
+                            <img src="@user.Username" alt="@user.Username" class="rounded-circle me-3" width="48" height="48" />
+                            <div class="text-dark">
+                                <strong>@user.Username</strong>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+
+            <!-- Reviews -->
+            @if (Model.Reviews.Any())
+            {
+                <h5 id="reviews" class="text-primary">Reviews</h5>
+                <div class="scroll-section mb-5">
+                    @foreach (var review in Model.Reviews)
+                    {
+                        <a href="/Reviews/Details/@review.Id" class="card-blue-light text-decoration-none me-3"
+                            style="width: 300px;">
+                            <img src="@review.GameImageUrl" class="card-img-top rounded-top"
+                                style="height: 140px; object-fit: cover;" />
+                            <div class="p-2 text-dark">
+                                <strong>@review.UserName</strong><br />
+                                <span class="text-muted small">
+                                    @review.Content.Substring(0, Math.Min(review.Content.Length, 100))...
+                                </span>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+
+            <!-- Lists -->
+            @if (Model.Lists.Any())
+            {
+                <h5 id="lists" class="text-primary">Lists</h5>
+                <div class="scroll-section mb-5">
+                    @foreach (var list in Model.Lists)
+                    {
+                        <a href="/Lists/Details/@list.Id" class="card-blue-light text-decoration-none me-3"
+                            style="width: 260px;">
+                            <div class="p-3 text-dark">
+                                <strong>@list.Name</strong><br />
+                                <span class="text-muted small">
+                                    @list.Description?.Substring(0, Math.Min(list.Description.Length, 80))...
+                                </span>
+                            </div>
+                        </a>
+                    }
                 </div>
             }
         </div>
 
-        <!-- Columna secundaria: filtros -->
-        <div class="col-lg-3">
-            <h5 class="mb-3">Mostrar resultados por</h5>
-            <ul class="list-group">
-                <li class="list-group-item">Todos</li>
-                <li class="list-group-item">Juegos</li>
-                <li class="list-group-item">Reseñas</li>
-                <li class="list-group-item">Listas</li>
-                <li class="list-group-item">Usuarios</li>
-                <li class="list-group-item">Desarrolladores</li>
-                <li class="list-group-item">Plataformas</li>
-                <li class="list-group-item">Géneros</li>
-            </ul>
-        </div>
+        <!-- 🧭 Menú lateral de categorías -->
+<div class="col-md-3">
+    <h6 class="text-secondary mb-3" style="font-size: 0.9rem;">Show results for</h6>
+    <div class="sidebar-links">
+        <a class="@(Model.Filter is null or "all" ? "fw-bold text-primary" : "")"
+           href="?query=@Model.Query#top">All</a>
+        <a class="@(Model.Filter == "games" ? "fw-bold text-primary" : "")"
+           href="?query=@Model.Query&filter=games#games">Games</a>
+        <a class="@(Model.Filter == "users" ? "fw-bold text-primary" : "")"
+           href="?query=@Model.Query&filter=users#users">Users</a>
+        <a class="@(Model.Filter == "reviews" ? "fw-bold text-primary" : "")"
+           href="?query=@Model.Query&filter=reviews#reviews">Reviews</a>
+        <a class="@(Model.Filter == "lists" ? "fw-bold text-primary" : "")"
+           href="?query=@Model.Query&filter=lists#lists">Lists</a>
     </div>
 </div>
+
+
+    </div>

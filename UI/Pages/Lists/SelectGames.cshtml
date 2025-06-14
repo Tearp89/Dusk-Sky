@@ -1,0 +1,90 @@
+@page "{listId}"
+@model SelectGamesModel
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-danger border-0 show">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="container mt-5 p-4 text-dark rounded shadow main-container" style="max-width: 900px;">
+    <h2 class="mb-4 fw-semibold">Select Games for List</h2>
+
+    <!-- 🔍 Búsqueda -->
+    <form method="post" asp-page-handler="Search" class="d-flex mb-4">
+        <input asp-for="SearchQuery" class="form-control bg-light text-dark me-2 input-glass rounded-pill" placeholder="Search game..." />
+        <button class="button-glass" type="submit">Search</button>
+    </form>
+
+    <!-- 🎯 Juegos seleccionados -->
+    @if (Model.SelectedGames.Any())
+    {
+        <div class="mb-5">
+            <h5 class="mb-3">Selected Games:</h5>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var game in Model.SelectedGames)
+                {
+                    <div style="position: relative; width: 100px; height: 140px; border: 1px solid #ccc; border-radius: 12px; overflow: hidden;">
+                        <form method="post" asp-page-handler="RemoveGame" style="position: absolute; top: 2px; right: 2px;">
+                            <input type="hidden" name="listId" value="@Model.ListId" />
+                            <input type="hidden" name="gameId" value="@game.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger" style="padding: 2px 6px;">×</button>
+                        </form>
+                        <img src="@game.HeaderUrl" alt="@game.Title" style="width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- 🎮 Resultados de búsqueda -->
+    @if (Model.SearchResults?.Any() == true)
+    {
+        <h5 class="mb-3">Results:</h5>
+        <div class="d-flex flex-wrap gap-3">
+            @foreach (var game in Model.SearchResults)
+            {
+                <form method="post" asp-page-handler="AddGame" style="display:inline;">
+                    <input type="hidden" name="listId" value="@Model.ListId" />
+                    <input type="hidden" name="gameId" value="@game.Id" />
+                    <button type="submit" style="all: unset; cursor: pointer;">
+                        <div class="card glass-card text-light" style="width: 12rem;">
+                            <img src="@game.HeaderUrl" class="card-img-top" />
+                            <div class="card-body">
+                                <h6 class="card-title">@game.Title</h6>
+                                <small>Click to add</small>
+                            </div>
+                        </div>
+                    </button>
+                </form>
+            }
+        </div>
+    }
+
+    <!-- ✅ Botón Finish -->
+    <form method="post" asp-page-handler="Finish">
+        <input type="hidden" name="listId" value="@Model.ListId" />
+        <button type="submit" class="button-glass-blue">Finish & Save List</button>
+    </form>
+</div>
