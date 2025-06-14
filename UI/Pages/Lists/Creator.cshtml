@@ -5,20 +5,28 @@
     ViewData["Title"] = "New List";
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+<!-- ✅ Mensajes en esquina superior derecha -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-success border-0 fade show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">@TempData["SuccessMessage"]</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-danger border-0 fade show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">@TempData["ErrorMessage"]</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+</div>
+
 
 <div class="container mt-5 p-4 rounded bg-dark text-light shadow" style="max-width: 900px;">
     <h2 class="mb-4">New List</h2>
@@ -30,6 +38,31 @@
                placeholder="Enter name of game..." style="max-width: 300px;" />
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
+
+    <!-- 🎮 Resultados de búsqueda -->
+    @if (Model.SearchResults != null && Model.SearchResults.Any())
+    {
+        <div class="mb-4">
+            <h5>Results:</h5>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var game in Model.SearchResults)
+                {
+                    <form method="post" asp-page-handler="AddGame" style="display:inline;">
+                        <input type="hidden" name="gameId" value="@game.Id" />
+                        <button type="submit" style="all: unset; cursor: pointer;">
+                            <div class="card bg-dark text-light border-secondary" style="width: 12rem;">
+                                <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title" />
+                                <div class="card-body">
+                                    <h6 class="card-title">@game.Title</h6>
+                                    <small>Click to add</small>
+                                </div>
+                            </div>
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
 
     <!-- ✅ FORMULARIO PRINCIPAL -->
     <form method="post" asp-page-handler="Create">
@@ -63,29 +96,6 @@
             <textarea asp-for="Description" class="form-control bg-dark text-light border-secondary" rows="5"></textarea>
         </div>
 
-        <!-- 🎮 Resultados de búsqueda -->
-        @if (Model.SearchResults != null && Model.SearchResults.Any())
-        {
-            <div class="mb-4">
-                <h5>Results:</h5>
-                <div class="d-flex flex-wrap gap-3">
-                    @foreach (var game in Model.SearchResults)
-                    {
-                        <div class="card bg-dark text-light border-secondary" style="width: 12rem;">
-                            <img src="@game.HeaderUrl" class="card-img-top" alt="@game.Title" />
-                            <div class="card-body">
-                                <h6 class="card-title">@game.Title</h6>
-                                <form method="post" asp-page-handler="AddGame">
-                                    <input type="hidden" name="gameId" value="@game.Id" />
-                                    <button type="button" class="btn btn-sm btn-success">Add</button>
-                                </form>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        }
-
         <!-- 🧩 Juegos seleccionados -->
         @if (Model.SelectedGames != null && Model.SelectedGames.Any())
         {
@@ -108,3 +118,15 @@
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const toastElList = [].slice.call(document.querySelectorAll('.toast'))
+            toastElList.forEach(function (toastEl) {
+                new bootstrap.Toast(toastEl, { delay: 3000 }).show()
+            })
+        });
+    </script>
+}
+

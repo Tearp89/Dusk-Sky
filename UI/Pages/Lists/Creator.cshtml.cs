@@ -93,6 +93,7 @@ public class ListCreatorModel : PageModel
             {
                 var item = new GameListItemDTO
                 {
+                    Id = Guid.NewGuid().ToString(),
                     ListId = listId,
                     GameId = gameId,
                     Order = order++,
@@ -115,6 +116,13 @@ public class ListCreatorModel : PageModel
             SearchResults = await _gameService.SearchGamePreviewsByNameAsync(GameSearchQuery);
         }
 
+        TempData["ListName"] = ListName;
+        TempData["Tags"] = Tags;
+        TempData["Description"] = Description;
+        TempData["Visibility"] = Visibility;
+        TempData["Ranked"] = Ranked;
+
+
         await OnGetAsync(); // para recargar juegos seleccionados
         return Page();
     }
@@ -128,6 +136,11 @@ public class ListCreatorModel : PageModel
             list.Add(gameId);
 
         HttpContext.Session.SetString("SelectedGameIds", string.Join(',', list));
+        TempData["ListName"] = ListName;
+        TempData["Tags"] = Tags;
+        TempData["Description"] = Description;
+        TempData["Visibility"] = Visibility;
+        TempData["Ranked"] = Ranked;
         return RedirectToPage(); // recarga y mostrará el juego añadido
     }
 
