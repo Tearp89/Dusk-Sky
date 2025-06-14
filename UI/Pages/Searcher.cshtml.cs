@@ -7,17 +7,22 @@ public class SearcherModel : PageModel
     private readonly IAuthService _authService;
     private readonly IReviewService _reviewService;
     private readonly IGameListService _listService;
+    private readonly IUserManagerService _userManagerService;
+
 
     public SearcherModel(
         IGameService gameService,
         IAuthService authService,
         IReviewService reviewService,
-        IGameListService listService)
+        IGameListService listService,
+         IUserManagerService userManagerService)
     {
         _gameService = gameService;
         _authService = authService;
         _reviewService = reviewService;
         _listService = listService;
+        _userManagerService = userManagerService;
+
     }
 
     [BindProperty(SupportsGet = true)]
@@ -27,7 +32,8 @@ public class SearcherModel : PageModel
     public string? Filter { get; set; }
 
     public List<GamePreviewDTO> Games { get; set; } = new();
-    public List<UserSearchResultDto> Users { get; set; } = new();
+    public List<SearchUserWithAvatarDto> Users { get; set; } = new();
+
     public List<ReviewWithUserDto> Reviews { get; set; } = new();
     public List<GameListDTO> Lists { get; set; } = new();
 
@@ -38,7 +44,34 @@ public class SearcherModel : PageModel
         if (Filter is null or "all")
         {
             Games = await _gameService.SearchGamePreviewsByNameAsync(Query);
-            Users = await _authService.SearchUsersAsync(Query);
+            var userMatches = await _authService.SearchUsersAsync(Query);
+
+            var userTasks = userMatches.Select(async user =>
+            {
+                string avatarUrl = "/Images/noImage.png";
+
+                try
+                {
+                    var profile = await _userManagerService.GetProfileAsync(user.Id);
+                    if (!string.IsNullOrEmpty(profile?.AvatarUrl))
+                    {
+                        avatarUrl = profile.AvatarUrl;
+                    }
+                }
+                catch
+                {
+                    // Silenciar errores individuales de perfil
+                }
+
+                return new SearchUserWithAvatarDto
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    AvatarUrl = avatarUrl
+                };
+            });
+
+            Users = (await Task.WhenAll(userTasks)).ToList();
 
             // Fallback mientras no existe búsqueda real para reseñas/listas
             var recentReviews = await _reviewService.GetRecentReviewsAsync();
@@ -75,7 +108,35 @@ public class SearcherModel : PageModel
         }
         else if (Filter == "users")
         {
-            Users = await _authService.SearchUsersAsync(Query);
+            var userMatches = await _authService.SearchUsersAsync(Query);
+
+            var userTasks = userMatches.Select(async user =>
+            {
+                string avatarUrl = "/Images/noImage.png";
+
+                try
+                {
+                    var profile = await _userManagerService.GetProfileAsync(user.Id);
+                    if (!string.IsNullOrEmpty(profile?.AvatarUrl))
+                    {
+                        avatarUrl = profile.AvatarUrl;
+                    }
+                }
+                catch
+                {
+                    // Silenciar errores individuales de perfil
+                }
+
+                return new SearchUserWithAvatarDto
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    AvatarUrl = avatarUrl
+                };
+            });
+
+            Users = (await Task.WhenAll(userTasks)).ToList();
+
         }
         else if (Filter == "reviews")
         {
