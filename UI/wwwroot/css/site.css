@@ -40,7 +40,8 @@ html {
 }
 
 body {
-  background-color: whitesmoke; /* ¡Fondo claro! */
+   background: linear-gradient(to bottom right, #ffffff, #e6f0ff);
+    background-attachment: fixed;
   color: #222; /* Texto oscuro para contraste */
   font-family: 'Inter', sans-serif;
 }
