@@ -131,7 +131,7 @@ public class ReviewDetailsModel : PageModel
             {
                 UserReviews.Add(new ReviewWithGameDto
                 {
-                    ReviewId = review.Id, 
+                    ReviewId = review.Id,
                     GameId = review.GameId.ToString(),
                     GameTitle = gameReview.Title,
                     GameImageUrl = gameReview.HeaderUrl
@@ -203,63 +203,74 @@ public class ReviewDetailsModel : PageModel
                 break;
         }
 
-        await _gameTrackingService.UpdateAsync(currentTracking.Id, currentTracking);
+        if (currentTracking.Id == Guid.Empty)
+            await _gameTrackingService.CreateAsync(currentTracking);
+        else
+            await _gameTrackingService.UpdateAsync(currentTracking.Id, currentTracking);
 
         return RedirectToPage("/Reviews/Details", new { reviewId });
     }
 
     public async Task<IActionResult> OnPostToggleTrackingAjaxAsync([FromBody] TrackingRequest request)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return new JsonResult(new { success = false });
+
+    var review = await _reviewService.GetReviewByIdAsync(request.ReviewId);
+    if (review is null)
+        return new JsonResult(new { success = false });
+
+    var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, review.GameId.ToString()) ?? new GameTrackingDto
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-            return new JsonResult(new { success = false });
+        UserId = userId,
+        GameId = review.GameId.ToString()
+    };
 
-        var review = await _reviewService.GetReviewByIdAsync(request.ReviewId);
-        if (review is null)
-            return new JsonResult(new { success = false });
+    switch (request.Type)
+    {
+        case "watch":
+            tracking.Status = tracking.Status == "played" ? null : "played";
+            break;
+        case "watchlist":
+            tracking.Status = tracking.Status == "backlog" ? null : "backlog";
+            break;
+        case "like":
+            tracking.Liked = !tracking.Liked;
+            break;
+    }
 
-        var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, review.GameId.ToString()) ?? new GameTrackingDto
-        {
-            UserId = userId,
-            GameId = review.GameId.ToString()
-        };
-
-        switch (request.Type)
-        {
-            case "watch":
-                tracking.Status = tracking.Status == "played" ? null : "played";
-                break;
-            case "watchlist":
-                tracking.Status = tracking.Status == "backlog" ? null : "backlog";
-                break;
-            case "like":
-                tracking.Liked = !tracking.Liked;
-                break;
-        }
-
+    // ✅ Agregado para evitar el 404
+    if (tracking.Id == Guid.Empty)
+        await _gameTrackingService.CreateAsync(tracking);
+    else
         await _gameTrackingService.UpdateAsync(tracking.Id, tracking);
 
-        return new JsonResult(new
+    return new JsonResult(new
+    {
+        success = true,
+        type = request.Type,
+        isActive = request.Type switch
         {
-            success = true,
-            type = request.Type,
-            isActive = request.Type switch
-            {
-                "watch" => tracking.Status == "played",
-                "watchlist" => tracking.Status == "backlog",
-                "like" => tracking.Liked == true,
-                _ => false
-            }
-        });
-    }
+            "watch" => tracking.Status == "played",
+            "watchlist" => tracking.Status == "backlog",
+            "like" => tracking.Liked == true,
+            _ => false
+        }
+    });
+}
+
 
     public async Task<IActionResult> OnPostLogReviewWithTrackingAsync(Guid GameId, string Content, double Rating, DateTime? WatchedOn, bool PlayedBefore, bool Like)
     {
         Console.WriteLine("Entró al handler LogReviewWithTracking");
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return RedirectToPage("/StartPage");
+        if (string.IsNullOrEmpty(userId))
+            return RedirectToPage("/StartPage");
+
         Console.WriteLine("REVIEW CONTENT: " + Content);
 
+        // Crear y guardar la reseña
         var review = new ReviewDTO
         {
             GameId = GameId,
@@ -270,16 +281,13 @@ public class ReviewDetailsModel : PageModel
         };
         await _reviewService.CreateReviewAsync(review);
 
+        // Obtener o crear tracking
         var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, GameId.ToString());
-
-        if (tracking == null)
+        tracking ??= new GameTrackingDto
         {
-            tracking = new GameTrackingDto
-            {
-                UserId = userId,
-                GameId = GameId.ToString()
-            };
-        }
+            UserId = userId,
+            GameId = GameId.ToString()
+        };
 
         if (WatchedOn.HasValue || PlayedBefore)
         {
@@ -287,58 +295,60 @@ public class ReviewDetailsModel : PageModel
             tracking.Liked = Like;
         }
 
-        if (string.IsNullOrEmpty(tracking.Id.ToString()))
+        // Guardar tracking según si ya existe o no
+        if (tracking.Id == Guid.Empty)
             await _gameTrackingService.CreateAsync(tracking);
         else
             await _gameTrackingService.UpdateAsync(tracking.Id, tracking);
 
         return new JsonResult(new { success = true });
     }
-    
+
+
     [BindProperty]
-public string NewListName { get; set; } = "";
+    public string NewListName { get; set; } = "";
 
-[BindProperty]
-public bool IsPublic { get; set; }
+    [BindProperty]
+    public bool IsPublic { get; set; }
 
-public async Task<IActionResult> OnPostCreateListAsync(string NewListName, bool IsPublic, Guid GameId)
-{
-    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    if (string.IsNullOrEmpty(userId))
-        return new JsonResult(new { success = false, message = "User not found." });
-
-    var newList = new GameListDTO
+    public async Task<IActionResult> OnPostCreateListAsync(string NewListName, bool IsPublic, Guid GameId)
     {
-        Id = Guid.NewGuid().ToString(),
-        UserId = userId,
-        Name = NewListName,
-        IsPublic = IsPublic,
-        Description = "",
-        CreatedAt = DateTime.UtcNow
-    };
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return new JsonResult(new { success = false, message = "User not found." });
 
-    var created = await _gameListService.CreateListAsync(newList);
-    if (created == null)
-        return new JsonResult(new { success = false, message = "Failed to create list." });
+        var newList = new GameListDTO
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserId = userId,
+            Name = NewListName,
+            IsPublic = IsPublic,
+            Description = "",
+            CreatedAt = DateTime.UtcNow
+        };
 
-    var userLists = await _gameListService.GetUserListsAsync(userId);
-    var list = userLists.FirstOrDefault(l => l.Name == NewListName);
+        var created = await _gameListService.CreateListAsync(newList);
+        if (created == null)
+            return new JsonResult(new { success = false, message = "Failed to create list." });
 
-    if (list == null)
-        return new JsonResult(new { success = false, message = "List not found after creation." });
+        var userLists = await _gameListService.GetUserListsAsync(userId);
+        var list = userLists.FirstOrDefault(l => l.Name == NewListName);
 
-    var item = new GameListItemDTO
-    {
-        GameId = GameId,
-        ListId = list.Id
-    };
+        if (list == null)
+            return new JsonResult(new { success = false, message = "List not found after creation." });
 
-    var added = await _gameListItemService.AddItemAsync(item);
-    if (!added)
-        return new JsonResult(new { success = false, message = "Failed to add game to list." });
+        var item = new GameListItemDTO
+        {
+            GameId = GameId,
+            ListId = list.Id
+        };
 
-    return new JsonResult(new { success = true });
-}
+        var added = await _gameListItemService.AddItemAsync(item);
+        if (!added)
+            return new JsonResult(new { success = false, message = "Failed to add game to list." });
+
+        return new JsonResult(new { success = true });
+    }
 
     public async Task<IActionResult> OnPostAddGameToListAsync(string ListId, Guid GameId)
     {
@@ -365,26 +375,26 @@ public async Task<IActionResult> OnPostCreateListAsync(string NewListName, bool 
         return new JsonResult(new { success = true });
     }
 
-public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
-{
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    var userLiked = await _reviewService.HasUserLikedAsync(ReviewId, userId);
-
-    bool nowLiked;
-
-    if (userLiked)
+    public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
     {
-        await _reviewService.UnlikeReviewAsync(ReviewId, userId);
-        nowLiked = false;
-    }
-    else
-    {
-        await _reviewService.LikeReviewAsync(ReviewId, userId);
-        nowLiked = true;
-    }
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userLiked = await _reviewService.HasUserLikedAsync(ReviewId, userId);
 
-    return new JsonResult(new { liked = nowLiked });
-}
+        bool nowLiked;
+
+        if (userLiked)
+        {
+            await _reviewService.UnlikeReviewAsync(ReviewId, userId);
+            nowLiked = false;
+        }
+        else
+        {
+            await _reviewService.LikeReviewAsync(ReviewId, userId);
+            nowLiked = true;
+        }
+
+        return new JsonResult(new { liked = nowLiked });
+    }
 
 
 

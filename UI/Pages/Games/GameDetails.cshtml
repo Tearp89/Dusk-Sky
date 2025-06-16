@@ -2,61 +2,52 @@
 @model GameDetailsModel
 @{
     ViewData["Title"] = Model.Game.Title;
+    ViewData["ShowBackground"] = true; 
+    ViewData["UseBlurEffect"] = true;
+    ViewData["BackgroundImage"] = Url.Content(Model.GamePreview.HeaderUrl);
 }
-<!-- Banner -->
-<div class="position-relative w-100" style="height: 480px; overflow: hidden;">
-    <img src="@Model.GamePreview.HeaderUrl" class="w-100 h-100 object-fit-cover" alt="Banner">
-    <div class="position-absolute bottom-0 start-0 w-100"
-        style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); padding: 2rem 0;">
-        <div class="container d-flex gap-4 align-items-end">
-            <img src="@Model.GamePreview.HeaderUrl" class="rounded shadow" alt="Poster"
-                style="height: 220px; width: auto; object-fit: cover;">
-            <div>
-                <h1 class="text-white fw-bold">@Model.Game.Title</h1>
-                <p class="text-light mb-1">
-                    @Model.Game.ReleaseDate — <em>@Model.Game.Developer</em>
-                </p>
-                <div class="d-flex flex-wrap gap-2 mt-2">
-                    <form method="post" asp-page-handler="ToggleTracking">
-                        <input type="hidden" name="trackingType" value="watch" />
-                        <input type="hidden" name="gameId" value="@Model.Game.Id" />
-                        <button class="btn btn-outline-light btn-sm" type="submit">
-                            <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i> Watch
-                        </button>
-                    </form>
-                    <form method="post" asp-page-handler="ToggleTracking">
-                        <input type="hidden" name="trackingType" value="like" />
-                        <input type="hidden" name="gameId" value="@Model.Game.Id" />
-                        <button class="btn btn-outline-light btn-sm" type="submit">
-                            <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i> Like
-                        </button>
-                    </form>
-                    <form method="post" asp-page-handler="ToggleTracking">
-                        <input type="hidden" name="trackingType" value="watchlist" />
-                        <input type="hidden" name="gameId" value="@Model.Game.Id" />
-                        <button class="btn btn-outline-light btn-sm" type="submit">
-                            <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i>
-                            Watchlist
-                        </button>
-                    </form>
-                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal"
-                        data-bs-target="#reviewLogModal">
-                        <i class="bi bi-pencil"></i> Review or log...
-                    </button>
 
+<!-- Overlay de información encima del fondo -->
+<div class="game-overlay-content container d-flex gap-4 align-items-end">
+    <img src="@Model.GamePreview.HeaderUrl" class="rounded shadow" alt="Poster"
+         style="height: 220px; width: auto; object-fit: cover;" />
+    <div>
+        <h1 class="text-white fw-bold">@Model.Game.Title</h1>
+        <p class="text-light mb-1">@Model.Game.ReleaseDate — <em>@Model.Game.Developer</em></p>
 
-                    <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#listModal">
-                        <i class="bi bi-list-stars"></i> Add to list
-                    </button>
-
-
-                </div>
-            </div>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            <form method="post" asp-page-handler="ToggleTracking">
+                <input type="hidden" name="trackingType" value="watch" />
+                <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                <button class="btn btn-outline-light btn-sm button-glass" type="submit">
+                    <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i> Watch
+                </button>
+            </form>
+            <form method="post" asp-page-handler="ToggleTracking">
+                <input type="hidden" name="trackingType" value="like" />
+                <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                <button class="btn btn-outline-light btn-sm button-glass" type="submit">
+                    <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i> Like
+                </button>
+            </form>
+            <form method="post" asp-page-handler="ToggleTracking">
+                <input type="hidden" name="trackingType" value="watchlist" />
+                <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                <button class="btn btn-outline-light btn-sm button-glass" type="submit">
+                    <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i> Watchlist
+                </button>
+            </form>
+            <button type="button" class="btn btn-outline-light btn-sm button-glass" data-bs-toggle="modal" data-bs-target="#reviewLogModal">
+                <i class="bi bi-pencil"></i> Review or log...
+            </button>
+            <button class="btn btn-outline-light btn-sm button-glass" data-bs-toggle="modal" data-bs-target="#listModal">
+                <i class="bi bi-list-stars"></i> Add to list
+            </button>
         </div>
     </div>
 </div>
 
-<!-- Main Content -->
+<!-- El resto del contenido (descripciones, reviews, etc.) -->
 <div class="container mt-5 mb-5">
     <div class="row">
         <div class="col-lg-8">
@@ -81,17 +72,41 @@
                     <span class="badge bg-secondary me-1 text-capitalize">@platform.Key</span>
                 }
             </div>
-
-
-
+            <hr>
             <h5 class="mt-4 fw-bold">Popular Reviews</h5>
             @foreach (var review in Model.Reviews)
             {
-                <div class="card mb-3 shadow-sm card-glossy">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-1 text-muted">Review by @review.UserName</h6>
-                        <p class="card-text">@review.Content.Substring(0, Math.Min(150, review.Content.Length))...</p>
-                        <a href="/Reviews/Details/@review.Id" class="btn btn-sm btn-outline-primary">Read more</a>
+                <div class="card mb-4 shadow-sm border-0">
+                    <div class="card-body d-flex gap-3">
+                        <img src="@review.ProfileImageUrl" class="rounded-circle shadow-sm"
+                            style="width: 48px; height: 48px; object-fit: cover;" alt="Avatar" />
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <strong>@review.UserName</strong> <span class="text-muted">reviewed</span>
+                                    <strong>@review.GameTitle</strong>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= review.Rating)
+                                    {
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    }
+                                    else if (i - review.Rating < 1)
+                                    {
+                                        <i class="bi bi-star-half text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star text-warning"></i>
+                                    }
+                                }
+                            </div>
+                            <p class="mb-2">@review.Content.Substring(0, Math.Min(180, review.Content.Length))...</p>
+                            <a href="/Reviews/Details/@review.Id" class="btn btn-sm btn-outline-primary">Read more</a>
+                        </div>
                     </div>
                 </div>
             }
@@ -141,49 +156,50 @@
 </div>
 
 <div class="modal fade" id="reviewLogModal" tabindex="-1" aria-labelledby="reviewLogModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content shadow glassy-modal">
-      <div class="modal-header bg-primary text-white button-glass-blue">
-        <h5 class="modal-title" id="reviewLogModalLabel">Log a Game</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <form id="reviewForm">
-        <div class="modal-body">
-          <input type="hidden" name="GameId" value="@Model.Game.Id" />
-
-          <div class="mb-3">
-            <label for="Content" class="form-label">Review</label>
-            <textarea class="form-control" name="Content" rows="4" required></textarea>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Rating</label>
-            <div id="starRating" class="d-flex gap-1">
-              @for (var i = 1; i <= 5; i++)
-              {
-                <i class="bi bi-star-fill text-secondary star" data-value="@i" style="cursor: pointer; font-size: 1.5rem;"></i>
-              }
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow glassy-modal">
+            <div class="modal-header bg-primary text-white button-glass-blue">
+                <h5 class="modal-title" id="reviewLogModalLabel">Log a Game</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <input type="hidden" name="Rating" id="RatingInput" value="0" />
-          </div>
+            <form id="reviewForm" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="GameId" value="@Model.Game.Id" />
 
-          <div class="form-check mb-2">
-            <input type="checkbox" class="form-check-input" id="WatchedBefore" name="WatchedBefore">
-            <label class="form-check-label" for="WatchedBefore">I've played this before</label>
-          </div>
+                    <div class="mb-3">
+                        <label for="Content" class="form-label">Review</label>
+                        <textarea class="form-control" name="Content" rows="4" required></textarea>
+                    </div>
 
-          <div class="mb-3">
-            <label for="WatchedOn" class="form-label">Played On</label>
-            <input type="date" name="WatchedOn" class="form-control" />
-          </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div id="starRating" class="d-flex gap-1">
+                            @for (var i = 1; i <= 5; i++)
+                            {
+                                <i class="bi bi-star-fill text-secondary star" data-value="@i"
+                                    style="cursor: pointer; font-size: 1.5rem;"></i>
+                            }
+                        </div>
+                        <input type="hidden" name="Rating" id="RatingInput" value="0" />
+                    </div>
+
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="WatchedBefore" name="WatchedBefore">
+                        <label class="form-check-label" for="WatchedBefore">I've played this before</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="WatchedOn" class="form-label">Played On</label>
+                        <input type="date" name="WatchedOn" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span id="reviewSuccessMessage" class="text-success me-auto d-none">Review submitted!</span>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
         </div>
-        <div class="modal-footer">
-          <span id="reviewSuccessMessage" class="text-success me-auto d-none">Review submitted!</span>
-          <button type="submit" class="btn btn-primary">Submit Review</button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 
 
@@ -192,7 +208,56 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 🔍 Filtrar listas por input
+            // ⭐ Rating
+            const stars = document.querySelectorAll('.star');
+            const ratingInput = document.getElementById('RatingInput');
+
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = star.dataset.value;
+                    ratingInput.value = rating;
+
+                    stars.forEach(s => {
+                        s.classList.remove('text-warning');
+                        if (s.dataset.value <= rating) {
+                            s.classList.add('text-warning');
+                        }
+                    });
+                });
+            });
+
+            // 📝 Enviar review
+            const reviewForm = document.getElementById('reviewForm');
+            reviewForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const form = e.target;
+                const data = new FormData(form);
+
+                const response = await fetch('?handler=LogReviewWithTracking', {
+                    method: 'POST',
+                    body: data
+                });
+
+
+                if (response.ok) {
+                    document.getElementById('reviewSuccessMessage').classList.remove('d-none');
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('reviewLogModal'));
+                        if (modal) modal.hide();
+                        form.reset();
+                        stars.forEach(s => s.classList.remove('text-warning'));
+                        ratingInput.value = 0;
+                        document.getElementById('reviewSuccessMessage').classList.add('d-none');
+
+                        // TODO: Opcional: Recargar lista de reseñas
+                        // location.reload();
+                    }, 1500);
+                } else {
+                    alert('Failed to submit review.');
+                }
+            });
+
+            // 🔍 Filtrar listas
             const input = document.getElementById("searchListInput");
             const container = document.getElementById("userListsContainer");
 
@@ -246,3 +311,16 @@
         });
     </script>
 }
+
+
+<style>
+    .game-overlay-content {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        color: white;
+    }
+</style>
+

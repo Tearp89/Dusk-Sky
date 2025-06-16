@@ -112,7 +112,8 @@ public class GameDetailsModel : PageModel
                 break;
         }
 
-        if (string.IsNullOrEmpty(Tracking.Id.ToString()))
+        if (Tracking.Id == Guid.Empty)
+
             await _gameTrackingService.CreateAsync(Tracking);
         else
             await _gameTrackingService.UpdateAsync(Tracking.Id, Tracking);
@@ -121,27 +122,66 @@ public class GameDetailsModel : PageModel
     }
 
     public async Task<IActionResult> OnPostAddGameToListAsync(string ListId, Guid GameId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return new JsonResult(new { success = false, message = "Usuario no autenticado." });
+
+        var alreadyExists = await _gameListItemService.ExistsAsync(ListId.ToString(), GameId);
+        if (alreadyExists)
+            return new JsonResult(new { success = false, message = "Game already in the list." });
+
+        var dto = new GameListItemDTO
+        {
+            Id = Guid.NewGuid().ToString(),
+            GameId = GameId,
+            ListId = ListId
+        };
+
+        var success = await _gameListItemService.AddItemAsync(dto);
+
+        return new JsonResult(new { success });
+    }
+
+    public async Task<IActionResult> OnPostLogReviewWithTrackingAsync(Guid GameId, string Content, double Rating, DateTime? WatchedOn, bool PlayedBefore, bool Like)
 {
     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId))
         return new JsonResult(new { success = false, message = "Usuario no autenticado." });
 
-    var alreadyExists = await _gameListItemService.ExistsAsync(ListId.ToString(), GameId);
-    if (alreadyExists)
-        return new JsonResult(new { success = false, message = "Game already in the list." });
-
-    var dto = new GameListItemDTO
+    var review = new ReviewDTO
     {
-        Id = Guid.NewGuid().ToString(),
         GameId = GameId,
-        ListId = ListId
+        UserId = userId,
+        Content = Content,
+        Rating = Rating,
+        CreatedAt = DateTime.UtcNow
     };
 
-    var success = await _gameListItemService.AddItemAsync(dto);
+    await _reviewService.CreateReviewAsync(review);
 
-    return new JsonResult(new { success });
+    var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, GameId.ToString()) ?? new GameTrackingDto
+    {
+        UserId = userId,
+        GameId = GameId.ToString()
+    };
+
+    if (WatchedOn.HasValue || PlayedBefore)
+    {
+        tracking.Status = "played";
+        tracking.Liked = Like;
+    }
+
+    if (tracking.Id == Guid.Empty)
+
+        await _gameTrackingService.CreateAsync(tracking);
+    else
+        await _gameTrackingService.UpdateAsync(tracking.Id, tracking);
+
+    return new JsonResult(new { success = true });
 }
 
 
-    
+
+
 }

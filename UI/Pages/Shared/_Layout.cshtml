@@ -33,11 +33,15 @@
     }
 
     @if (ViewData["ShowBackground"] as bool? == true)
-    {
-        <div class="container-img">
-            <img src="@ViewData["BackgroundImage"]" alt="Fondo" />
-        </div>
-    }
+{
+    var useBlur = ViewData["UseBlurEffect"] as bool? == true;
+    var containerClass = useBlur ? "container-img blur-background" : "container-img";
+
+    <div class="@containerClass">
+        <img src="@ViewData["BackgroundImage"]" alt="Fondo" />
+    </div>
+}
+
 
 
     <!-- NAVBAR -->
