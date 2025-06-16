@@ -23,7 +23,7 @@ builder.Services.AddHttpClient<ICommentService, CommentService>(client =>
 
 builder.Services.AddHttpClient<IFriendshipService, FriendshipService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8007/friendships");
+    client.BaseAddress = new Uri("http://friendship.local");
 
 });
 builder.Services.AddHttpClient<IGameListService, GameListService>(client =>

@@ -1,4 +1,6 @@
 @page
+@using System.Text.Json
+@using System.Security.Claims
 @model SearcherModel
 @{
     ViewData["Title"] = "Search Results";
@@ -7,7 +9,7 @@
 <div id="top"></div>
 
 
-<div class="container mt-4 mb-5">
+<div class="container mt-4 mb-5" style="margin-top: 100px;">
     <div class="row">
         <!-- 🧩 Columna principal con resultados -->
         <div class="col-md-9">
@@ -20,7 +22,7 @@
                 <div class="scroll-section mb-5">
                     @foreach (var game in Model.Games)
                     {
-                        <a href="/Game/Details/@game.Id" class="card-blue-light text-decoration-none me-3">
+                        <a asp-page="/Games/GameDetails" asp-route-gameId="@game.Id" class="card-blue-light text-decoration-none me-3">
                             <img src="@game.HeaderUrl" class="card-img-top rounded-top"
                                 style="height: 200px; object-fit: cover;" />
                             <div class="p-2">
@@ -38,59 +40,131 @@
                 <div class="scroll-section mb-5">
                     @foreach (var user in Model.Users)
                     {
-                        <a href="/Profile/@user.Id"
-                            class="card-blue-light text-decoration-none me-3 d-flex align-items-center p-2"
-                            style="width: 220px;">
-                            <img src="@user.AvatarUrl" alt="@user.Username" class="rounded-circle me-3" width="48" height="48" />
-                            <div class="text-dark">
-                                <strong>@user.Username</strong>
-                            </div>
-                        </a>
+<form method="post" asp-page-handler="SendFriendRequest">
+    <input type="hidden" name="receiverId" value="@user.Id" />
+
+    <div class="card-blue-light text-decoration-none me-3 p-2 d-flex justify-content-between align-items-center"
+         style="width: 260px;">
+        <div class="d-flex align-items-center">
+            <img src="@user.AvatarUrl" alt="@user.Username" class="rounded-circle me-3" width="48" height="48" />
+            <div class="text-dark">
+                <strong>@user.Username</strong>
+            </div>
+        </div>
+
+       @if (User.FindFirst(ClaimTypes.NameIdentifier)?.Value != user.Id)
+            {
+                <button type="submit" class="btn btn-sm btn-primary">Añadir amigo</button>
+            }
+            else
+            {
+                <span class="text-muted small">Este eres tú</span>
+            }
+    </div>
+</form>
+
+
+
                     }
                 </div>
             }
 
-            <!-- Reviews -->
-            @if (Model.Reviews.Any())
-            {
-                <h5 id="reviews" class="text-primary">Reviews</h5>
-                <div class="scroll-section mb-5">
-                    @foreach (var review in Model.Reviews)
-                    {
-                        <a href="/Reviews/Details/@review.Id" class="card-blue-light text-decoration-none me-3"
-                            style="width: 300px;">
-                            <img src="@review.GameImageUrl" class="card-img-top rounded-top"
-                                style="height: 140px; object-fit: cover;" />
-                            <div class="p-2 text-dark">
-                                <strong>@review.UserName</strong><br />
-                                <span class="text-muted small">
-                                    @review.Content.Substring(0, Math.Min(review.Content.Length, 100))...
-                                </span>
-                            </div>
-                        </a>
-                    }
-                </div>
-            }
+            <!-- Reviews agrupadas por juego -->
+@if (Model.Reviews.Any())
+{
+    <h5 id="reviews" class="text-primary">Reviews</h5>
 
-            <!-- Lists -->
-            @if (Model.Lists.Any())
-            {
-                <h5 id="lists" class="text-primary">Lists</h5>
-                <div class="scroll-section mb-5">
-                    @foreach (var list in Model.Lists)
-                    {
-                        <a href="/Lists/Details/@list.Id" class="card-blue-light text-decoration-none me-3"
-                            style="width: 260px;">
-                            <div class="p-3 text-dark">
-                                <strong>@list.Name</strong><br />
-                                <span class="text-muted small">
-                                    @list.Description?.Substring(0, Math.Min(list.Description.Length, 80))...
-                                </span>
-                            </div>
-                        </a>
-                    }
+    @foreach (var group in Model.Reviews.GroupBy(r => r.GameId))
+    {
+        var firstReview = group.FirstOrDefault();
+        if (firstReview is null) continue;
+
+        <div class="card mb-4 shadow-sm border-0" style="border-radius: 12px;">
+            <!-- Header del juego -->
+            <div class="d-flex align-items-center bg-light p-3 rounded-top" style="border-bottom: 1px solid #dee2e6;">
+                <img src="@firstReview.GameImageUrl" alt="Game" class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" />
+                <h6 class="mb-0 fw-bold text-dark">@firstReview.GameTitle</h6>
+            </div>
+
+            <!-- Reviews del juego -->
+            <div class="p-3">
+                @foreach (var review in group)
+                {
+                    <div class="d-flex mb-3">
+                        <img src="@review.ProfileImageUrl" class="rounded-circle me-3" width="40" height="40" />
+                        <div>
+                            <strong class="text-dark">@review.UserName</strong><br />
+                            <span class="text-muted small">
+                                @review.Content.Substring(0, Math.Min(review.Content.Length, 120))...
+                                <a href="/Reviews/Details?reviewId=@review.Id" class="text-primary small">Read more</a>
+                            </span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
+
+<!-- Lists -->
+@if (Model.Lists.Any())
+{
+    <h5 id="lists" class="text-primary">Lists</h5>
+    <div class="scroll-section mb-5">
+        @{
+            int index = 0;
+        }
+        @foreach (var list in Model.Lists)
+        {
+            var id = $"collage-{index++}";
+            var json = JsonSerializer.Serialize(list.GameHeaders, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            <a href="/Lists/Details/@list.Id" class="card-blue-light text-decoration-none me-3" style="width: 260px;">
+                <!-- Collage -->
+                <div id="@id" class="poster-collage" style="position: relative; height: 140px; overflow: hidden; border-radius: 12px 12px 0 0;"></div>
+
+                <div class="p-3 text-dark">
+                    <!-- Nombre de la lista -->
+                    <strong>@list.Name</strong><br />
+                    <span class="text-muted small">
+                        @list.Description?.Substring(0, Math.Min(list.Description.Length, 80))...
+                    </span>
+
+                    <!-- Usuario -->
+                    <div class="d-flex align-items-center mt-2">
+                        <img src="@list.AvatarUrl" alt="@list.UserName" class="rounded-circle me-2" width="24" height="24" />
+                        <span class="text-muted" style="font-size: 0.85rem;">@list.UserName</span>
+                    </div>
                 </div>
-            }
+            </a>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const images = @Html.Raw(json);
+                    const container = document.getElementById("@id");
+
+                    if (container && images?.length > 0) {
+                        images.forEach((url, i) => {
+                            const img = document.createElement('img');
+                            img.src = url;
+                            img.alt = "Game";
+                            img.classList.add('poster');
+                            img.style.position = 'absolute';
+                            img.style.left = `${i * 40}px`;
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            img.style.borderRadius = '6px';
+                            container.appendChild(img);
+                        });
+                    }
+                });
+            </script>
+        }
+    </div>
+}
+
+
         </div>
 
         <!-- 🧭 Menú lateral de categorías -->

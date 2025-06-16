@@ -29,7 +29,7 @@ public class GameService : IGameService
 
         public async Task<GameDetailsDTO?> GetGameByIdAsync(Guid id)
         {
-            var response = await _http.GetAsync($"api/game/{id}");
+            var response = await _http.GetAsync(id.ToString());
             if (!response.IsSuccessStatusCode)
                 return null;
 

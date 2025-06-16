@@ -5,10 +5,8 @@
 }
 
 <!-- ✅ Enlace a estilos personalizados -->
-<link rel="stylesheet" href="~/css/create-list.css" />
 
 <!-- ✅ Enlace a validaciones de cliente -->
-<partial name="_ValidationScriptsPartial" />
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
@@ -27,10 +25,15 @@
 <div class="container mt-5 mb-5 glass-container text-light" style="max-width: 700px;">
     <h2 class="mb-4 text-dark text-center">Create a New List</h2>
 
+   
+
+
     <!-- ✔️ Validación general -->
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
+    
     <form method="post">
+        <input type="hidden" asp-for="GameId" />
+
         <!-- 📌 Nombre -->
         <div class="form-group">
             <label asp-for="List.Name" class="glass-label">List Name</label>

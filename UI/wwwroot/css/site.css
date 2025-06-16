@@ -1133,3 +1133,135 @@ input[type="checkbox"]#likedCheckbox:checked + label .heart-icon {
     color: #0d6efd;
     text-decoration: none;
 }
+
+.poster-collage img.poster {
+    transition: transform 0.2s ease;
+}
+
+.poster-collage img.poster:hover {
+    transform: scale(1.05);
+    z-index: 2;
+}
+
+#gameListContainer::before,
+#gameListContainer::after {
+  content: none !important;
+  display: none !important;
+  pointer-events: none !important;
+}
+
+sidebar-card,
+    .review-card {
+        background-color: rgba(255, 255, 255, 0.7); /* Blanco semi-transparente */
+        border: 1px solid rgba(255, 255, 255, 0.4); /* Borde sutil para el efecto de cristal */
+        backdrop-filter: blur(8px); /* El efecto de desenfoque detrás del elemento */
+        -webkit-backdrop-filter: blur(8px); /* Para compatibilidad con Safari */
+        border-radius: 15px; /* Bordes más redondeados */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Sombra suave para darle profundidad */
+        overflow: hidden; /* Asegura que el blur no se escape */
+    }
+
+    /* Ajustes para la imagen principal del juego */
+    .game-image {
+        width: 100%;
+        height: auto; /* Mantiene la proporción */
+        object-fit: cover;
+        max-height: 500px; /* Limita la altura para que no sea demasiado grande */
+        border-radius: 15px; /* Bordes redondeados para la imagen también */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    }
+
+    /* Estilos para Botones Glassy */
+    .btn-glassy {
+        background-color: rgba(173, 216, 230, 0.3); /* Un azul claro muy sutil, transparente */
+        color: #007bff; /* Color del texto principal de Bootstrap (azul) */
+        border: 1px solid rgba(173, 216, 230, 0.5); /* Borde que coincide con el fondo */
+        transition: all 0.3s ease; /* Transición suave al pasar el ratón */
+        font-weight: 600; /* Texto un poco más bold */
+    }
+
+    .btn-glassy:hover {
+        background-color: rgba(173, 216, 230, 0.5);
+        color: #0056b3;
+        border-color: rgba(173, 216, 230, 0.7);
+        transform: translateY(-2px); /* Pequeño efecto de elevación */
+    }
+
+    .btn-glassy-outline {
+        background-color: transparent;
+        color: #6c757d; /* Gris para botones de contorno */
+        border: 1px solid rgba(108, 117, 125, 0.3); /* Borde sutil */
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .btn-glassy-outline:hover {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #495057;
+        border-color: rgba(108, 117, 125, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-glassy-link {
+        color: #007bff; /* Color azul para enlaces */
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .btn-glassy-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+    /* Estilos para Badges (Géneros y Plataformas) */
+    .genre-badge, .platform-badge {
+        display: inline-block;
+        padding: 0.4em 0.8em;
+        font-size: 0.8em;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.5rem; /* Bordes más redondeados */
+        margin-bottom: 0.25rem; /* Espacio entre badges */
+        border: 1px solid transparent; /* Borde base transparente */
+    }
+
+    .genre-badge {
+        background-color: rgba(23, 162, 184, 0.15); /* Cian sutil */
+        color: #17a2b8;
+        border-color: rgba(23, 162, 184, 0.3);
+    }
+
+    .platform-badge {
+        background-color: rgba(108, 117, 125, 0.1); /* Gris muy claro */
+        color: #6c757d;
+        border-color: rgba(108, 117, 125, 0.2);
+    }
+
+    .platform-badge.available {
+        background-color: rgba(40, 167, 69, 0.15); /* Verde para disponible */
+        color: #28a745;
+        border-color: rgba(40, 167, 69, 0.3);
+    }
+
+    .platform-badge.unavailable {
+        background-color: rgba(220, 53, 69, 0.15); /* Rojo para no disponible (o simplemente el gris por defecto) */
+        color: #dc3545;
+        border-color: rgba(220, 53, 69, 0.3);
+    }
+
+    /* Estilos de texto */
+    .text-dark {
+        color: #343a40 !important; /* Asegura un contraste fuerte */
+    }
+    .text-secondary {
+        color: #5d6a78 !important; /* Un gris un poco más oscuro que el muted */
+    }
+    .text-muted {
+        color: #6c757d !important; /* El gris claro estándar de Bootstrap */
+    }
+    .small {
+        font-size: 0.875em !important;
+    }

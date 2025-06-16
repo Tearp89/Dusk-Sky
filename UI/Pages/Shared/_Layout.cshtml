@@ -269,13 +269,30 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/site.js"></script>
+<!-- ✅ jQuery debe ir primero -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- ✅ Bootstrap puede venir después -->
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ✅ Validación unobtrusive que depende de jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+
+<!-- ✅ Tu script personalizado -->
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<!-- ✅ Toast autocierre -->
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const toasts = document.querySelectorAll('.toast');
+        toasts.forEach(t => new bootstrap.Toast(t, { delay: 4000 }).show());
+    });
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
 
 
-    @await RenderSectionAsync("Scripts", required: false)
 </body>
 
 </html>

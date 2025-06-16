@@ -18,6 +18,9 @@ public class SelectGamesModel : PageModel
 
     [BindProperty]
     public string SearchQuery { get; set; } = string.Empty;
+    [BindProperty(SupportsGet = true)]
+public Guid? GameId { get; set; }
+
 
     public List<GamePreviewDTO> SearchResults { get; set; } = new();
 
@@ -27,6 +30,12 @@ public class SelectGamesModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
+        var ids = GetSelectedGameIdsFromSession();
+        if (GameId.HasValue && !ids.Contains(GameId.Value))
+        {
+            ids.Add(GameId.Value);
+            HttpContext.Session.SetString(SessionKey, JsonSerializer.Serialize(ids));
+        }
         await LoadSelectedGamesAsync();
         return Page();
     }

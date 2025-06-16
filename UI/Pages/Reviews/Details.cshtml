@@ -27,7 +27,7 @@ else
 }
 
 
-<div class="container py-4" style="background-color: whitesmoke; min-height: 100vh;" >
+<div class="container py-4" style="background-color: whitesmoke; min-height: 100vh;">
     <div class="row mt-5">
         <!-- Columna izquierda -->
         <div class="col-md-8 mb-4">
@@ -45,17 +45,18 @@ else
                     <div class="d-flex gap-2 flex-wrap mt-3">
                         @if (Model.Review.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                         {
-                            
-                            <form method="post" asp-page-handler="ToggleLike" class="like-form" data-review-id="@Model.Review.Id">
-                            <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
-                            <input type="hidden" name="UserId" value="@Model.UserId" />
-                            <button type="button"
-                                class="btn btn-sm @(@Model.Review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
-                                onclick="event.stopPropagation(); toggleLike(this);">
-                                <i class="bi @(Model.Review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
-                                <span class="like-text">@(Model.Review.UserLiked ? "Quitar like" : "Me gusta")</span>
-                                <span class="like-count visually-hidden">@Model.Review.Likes</span>
-                            </button>
+
+                            <form method="post" asp-page-handler="ToggleLike" class="like-form"
+                                data-review-id="@Model.Review.Id">
+                                <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
+                                <input type="hidden" name="UserId" value="@Model.UserId" />
+                                <button type="button"
+                                    class="btn btn-sm @(@Model.Review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
+                                    onclick="event.stopPropagation(); toggleLike(this);">
+                                    <i class="bi @(Model.Review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                                    <span class="like-text">@(Model.Review.UserLiked ? "Quitar like" : "Me gusta")</span>
+                                    <span class="like-count visually-hidden">@Model.Review.Likes</span>
+                                </button>
                             </form>
                         }
                         <button class="btn btn-outline-dark btn-sm">Add to list</button>
@@ -126,7 +127,8 @@ else
                         data-bs-target="#reviewModal">
                         Review or log...
                     </button>
-                    <button class="btn btn-outline-dark btn-sm button-glass" data-bs-toggle="modal" data-bs-target="#listModal">
+                    <button class="btn btn-outline-dark btn-sm button-glass" data-bs-toggle="modal"
+                        data-bs-target="#listModal">
                         Add this game to lists
                     </button>
 
@@ -223,19 +225,22 @@ else
         </div>
     </div>
 
-<!-- Modal para listas-->
+    <!-- Modal para listas-->
     <div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content bg-light text-black">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">Add ‘@Model.GamePreview.Title’ to a list</h5>
+                    <h5 class="modal-title fw-bold" id="listModalTitle" data-game-id="@Model.GamePreview.Id">
+                        Add ‘@Model.GamePreview.Title’ to a list
+                    </h5>
+
                     <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body px-4">
                     <!-- Buscador -->
-                    <input type="text" id="searchListInput" class="form-control mb-3 input-glass rounded-pill" 
+                    <input type="text" id="searchListInput" class="form-control mb-3 input-glass rounded-pill"
                         placeholder="Search for an existing list...">
 
                     <!-- Listas -->
@@ -253,18 +258,23 @@ else
                     </div>
 
                     <div class="text-center">
-                        <button class="btn btn-outline-light button-glass-blue" onclick="goToCreateListPage()">+ Create new list</button>
+                        <button onclick="location.href='/Lists/Creator?defaultName=&gameId=@Model.GamePreview?.Id'">
+                            Create New List
+                        </button>
+
+
+
                     </div>
                 </div>
             </div>
         </div>
-</div>
+    </div>
 
 
-<!-- Mensaje de éxito para listas -->
-<div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
-    List created and game added successfully!
-</div>
+    <!-- Mensaje de éxito para listas -->
+    <div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
+        List created and game added successfully!
+    </div>
 
 
 
@@ -397,9 +407,9 @@ else
         event.target.classList.add('active');
     }
 
-    function goToCreateListPage() {
+   /* function goToCreateListPage() {
         const title = document.getElementById("searchListInput")?.value || "";
-        const gameId = "@Model.GamePreview.Id";
+        const gameId = document.getElementById("listModalTitle")?.dataset.gameId || "";
         window.location.href = `/Lists/Creator?defaultName=${encodeURIComponent(title)}&gameId=${gameId}`;
-    }
+    }*/
 </script>

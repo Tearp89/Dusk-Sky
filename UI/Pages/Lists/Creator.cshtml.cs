@@ -22,11 +22,8 @@ public class CreateListModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-         if (!ModelState.IsValid)
-    {
-         TempData["ErrorMessage"] = "Please fill in all required fields.";
-        return Page(); // vuelve a mostrar el formulario con errores
-    }
+         
+        
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();

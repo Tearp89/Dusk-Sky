@@ -88,3 +88,20 @@
         <button type="submit" class="button-glass-blue">Finish & Save List</button>
     </form>
 </div>
+
+@section Scripts {
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Validación unobtrusive -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- Autocierre de toast -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(t => new bootstrap.Toast(t, { delay: 4000 }).show());
+        });
+    </script>
+}

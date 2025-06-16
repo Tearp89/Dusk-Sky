@@ -1,0 +1,248 @@
+@page "{gameId:guid}"
+@model GameDetailsModel
+@{
+    ViewData["Title"] = Model.Game.Title;
+}
+<!-- Banner -->
+<div class="position-relative w-100" style="height: 480px; overflow: hidden;">
+    <img src="@Model.GamePreview.HeaderUrl" class="w-100 h-100 object-fit-cover" alt="Banner">
+    <div class="position-absolute bottom-0 start-0 w-100"
+        style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); padding: 2rem 0;">
+        <div class="container d-flex gap-4 align-items-end">
+            <img src="@Model.GamePreview.HeaderUrl" class="rounded shadow" alt="Poster"
+                style="height: 220px; width: auto; object-fit: cover;">
+            <div>
+                <h1 class="text-white fw-bold">@Model.Game.Title</h1>
+                <p class="text-light mb-1">
+                    @Model.Game.ReleaseDate — <em>@Model.Game.Developer</em>
+                </p>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <form method="post" asp-page-handler="ToggleTracking">
+                        <input type="hidden" name="trackingType" value="watch" />
+                        <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                        <button class="btn btn-outline-light btn-sm" type="submit">
+                            <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i> Watch
+                        </button>
+                    </form>
+                    <form method="post" asp-page-handler="ToggleTracking">
+                        <input type="hidden" name="trackingType" value="like" />
+                        <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                        <button class="btn btn-outline-light btn-sm" type="submit">
+                            <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i> Like
+                        </button>
+                    </form>
+                    <form method="post" asp-page-handler="ToggleTracking">
+                        <input type="hidden" name="trackingType" value="watchlist" />
+                        <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                        <button class="btn btn-outline-light btn-sm" type="submit">
+                            <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i>
+                            Watchlist
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#reviewLogModal">
+                        <i class="bi bi-pencil"></i> Review or log...
+                    </button>
+
+
+                    <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#listModal">
+                        <i class="bi bi-list-stars"></i> Add to list
+                    </button>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <h4 class="fw-bold">A new and altogether different screen excitement!</h4>
+            <p class="text-muted">@Model.Game.Description</p>
+
+            <div class="mb-3">
+                <strong>Genres:</strong>
+                @foreach (var genre in Model.Game.Genres)
+                {
+                    <span class="badge bg-primary me-1">@genre</span>
+                }
+            </div>
+
+            <div class="mb-3">
+                <strong>Publisher:</strong> @Model.Game.Publisher
+            </div>
+            <div class="mb-3">
+                <strong>Platforms:</strong>
+                @foreach (var platform in Model.Game.Platforms.Where(p => p.Value))
+                {
+                    <span class="badge bg-secondary me-1 text-capitalize">@platform.Key</span>
+                }
+            </div>
+
+
+
+            <h5 class="mt-4 fw-bold">Popular Reviews</h5>
+            @foreach (var review in Model.Reviews)
+            {
+                <div class="card mb-3 shadow-sm card-glossy">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-1 text-muted">Review by @review.UserName</h6>
+                        <p class="card-text">@review.Content.Substring(0, Math.Min(150, review.Content.Length))...</p>
+                        <a href="/Reviews/Details/@review.Id" class="btn btn-sm btn-outline-primary">Read more</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal para listas -->
+<div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-light text-black">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="listModalTitle" data-game-id="@Model.Game.Id">
+                    Add ‘@Model.Game.Title’ to a list
+                </h5>
+                <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body px-4">
+                <input type="text" id="searchListInput" class="form-control mb-3 input-glass rounded-pill"
+                    placeholder="Search for an existing list...">
+
+                <div id="userListsContainer" class="d-flex flex-wrap gap-3 mb-4">
+                    @foreach (var list in Model.UserLists)
+                    {
+                        <form method="post" asp-page-handler="AddGameToList" class="add-list-form">
+                            <input type="hidden" name="ListId" value="@list.Id" />
+                            <input type="hidden" name="GameId" value="@Model.Game.Id" />
+                            <button type="submit" class="btn btn-outline-dark">@list.Name</button>
+                        </form>
+                    }
+                </div>
+
+                <div class="text-center">
+                    <button onclick="location.href='/Lists/Creator?defaultName=&gameId=@Model.Game.Id'">
+                        Create New List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
+    List created and game added successfully!
+</div>
+
+<div class="modal fade" id="reviewLogModal" tabindex="-1" aria-labelledby="reviewLogModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow glassy-modal">
+      <div class="modal-header bg-primary text-white button-glass-blue">
+        <h5 class="modal-title" id="reviewLogModalLabel">Log a Game</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="reviewForm">
+        <div class="modal-body">
+          <input type="hidden" name="GameId" value="@Model.Game.Id" />
+
+          <div class="mb-3">
+            <label for="Content" class="form-label">Review</label>
+            <textarea class="form-control" name="Content" rows="4" required></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Rating</label>
+            <div id="starRating" class="d-flex gap-1">
+              @for (var i = 1; i <= 5; i++)
+              {
+                <i class="bi bi-star-fill text-secondary star" data-value="@i" style="cursor: pointer; font-size: 1.5rem;"></i>
+              }
+            </div>
+            <input type="hidden" name="Rating" id="RatingInput" value="0" />
+          </div>
+
+          <div class="form-check mb-2">
+            <input type="checkbox" class="form-check-input" id="WatchedBefore" name="WatchedBefore">
+            <label class="form-check-label" for="WatchedBefore">I've played this before</label>
+          </div>
+
+          <div class="mb-3">
+            <label for="WatchedOn" class="form-label">Played On</label>
+            <input type="date" name="WatchedOn" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <span id="reviewSuccessMessage" class="text-success me-auto d-none">Review submitted!</span>
+          <button type="submit" class="btn btn-primary">Submit Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 🔍 Filtrar listas por input
+            const input = document.getElementById("searchListInput");
+            const container = document.getElementById("userListsContainer");
+
+            if (input && container) {
+                input.addEventListener("input", () => {
+                    const query = input.value.toLowerCase();
+                    const forms = container.querySelectorAll("form");
+
+                    forms.forEach(form => {
+                        const text = form.querySelector("button").innerText.toLowerCase();
+                        form.style.display = text.includes(query) ? "inline-block" : "none";
+                    });
+                });
+            }
+
+            // 📥 Enviar formularios de agregar a lista (sin recargar)
+            document.querySelectorAll(".add-list-form").forEach(form => {
+                form.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    const formData = new FormData(form);
+
+                    try {
+                        const response = await fetch("?handler=AddGameToList", {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        const result = await response.json();
+
+                        const modal = document.getElementById("listModal");
+                        const modalInstance = bootstrap.Modal.getInstance(modal);
+                        if (modalInstance) modalInstance.hide();
+
+                        const message = document.getElementById("listSuccessMessage");
+                        if (message) {
+                            message.textContent = result.success
+                                ? "✅ Game added to list!"
+                                : "❌ " + (result.message || "Error adding game to list.");
+
+                            message.classList.remove("d-none", "alert-success", "alert-danger");
+                            message.classList.add(result.success ? "alert-success" : "alert-danger");
+
+                            setTimeout(() => message.classList.add('d-none'), 4000);
+                        }
+                    } catch (err) {
+                        console.error("Error en AddGameToList:", err);
+                    }
+                });
+            });
+        });
+    </script>
+}
