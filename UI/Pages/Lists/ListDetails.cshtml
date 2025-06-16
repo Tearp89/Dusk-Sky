@@ -1,0 +1,184 @@
+@page "{id}"
+@model ListDetailsModel
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "List Details";
+}
+
+<div class="container mt-5 py-5">
+    <div class="card shadow p-4 glossy-card">
+        <h2 class="fw-bold">@Model.List.Name</h2>
+        <p class="text-muted">@Model.List.Description</p>
+
+        <div class="d-flex align-items-center mb-3">
+            <img src="@Model.UserData.AvatarUrl" class="rounded-circle me-2" style="width: 40px; height: 40px;" />
+            <span class="fw-semibold">@Model.UserData.Username</span>
+        </div>
+
+        <div class="poster-collage mb-3" id="poster-collage"
+             style="height: 180px; border-radius: 12px; overflow: hidden;">
+            @foreach (var game in Model.Games.Take(5))
+            {
+                <img src="@game.Game.HeaderUrl" style="width: 20%; height: 100%; object-fit: cover;" />
+            }
+        </div>
+
+        <h4 class="mt-4 mb-3">Juegos en esta lista</h4>
+
+        @if (Model.IsOwner)
+        {
+            <form method="post" asp-page-handler="Search" class="d-flex mb-4">
+                <input asp-for="SearchTerm" class="form-control bg-light text-dark me-2 input-glass rounded-pill" placeholder="Search game..." />
+                <button class="button-glass" type="submit">Search</button>
+            </form>
+        }
+
+        @if (Model.SearchResults?.Any() == true)
+        {
+            <h5 class="mb-3">Results:</h5>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var game in Model.SearchResults)
+                {
+                    <button type="button" class="btn p-0 border-0 bg-transparent" data-bs-toggle="modal"
+                            data-bs-target="#addGameModal"
+                            data-game-id="@game.Id"
+                            data-title="@game.Title"
+                            data-img="@game.HeaderUrl">
+                        <div class="card glass-card text-light" style="width: 12rem;">
+                            <img src="@game.HeaderUrl" class="card-img-top" />
+                            <div class="card-body">
+                                <h6 class="card-title">@game.Title</h6>
+                                <small>Click to add</small>
+                            </div>
+                        </div>
+                    </button>
+                }
+            </div>
+        }
+
+        @if (Model.Games.Count == 0)
+        {
+            <div class="alert alert-info">
+                Esta lista no tiene juegos todavía. ¡Agrégale algunos para compartirla!
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var item in Model.Games)
+                {
+                    <div class="col-md-3 mb-4">
+                        <a asp-page="/Games/Details" asp-route-id="@item.Game.Id" class="text-decoration-none text-dark">
+                            <div class="card h-100 hover-shadow">
+                                <img src="@item.Game.HeaderUrl" class="card-img-top" alt="@item.Game.Title"
+                                     style="height: 200px; object-fit: cover;" />
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.Game.Title</h5>
+                                    @if (!string.IsNullOrWhiteSpace(item.Notes))
+                                    {
+                                        <p class="card-text">
+                                            <small class="text-muted">📝 @item.Notes</small>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal para agregar comentario al juego -->
+<div class="modal fade" id="addGameModal" tabindex="-1" aria-labelledby="addGameModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glossy-card">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addGameModalLabel">Agregar juego</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="AddGame">
+                <div class="modal-body">
+                    <input type="hidden" name="gameId" id="modalGameId" />
+                    <input type="hidden" name="listId" value="@Model.List.Id" />
+                    <div class="mb-2">
+                        <strong id="modalGameTitle"></strong>
+                    </div>
+                    <div class="mb-3">
+                        <img id="modalGameImage" src="" class="img-fluid rounded shadow" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalNotes" class="form-label">Comentario (opcional):</label>
+                        <textarea name="notes" id="modalNotes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success button-glass-blue">Agregar</button>
+                    <button type="button" class="btn btn-secondary button-glass" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const collage = document.getElementById("poster-collage");
+            collage.innerHTML = "";
+
+            const images = [
+                @foreach (var game in Model.Games.Take(5))
+                {
+                    <text>"@game.Game.HeaderUrl",</text>
+                }
+            ];
+
+            images.forEach(url => {
+                const img = document.createElement("img");
+                img.src = url;
+                img.style.width = "20%";
+                img.style.height = "100%";
+                img.style.objectFit = "cover";
+                img.style.display = "inline-block";
+                collage.appendChild(img);
+            });
+
+            const addGameModal = document.getElementById('addGameModal');
+            if (addGameModal) {
+                addGameModal.addEventListener('show.bs.modal', event => {
+                    const button = event.relatedTarget;
+                    const gameId = button.getAttribute('data-game-id');
+                    const title = button.getAttribute('data-title');
+                    const img = button.getAttribute('data-img');
+
+                    document.getElementById('modalGameId').value = gameId;
+                    document.getElementById('modalGameTitle').innerText = title;
+                    document.getElementById('modalGameImage').src = img;
+                    document.getElementById('modalNotes').value = "";
+                });
+            }
+        });
+    </script>
+}
+
+<style>
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+    .modal {
+        z-index: 1055 !important;
+    }
+
+    .glassy-modal {
+        z-index: 1056 !important;
+        position: relative;
+    }
+
+    .poster-collage {
+        position: relative;
+        z-index: 1 !important;
+    }
+</style>

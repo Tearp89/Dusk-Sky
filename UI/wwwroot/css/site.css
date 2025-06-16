@@ -1309,3 +1309,8 @@ sidebar-card,
 .background-normal::before {
     /* No blur, solo imagen */
 }
+
+#searchResults::before {
+        content: none !important;
+        display: none !important;
+    }

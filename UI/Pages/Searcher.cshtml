@@ -120,7 +120,7 @@
             var id = $"collage-{index++}";
             var json = JsonSerializer.Serialize(list.GameHeaders, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-            <a href="/Lists/Details/@list.Id" class="card-blue-light text-decoration-none me-3" style="width: 260px;">
+            <a href="/Lists/ListDetails/@list.Id" class="card-blue-light text-decoration-none me-3" style="width: 260px;">
                 <!-- Collage -->
                 <div id="@id" class="poster-collage" style="position: relative; height: 140px; overflow: hidden; border-radius: 12px 12px 0 0;"></div>
 
