@@ -21,19 +21,21 @@ public class CreateListModel : PageModel
     public string Tags { get; set; } = string.Empty;
 
     public async Task<IActionResult> OnPostAsync()
+{
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userId))
+        return Unauthorized();
+
+    List.UserId = userId;
+
+    var listId = await _listService.CreateListAsync(List);
+    if (string.IsNullOrEmpty(listId))
     {
-         
-        
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
-
-        List.Id = Guid.NewGuid().ToString();
-        List.UserId = userId;
-
-        await _listService.CreateListAsync(List);
-
-        // podrías guardar tags aparte si tu sistema los maneja
-        return RedirectToPage("SelectGames", new { listId = List.Id, gameId = GameId });
+        TempData["ErrorMessage"] = "Hubo un problema al crear la lista.";
+        return Page();
     }
+
+    return RedirectToPage("SelectGames", new { listId, gameId = GameId });
+}
+
 }

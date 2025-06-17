@@ -18,24 +18,30 @@ public class SelectGamesModel : PageModel
 
     [BindProperty]
     public string SearchQuery { get; set; } = string.Empty;
-    [BindProperty(SupportsGet = true)]
-public Guid? GameId { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public Guid? GameId { get; set; }
 
     public List<GamePreviewDTO> SearchResults { get; set; } = new();
 
-    public List<GamePreviewDTO> SelectedGames { get; set; } = new();
+    public List<SelectedGamePreview> SelectedGames { get; set; } = new();
 
     private string SessionKey => $"SelectedGames_{ListId}";
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var ids = GetSelectedGameIdsFromSession();
-        if (GameId.HasValue && !ids.Contains(GameId.Value))
+        var selected = GetSelectedGamesFromSession();
+
+        if (GameId.HasValue && !selected.Any(s => s.GameId == GameId.Value))
         {
-            ids.Add(GameId.Value);
-            HttpContext.Session.SetString(SessionKey, JsonSerializer.Serialize(ids));
+            selected.Add(new SelectedGameSessionItem
+            {
+                GameId = GameId.Value,
+                Notes = string.Empty
+            });
+            SaveSelectedGamesToSession(selected);
         }
+
         await LoadSelectedGamesAsync();
         return Page();
     }
@@ -51,79 +57,123 @@ public Guid? GameId { get; set; }
         return Page();
     }
 
-    public IActionResult OnPostAddGameAsync(string listId, Guid gameId)
+    public async Task<IActionResult> OnPostAddGameAsync(string listId, Guid gameId, string notes)
+{
+    var selected = GetSelectedGamesFromSession();
+
+    if (selected.Any(g => g.GameId == gameId))
     {
-        var ids = GetSelectedGameIdsFromSession();
-        if (ids.Contains(gameId))
-        {
-            TempData["ErrorMessage"] = "Este juego ya está en la lista.";
-            return RedirectToPage(new { listId });
-        }
-
-        if (!ids.Contains(gameId))
-        {
-            ids.Add(gameId);
-            HttpContext.Session.SetString(SessionKey, JsonSerializer.Serialize(ids));
-        }
-
+        TempData["ErrorMessage"] = "Este juego ya está en la lista.";
         return RedirectToPage(new { listId });
     }
 
+    // Agregar el nuevo juego con notas
+    selected.Add(new SelectedGameSessionItem
+    {
+        GameId = gameId,
+        Notes = notes
+    });
+
+    // Guardar en sesión
+    SaveSelectedGamesToSession(selected);
+
+    TempData["SuccessMessage"] = "Juego agregado temporalmente a la lista.";
+    return RedirectToPage(new { listId });
+}
+
+
     public IActionResult OnPostRemoveGameAsync(string listId, Guid gameId)
     {
-        var ids = GetSelectedGameIdsFromSession();
-        ids.RemoveAll(id => id == gameId);
-        HttpContext.Session.SetString(SessionKey, JsonSerializer.Serialize(ids));
-        TempData["SuccessMessage"] = "Juego eliminado de la lista.";
+        var selected = GetSelectedGamesFromSession();
+        selected.RemoveAll(g => g.GameId == gameId);
+        SaveSelectedGamesToSession(selected);
 
+        TempData["SuccessMessage"] = "Juego eliminado de la lista.";
         return RedirectToPage(new { listId });
     }
 
     public async Task<IActionResult> OnPostFinishAsync(string listId)
+{
+    if (string.IsNullOrEmpty(listId))
     {
-        var ids = GetSelectedGameIdsFromSession();
-        int order = 1;
-
-
-        foreach (var gameId in ids)
-        {
-            bool exists = await _itemService.ExistsAsync(listId, gameId);
-            if (!exists)
-            {
-                var item = new GameListItemDTO
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    ListId = listId,
-                    GameId = gameId,
-                    Order = order++
-                };
-                await _itemService.AddItemAsync(item);
-            }
-        }
-
-        HttpContext.Session.Remove(SessionKey);
-        TempData["SuccessMessage"] = "¡Lista guardada con juegos!";
+        TempData["ErrorMessage"] = "ID de lista no válido.";
         return RedirectToPage("/Homepage/Index");
     }
 
+    // ✅ también actualiza el valor en la propiedad ListId (usado en SessionKey)
+    ListId = listId;
 
+    var selected = GetSelectedGamesFromSession();
+    int order = 1;
 
-    private List<Guid> GetSelectedGameIdsFromSession()
+    foreach (var item in selected)
     {
-        var json = HttpContext.Session.GetString(SessionKey);
-        return string.IsNullOrEmpty(json) ? new List<Guid>() : JsonSerializer.Deserialize<List<Guid>>(json) ?? new List<Guid>();
+        bool exists = await _itemService.ExistsAsync(listId, item.GameId);
+        if (!exists)
+        {
+            var dto = new GameListItemDTO
+            {
+                Id = Guid.NewGuid().ToString(),
+                ListId = listId,
+                GameId = item.GameId,
+                Notes = item.Notes,
+                Order = order++
+            };
+            await _itemService.AddItemAsync(dto);
+        }
     }
+
+    HttpContext.Session.Remove(SessionKey);
+    TempData["SuccessMessage"] = "¡Lista guardada con juegos!";
+    return RedirectToPage("/Homepage/Index");
+}
+
+
+
 
     private async Task LoadSelectedGamesAsync()
     {
-        var ids = GetSelectedGameIdsFromSession();
-        foreach (var id in ids)
+        var selected = GetSelectedGamesFromSession();
+        SelectedGames.Clear();
+
+        foreach (var item in selected)
         {
-            var game = await _gameService.GetGamePreviewByIdAsync(id);
-            if (game != null && !SelectedGames.Any(g => g.Id == id))
+            var game = await _gameService.GetGamePreviewByIdAsync(item.GameId);
+            if (game != null)
             {
-                SelectedGames.Add(game);
+                SelectedGames.Add(new SelectedGamePreview
+                {
+                    Game = game,
+                    Notes = item.Notes
+                });
             }
         }
+    }
+
+    private List<SelectedGameSessionItem> GetSelectedGamesFromSession()
+    {
+        var json = HttpContext.Session.GetString(SessionKey);
+        return string.IsNullOrEmpty(json)
+            ? new List<SelectedGameSessionItem>()
+            : JsonSerializer.Deserialize<List<SelectedGameSessionItem>>(json) ?? new();
+    }
+
+    private void SaveSelectedGamesToSession(List<SelectedGameSessionItem> items)
+    {
+        HttpContext.Session.SetString(SessionKey, JsonSerializer.Serialize(items));
+    }
+
+    // Clase interna para guardar en sesión
+    private class SelectedGameSessionItem
+    {
+        public Guid GameId { get; set; }
+        public string Notes { get; set; } = string.Empty;
+    }
+
+    // Clase para renderizar en la interfaz
+    public class SelectedGamePreview
+    {
+        public GamePreviewDTO Game { get; set; } = null!;
+        public string Notes { get; set; } = string.Empty;
     }
 }

@@ -8,7 +8,26 @@
 <div class="container mt-5 py-5">
     <div class="card shadow p-4 glossy-card">
         <h2 class="fw-bold">@Model.List.Name</h2>
-        <p class="text-muted">@Model.List.Description</p>
+        @if (Model.IsOwner || User.IsInRole("moderator") || User.IsInRole("admin"))
+{
+    <form method="post" asp-page-handler="DeleteList" class="d-inline" onsubmit="return confirm('¿Seguro que quieres eliminar esta lista? Esta acción no se puede deshacer.');">
+        <input type="hidden" name="ListId" value="@Model.List.Id" />
+        <button type="submit" class="btn btn-danger btn-sm ms-2">🗑 Eliminar lista</button>
+    </form>
+}
+
+        <p class="text-muted d-flex align-items-center">
+            <span id="list-description">@Model.List.Description</span>
+            <form method="post" asp-page-handler="EditDescription" class="d-none" id="edit-form">
+                <input type="hidden" name="ListId" value="@Model.List.Id" />
+                <input type="text" name="NewDescription" id="description-input" class="form-control form-control-sm ms-2 me-2" style="width: auto;" value="@Model.List.Description" />
+                <button type="submit" class="btn btn-success btn-sm me-1">✔</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit()">✖</button>
+            </form>
+            <button class="btn btn-outline-secondary btn-sm ms-2" onclick="startEdit()" id="edit-btn">
+                <i class="bi bi-pencil-fill"></i>
+            </button>
+        </p>
 
         <div class="d-flex align-items-center mb-3">
             <img src="@Model.UserData.AvatarUrl" class="rounded-circle me-2" style="width: 40px; height: 40px;" />
@@ -68,10 +87,9 @@
                 @foreach (var item in Model.Games)
                 {
                     <div class="col-md-3 mb-4">
-                        <a asp-page="/Games/Details" asp-route-id="@item.Game.Id" class="text-decoration-none text-dark">
-                            <div class="card h-100 hover-shadow">
-                                <img src="@item.Game.HeaderUrl" class="card-img-top" alt="@item.Game.Title"
-                                     style="height: 200px; object-fit: cover;" />
+                        <div class="card h-100 hover-shadow position-relative">
+                            <a asp-page="/Games/Details" asp-route-id="@item.Game.Id" class="text-decoration-none text-dark">
+                                <img src="@item.Game.HeaderUrl" class="card-img-top" style="height: 200px; object-fit: cover;" />
                                 <div class="card-body">
                                     <h5 class="card-title">@item.Game.Title</h5>
                                     @if (!string.IsNullOrWhiteSpace(item.Notes))
@@ -81,8 +99,19 @@
                                         </p>
                                     }
                                 </div>
-                            </div>
-                        </a>
+                            </a>
+                            @if (Model.IsOwner)
+                            {
+                                <form method="post" asp-page-handler="DeleteGame" 
+      onsubmit="return confirm('¿Estás seguro de que quieres eliminar este juego de la lista?');" 
+      class="position-absolute top-0 end-0 m-2">
+    <input type="hidden" name="itemId" value="@item.ItemId" />
+    <input type="hidden" name="listId" value="@Model.List.Id" />
+    <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+</form>
+
+                            }
+                        </div>
                     </div>
                 }
             </div>
@@ -160,6 +189,18 @@
                 });
             }
         });
+
+        function startEdit() {
+            document.getElementById("list-description").style.display = "none";
+            document.getElementById("edit-form").classList.remove("d-none");
+            document.getElementById("edit-btn").style.display = "none";
+        }
+
+        function cancelEdit() {
+            document.getElementById("list-description").style.display = "inline";
+            document.getElementById("edit-form").classList.add("d-none");
+            document.getElementById("edit-btn").style.display = "inline-block";
+        }
     </script>
 }
 

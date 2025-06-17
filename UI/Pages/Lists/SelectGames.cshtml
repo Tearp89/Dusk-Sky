@@ -1,14 +1,13 @@
 @page "{listId}"
 @model SelectGamesModel
 
+<!-- Mensajes -->
 @if (TempData["SuccessMessage"] != null)
 {
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
         <div class="toast align-items-center text-white bg-success border-0 show">
             <div class="d-flex">
-                <div class="toast-body">
-                    @TempData["SuccessMessage"]
-                </div>
+                <div class="toast-body">@TempData["SuccessMessage"]</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
@@ -19,9 +18,7 @@
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
         <div class="toast align-items-center text-white bg-danger border-0 show">
             <div class="d-flex">
-                <div class="toast-body">
-                    @TempData["ErrorMessage"]
-                </div>
+                <div class="toast-body">@TempData["ErrorMessage"]</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
@@ -45,13 +42,17 @@
             <div class="d-flex flex-wrap gap-3">
                 @foreach (var game in Model.SelectedGames)
                 {
-                    <div style="position: relative; width: 100px; height: 140px; border: 1px solid #ccc; border-radius: 12px; overflow: hidden;">
+                    <div class="card glossy-card" style="width: 140px; position: relative;">
                         <form method="post" asp-page-handler="RemoveGame" style="position: absolute; top: 2px; right: 2px;">
                             <input type="hidden" name="listId" value="@Model.ListId" />
-                            <input type="hidden" name="gameId" value="@game.Id" />
+                            <input type="hidden" name="gameId" value="@game.Game.Id" />
                             <button type="submit" class="btn btn-sm btn-danger" style="padding: 2px 6px;">×</button>
                         </form>
-                        <img src="@game.HeaderUrl" alt="@game.Title" style="width: 100%; height: 100%; object-fit: cover;" />
+                        <img src="@game.Game.HeaderUrl" class="card-img-top" style="height: 140px; object-fit: cover;" />
+                        <div class="card-body p-2">
+                            <small class="fw-bold">@game.Game.Title</small><br />
+                            <small class="text-muted">@game.Notes</small>
+                        </div>
                     </div>
                 }
             </div>
@@ -65,39 +66,31 @@
         <div class="d-flex flex-wrap gap-3">
             @foreach (var game in Model.SearchResults)
             {
-                <form method="post" asp-page-handler="AddGame" style="display:inline;">
+                <form method="post" asp-page-handler="AddGame" class="card glass-card text-light p-2" style="width: 12rem;">
                     <input type="hidden" name="listId" value="@Model.ListId" />
                     <input type="hidden" name="gameId" value="@game.Id" />
-                    <button type="submit" style="all: unset; cursor: pointer;">
-                        <div class="card glass-card text-light" style="width: 12rem;">
-                            <img src="@game.HeaderUrl" class="card-img-top" />
-                            <div class="card-body">
-                                <h6 class="card-title">@game.Title</h6>
-                                <small>Click to add</small>
-                            </div>
-                        </div>
-                    </button>
+                    <img src="@game.HeaderUrl" class="card-img-top" style="height: 160px; object-fit: cover;" />
+                    <div class="card-body p-2">
+                        <h6 class="card-title">@game.Title</h6>
+                        <textarea name="notes" placeholder="Add a note..." class="form-control form-control-sm mb-2" style="resize: none;"></textarea>
+                        <button type="submit" class="btn btn-sm btn-primary w-100">Add</button>
+                    </div>
                 </form>
             }
         </div>
     }
 
     <!-- ✅ Botón Finish -->
-    <form method="post" asp-page-handler="Finish">
+    <form method="post" asp-page-handler="Finish" class="mt-4">
         <input type="hidden" name="listId" value="@Model.ListId" />
         <button type="submit" class="button-glass-blue">Finish & Save List</button>
     </form>
-</div>
+</div>  
 
 @section Scripts {
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Validación unobtrusive -->
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
-
-    <!-- Autocierre de toast -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             const toasts = document.querySelectorAll('.toast');

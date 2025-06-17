@@ -11,15 +11,13 @@ public class ListDetailsModel : PageModel
 
     public GameListDTO List { get; set; } = null!;
     public List<GamePreviewWithNotesDto> Games { get; set; } = new();
-
     public UserProfileDTO UserData { get; set; } = null!;
     public bool IsOwner { get; set; }
+
     [BindProperty(SupportsGet = true)]
     public string? SearchTerm { get; set; }
 
     public List<GamePreviewDTO> SearchResults { get; set; } = new();
-
-
 
     public ListDetailsModel(
         IGameListService listService,
@@ -35,10 +33,100 @@ public class ListDetailsModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(string id)
     {
+        await CargarDatosLista(id);
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostSearchAsync()
+    {
+        var id = RouteData.Values["id"]?.ToString() ?? "";
+        await CargarDatosLista(id);
+
+        if (!string.IsNullOrWhiteSpace(SearchTerm))
+            SearchResults = await _gameService.SearchGamePreviewsByNameAsync(SearchTerm);
+
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAddGameAsync(Guid gameId, string? notes, string listId)
+    {
+        List = await _listService.GetListByIdAsync(listId) ?? throw new Exception("Lista no encontrada");
+
+        bool alreadyExists = await _itemService.ExistsAsync(List.Id, gameId);
+        if (alreadyExists)
+        {
+            TempData["ErrorMessage"] = "El juego ya está en la lista.";
+            return RedirectToPage(new { id = List.Id, SearchTerm });
+        }
+
+        var item = new GameListItemDTO
+        {
+            Id = Guid.NewGuid().ToString(),
+            ListId = List.Id,
+            GameId = gameId,
+            Notes = notes ?? "",
+            Order = 0
+        };
+
+        await _itemService.AddItemAsync(item);
+        return RedirectToPage(new { id = listId, SearchTerm });
+    }
+
+    public async Task<IActionResult> OnPostDeleteGameAsync(string listId, string itemId)
+    {
+        await _itemService.DeleteItemAsync(listId, itemId);
+        return RedirectToPage(new { id = listId, SearchTerm });
+    }
+
+public async Task<IActionResult> OnPostDeleteListAsync(string listId)
+{
+    // Verifica que la lista exista
+    var list = await _listService.GetListByIdAsync(listId);
+    if (list == null)
+    {
+        TempData["ErrorMessage"] = "La lista no existe.";
+        return RedirectToPage("/Homepage/Index");
+    }
+
+    // Verifica permisos
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var isOwner = currentUserId == list.UserId;
+    var isModerator = User.IsInRole("Moderator") || User.IsInRole("Admin");
+
+    if (!isOwner && !isModerator)
+        return Forbid();
+
+    var success = await _listService.DeleteListAsync(listId);
+
+    if (success)
+    {
+        TempData["SuccessMessage"] = "La lista ha sido eliminada correctamente.";
+        return RedirectToPage("/Homepage/Index");
+    }
+    else
+    {
+        TempData["ErrorMessage"] = "No se pudo eliminar la lista.";
+        return RedirectToPage(new { id = listId });
+    }
+}
+
+
+
+    public async Task<IActionResult> OnPostEditDescriptionAsync(string listId, string newDescription)
+    {
+        var list = await _listService.GetListByIdAsync(listId);
+        if (list == null) return NotFound();
+
+        list.Description = newDescription;
+        await _listService.UpdateListAsync(list.Id, list);
+        return RedirectToPage(new { id = listId, SearchTerm });
+    }
+
+    private async Task CargarDatosLista(string id)
+    {
         List = await _listService.GetListByIdAsync(id) ?? throw new Exception("Lista no encontrada");
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         IsOwner = currentUserId == List.UserId;
-
 
         var items = await _itemService.GetItemsByListIdAsync(id);
         var combinedList = new List<GamePreviewWithNotesDto>();
@@ -51,82 +139,13 @@ public class ListDetailsModel : PageModel
                 combinedList.Add(new GamePreviewWithNotesDto
                 {
                     Game = preview,
-                    Notes = item.Notes
+                    Notes = item.Notes,
+                    ItemId = item.Id
                 });
             }
         }
 
         Games = combinedList;
         UserData = await _userService.GetProfileAsync(List.UserId);
-
-        return Page();
     }
-
-public async Task<IActionResult> OnPostAddGameAsync(Guid gameId, string? notes, string listId)
-{
-    List = await _listService.GetListByIdAsync(listId) ?? throw new Exception("Lista no encontrada");
-
-    bool alreadyExists = await _itemService.ExistsAsync(List.Id, gameId);
-    if (alreadyExists)
-    {
-        TempData["ErrorMessage"] = "El juego ya está en la lista.";
-        return RedirectToPage(new { id = List.Id, SearchTerm });
-    }
-
-    var item = new GameListItemDTO
-    {
-        Id = Guid.NewGuid().ToString(),
-        ListId = List.Id,
-        GameId = gameId,
-        Notes = notes ?? "",
-        Order = 0
-    };
-
-    await _itemService.AddItemAsync(item);
-
-    return RedirectToPage(new { id = listId, SearchTerm });
-
-}
-
-
-
-      public async Task<IActionResult> OnPostSearchAsync()
-{
-    // Cargar lista
-    List = await _listService.GetListByIdAsync(RouteData.Values["id"]?.ToString() ?? "") ?? throw new Exception("Lista no encontrada");
-    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    IsOwner = currentUserId == List.UserId;
-
-    // Cargar juegos existentes
-    var items = await _itemService.GetItemsByListIdAsync(List.Id);
-    Games = new List<GamePreviewWithNotesDto>();
-    foreach (var item in items.OrderBy(i => i.Order))
-    {
-        var preview = await _gameService.GetGamePreviewByIdAsync(item.GameId);
-        if (preview != null)
-        {
-            Games.Add(new GamePreviewWithNotesDto
-            {
-                Game = preview,
-                Notes = item.Notes
-            });
-        }
-    }
-
-    // Cargar datos del usuario dueño de la lista
-    UserData = await _userService.GetProfileAsync(List.UserId);
-
-    // Búsqueda
-    if (!string.IsNullOrWhiteSpace(SearchTerm))
-    {
-        SearchResults = await _gameService.SearchGamePreviewsByNameAsync(SearchTerm);
-    }
-
-    return Page();
-}
-
-
-
-
-
 }

@@ -83,7 +83,8 @@ public class StartPageModel : PageModel
         {
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim("avatar_url", profile.AvatarUrl ?? "/images/default_avatar.png")
+            new Claim("avatar_url", profile.AvatarUrl ?? "/images/default_avatar.png"),
+            new Claim(ClaimTypes.Role, user.Role ?? "user") 
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -136,12 +137,13 @@ public class StartPageModel : PageModel
             // Buscar usuario
             var users = await _authService.SearchUsersAsync(RegisterData.Username);
             var user = users.FirstOrDefault(u => u.Username == RegisterData.Username);
+           
 
             if (user == null)
-            {
-                ErrorMessage = "Registro exitoso, pero no se encontró el usuario.";
-                return Page();
-            }
+                {
+                    ErrorMessage = "Registro exitoso, pero no se encontró el usuario.";
+                    return Page();
+                }
 
             var profile = await _userService.GetProfileAsync(user.Id);
             if (profile == null)
@@ -156,7 +158,8 @@ public class StartPageModel : PageModel
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim("avatar_url", profile.AvatarUrl ?? "/images/default_avatar.png")
+                new Claim("avatar_url", profile.AvatarUrl ?? "/images/default_avatar.png"),
+                new Claim(ClaimTypes.Role, user.Role ?? "user")  
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
