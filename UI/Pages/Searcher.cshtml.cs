@@ -37,19 +37,33 @@ public class SearcherModel : PageModel
     public string? Filter { get; set; }
 
     public List<GamePreviewDTO> Games { get; set; } = new();
-    public List<SearchUserWithAvatarDto> Users { get; set; } = new();
+    public List<SearchUserWithFriendshipStatusDto> Users { get; set; } = new();
+
     public List<ReviewFullDto> Reviews { get; set; } = new();
 
     public List<SearchListWithImagesDto> Lists { get; set; } = new();
+    private HashSet<string> FriendIds;
+    private Dictionary<string, string> IncomingRequestSenders;
 
     public async Task OnGetAsync()
     {
         if (string.IsNullOrWhiteSpace(Query)) return;
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!string.IsNullOrEmpty(currentUserId))
+        {
+            var friends = await _friendshipService.GetFriendsAsync(currentUserId);
+            FriendIds = friends
+                .Select(f => f.SenderId == currentUserId ? f.ReceiverId : f.SenderId)
+                .ToHashSet();
+
+            var incomingRequests = await _friendshipService.GetPendingRequestsAsync(currentUserId);
+            IncomingRequestSenders = incomingRequests.ToDictionary(r => r.SenderId, r => r.Id);
+        }
 
         if (Filter is null or "all")
         {
             Games = await _gameService.SearchGamePreviewsByNameAsync(Query);
-            await CargarUsuariosAsync(Query);
+            await LoadUsersAsync(Query);
             await LoadReviewsAsync(Query);
             await LoadListsAsync(Query);
         }
@@ -59,7 +73,7 @@ public class SearcherModel : PageModel
         }
         else if (Filter == "users")
         {
-            await CargarUsuariosAsync(Query);
+            await LoadUsersAsync(Query);
         }
         else if (Filter == "reviews")
         {
@@ -71,32 +85,82 @@ public class SearcherModel : PageModel
         }
     }
 
-    private async Task CargarUsuariosAsync(string query)
+    private async Task LoadUsersAsync(string query)
     {
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var userMatches = await _authService.SearchUsersAsync(query);
+
         var userTasks = userMatches.Select(async user =>
         {
             string avatarUrl = "/Images/noImage.png";
             try
             {
                 var profile = await _userManagerService.GetProfileAsync(user.Id);
-                if (!string.IsNullOrEmpty(profile?.AvatarUrl))
-                {
-                    avatarUrl = profile.AvatarUrl;
-                }
+                avatarUrl = profile?.AvatarUrl ?? avatarUrl;
             }
             catch { }
+            var friendshipStatus = await GetFriendshipStatus(currentUserId, user.Id);
 
-            return new SearchUserWithAvatarDto
+            return new SearchUserWithFriendshipStatusDto
             {
                 Id = user.Id,
                 Username = user.Username,
-                AvatarUrl = avatarUrl
+                AvatarUrl = avatarUrl,
+                Friendship = friendshipStatus
             };
+
+            
         });
 
         Users = (await Task.WhenAll(userTasks)).ToList();
     }
+
+    private async Task<FriendshipStatus> GetFriendshipStatus(string currentUserId, string otherUserId)
+    {
+        if (string.IsNullOrEmpty(currentUserId))
+            return new FriendshipStatus { Status = "not_friends" };
+
+        if (currentUserId == otherUserId)
+            return new FriendshipStatus { Status = "is_self" };
+
+        if (FriendIds?.Contains(otherUserId) == true)
+            return new FriendshipStatus { Status = "friends" };
+
+        if (IncomingRequestSenders?.TryGetValue(otherUserId, out var incomingRequestId) == true)
+            return new FriendshipStatus { Status = "pending_incoming", RequestId = incomingRequestId };
+
+        var otherUserPendingRequests = await _friendshipService.GetPendingRequestsAsync(otherUserId);
+        var sentRequest = otherUserPendingRequests.FirstOrDefault(r => r.SenderId == currentUserId);
+        if (sentRequest != null)
+            return new FriendshipStatus { Status = "pending_outgoing", RequestId = sentRequest.Id };
+
+        return new FriendshipStatus { Status = "not_friends" };
+    }
+
+
+
+
+   public async Task<IActionResult> OnPostAcceptFriendRequestAsync(string requestId)
+{
+    if (string.IsNullOrEmpty(requestId))
+        return RedirectToPage(new { query = Query, filter = Filter });
+
+    // Calls the service to accept the request
+    var result = await _friendshipService.AcceptRequestAsync(requestId);
+
+    if(result)
+        TempData["SuccessMessage"] = "Friend added successfully.";
+    else
+        TempData["ErrorMessage"] = "Could not accept the request.";
+    
+    // Redirects to the same search page to see the change
+    return RedirectToPage(new { query = Query, filter = Filter });
+}
+
+
+
+
+
 
     private async Task LoadReviewsAsync(string query)
     {

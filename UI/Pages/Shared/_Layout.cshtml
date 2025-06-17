@@ -77,9 +77,9 @@
                                 <ul class="dropdown-menu glassy-dropdown">
                                     <li><a class="dropdown-item" asp-page="/Index">Home</a></li>
                                     <li><a class="dropdown-item" asp-page="/Users/Profile">Profile</a></li>
-                                    <li><a class="dropdown-item" asp-page="/Films">Films</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Users/Friends">Friends</a></li>
                                     <li><a class="dropdown-item" asp-page="/Reviews">Reviews</a></li>
-                                    <li><a class="dropdown-item" asp-page="/Lists">Lists</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Lists/Lists">Lists</a></li>
                                     <li>
                                         <form method="post" action="/Logout">
                                             <button type="submit" class="nav-link btn btn-link"
@@ -88,8 +88,10 @@
                                     </li>
                                 </ul>
                             </li>
-                            <li class="nav-item"><a class="nav-link" asp-page="/Games">Games</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-page="/Lists">Lists</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/Games/Games">Games</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-page="/Lists/Lists">Lists</a></li>
+                            <li class="nav-item"> <a class="nav-link" asp-asp="/Reviews/Reviews">Reviews</a></li>
+                            
 
                             <form method="get" asp-page="/Searcher" class="d-flex align-items-center gap-2 ms-auto"
                                 style="max-width: 280px;">
