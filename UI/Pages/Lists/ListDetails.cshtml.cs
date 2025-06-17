@@ -18,6 +18,9 @@ public class ListDetailsModel : PageModel
     public string? SearchTerm { get; set; }
 
     public List<GamePreviewDTO> SearchResults { get; set; } = new();
+    [BindProperty(SupportsGet = true)]
+public string? Term { get; set; }
+
 
     public ListDetailsModel(
         IGameListService listService,
@@ -78,37 +81,30 @@ public class ListDetailsModel : PageModel
         return RedirectToPage(new { id = listId, SearchTerm });
     }
 
-public async Task<IActionResult> OnPostDeleteListAsync(string listId)
+    public async Task<IActionResult> OnPostDeleteListAsync(string ListId)
 {
-    // Verifica que la lista exista
-    var list = await _listService.GetListByIdAsync(listId);
-    if (list == null)
-    {
-        TempData["ErrorMessage"] = "La lista no existe.";
-        return RedirectToPage("/Homepage/Index");
-    }
+    if (string.IsNullOrEmpty(ListId))
+        return BadRequest();
 
-    // Verifica permisos
-    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    var isOwner = currentUserId == list.UserId;
-    var isModerator = User.IsInRole("Moderator") || User.IsInRole("Admin");
+    // Verifica si el usuario es dueño o tiene permisos
+    var list = await _listService.GetListByIdAsync(ListId);
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var userRoles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
 
-    if (!isOwner && !isModerator)
+    bool isOwner = list.UserId == userId;
+    bool isModOrAdmin = userRoles.Contains("moderator") || userRoles.Contains("admin");
+
+    if (!isOwner && !isModOrAdmin)
         return Forbid();
 
-    var success = await _listService.DeleteListAsync(listId);
+    await _listService.DeleteListAsync(ListId);
 
-    if (success)
-    {
-        TempData["SuccessMessage"] = "La lista ha sido eliminada correctamente.";
-        return RedirectToPage("/Homepage/Index");
-    }
-    else
-    {
-        TempData["ErrorMessage"] = "No se pudo eliminar la lista.";
-        return RedirectToPage(new { id = listId });
-    }
+    TempData["SuccessMessage"] = "La lista se eliminó correctamente.";
+    return RedirectToPage("/Homepage/Index");
 }
+
+
+
 
 
 

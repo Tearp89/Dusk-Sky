@@ -50,8 +50,8 @@ public class SearcherModel : PageModel
         {
             Games = await _gameService.SearchGamePreviewsByNameAsync(Query);
             await CargarUsuariosAsync(Query);
-            await CargarReviewsAsync(Query);
-            await CargarListasAsync(Query);
+            await LoadReviewsAsync(Query);
+            await LoadListsAsync(Query);
         }
         else if (Filter == "games")
         {
@@ -63,11 +63,11 @@ public class SearcherModel : PageModel
         }
         else if (Filter == "reviews")
         {
-            await CargarReviewsAsync(Query);
+            await LoadReviewsAsync(Query);
         }
         else if (Filter == "lists")
         {
-            await CargarListasAsync(Query);
+            await LoadListsAsync(Query);
         }
     }
 
@@ -98,13 +98,17 @@ public class SearcherModel : PageModel
         Users = (await Task.WhenAll(userTasks)).ToList();
     }
 
-    private async Task CargarReviewsAsync(string query)
+    private async Task LoadReviewsAsync(string query)
     {
         var recentReviews = await _reviewService.GetRecentReviewsAsync();
+        var matchedGames = await _gameService.SearchGamePreviewsByNameAsync(query);
+        var matchedGameIds = matchedGames.Select(g => g.Id).ToHashSet();
 
         var filtered = recentReviews
-            .Where(r => r.Content.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+            .Where(r =>
+                r.Content.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                matchedGameIds.Contains(r.GameId)
+            ).ToList();
 
         var reviewTasks = filtered.Select(async r =>
         {
@@ -113,7 +117,6 @@ public class SearcherModel : PageModel
             string gameTitle = "Unknown Game";
             string gameImage = "/Images/noImage.png";
 
-            // Obtener datos del perfil
             var profile = await _userManagerService.GetProfileAsync(r.UserId);
             if (profile != null)
             {
@@ -121,7 +124,6 @@ public class SearcherModel : PageModel
                 avatarUrl = profile.AvatarUrl ?? "/Images/noImage.png";
             }
 
-            // Obtener datos del juego
             var game = await _gameService.GetGamePreviewByIdAsync(r.GameId);
             if (game != null)
             {
@@ -150,7 +152,8 @@ public class SearcherModel : PageModel
         Reviews = (await Task.WhenAll(reviewTasks)).ToList();
     }
 
-    private async Task CargarListasAsync(string query)
+
+    private async Task LoadListsAsync(string query)
     {
         var recentLists = await _listService.GetRecentListsAsync();
         var matchedGames = await _gameService.SearchGamePreviewsByNameAsync(query);
@@ -175,13 +178,33 @@ public class SearcherModel : PageModel
             }
 
             var gameItems = await _listItemService.GetItemsByListIdAsync(list.Id);
-            dto.GameHeaders = gameItems
-                .Select(i => i.GameId)
-                .Distinct()
-                .Take(6)
-                .Select(id => matchedGames.FirstOrDefault(g => g.Id == id)?.HeaderUrl ?? "")
+
+            var matchedInList = gameItems
+                .Where(i => matchedGameIds.Contains(i.GameId))
+                .Select(i => matchedGames.FirstOrDefault(g => g.Id == i.GameId)?.HeaderUrl ?? "")
                 .Where(url => !string.IsNullOrEmpty(url))
+                .Take(6)
                 .ToList();
+
+            if (matchedInList.Any())
+            {
+                dto.GameHeaders = matchedInList;
+            }
+            else
+            {
+                dto.GameHeaders = gameItems
+                    .Select(i => i.GameId)
+                    .Distinct()
+                    .Take(6)
+                    .Select(async id =>
+                    {
+                        var game = await _gameService.GetGamePreviewByIdAsync(id);
+                        return game?.HeaderUrl ?? "";
+                    })
+                    .Select(t => t.Result)
+                    .Where(url => !string.IsNullOrEmpty(url))
+                    .ToList();
+            }
 
             bool nameMatch = (!string.IsNullOrEmpty(dto.Name) && dto.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
             bool descMatch = (!string.IsNullOrEmpty(dto.Description) && dto.Description.Contains(query, StringComparison.OrdinalIgnoreCase));
@@ -195,17 +218,18 @@ public class SearcherModel : PageModel
             .Select(t => t.dto)
             .ToList();
     }
-    
+
+
     public async Task<IActionResult> OnPostSendFriendRequestAsync(string receiverId)
-{
+    {
         var senderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-    if (string.IsNullOrEmpty(senderId) || string.IsNullOrEmpty(receiverId))
-        return RedirectToPage(); // fallback
+        if (string.IsNullOrEmpty(senderId) || string.IsNullOrEmpty(receiverId))
+            return RedirectToPage(); // fallback
 
-    var result = await _friendshipService.SendRequestAsync(senderId, receiverId);
-    TempData["SuccessMessage"] = result ? "Solicitud enviada." : "No se pudo enviar la solicitud.";
-    return RedirectToPage(new { query = Query, filter = Filter }); // mantiene el contexto de búsqueda
-}
+        var result = await _friendshipService.SendRequestAsync(senderId, receiverId);
+        TempData["SuccessMessage"] = result ? "Request sended" : "There was a problem sending the request, try again later";
+        return RedirectToPage(new { query = Query, filter = Filter });
+    }
 
 }

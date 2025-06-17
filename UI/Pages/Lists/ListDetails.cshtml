@@ -7,35 +7,57 @@
 
 <div class="container mt-5 py-5">
     <div class="card shadow p-4 glossy-card">
-        <h2 class="fw-bold">@Model.List.Name</h2>
-        @if (Model.IsOwner || User.IsInRole("moderator") || User.IsInRole("admin"))
-{
-    <form method="post" asp-page-handler="DeleteList" class="d-inline" onsubmit="return confirm('¿Seguro que quieres eliminar esta lista? Esta acción no se puede deshacer.');">
-        <input type="hidden" name="ListId" value="@Model.List.Id" />
-        <button type="submit" class="btn btn-danger btn-sm ms-2">🗑 Eliminar lista</button>
-    </form>
-}
+        <!-- Header con nombre y dropdown -->
+        <div class="d-flex justify-content-between align-items-start">
+            <h2 class="fw-bold">@Model.List.Name</h2>
 
-        <p class="text-muted d-flex align-items-center">
-            <span id="list-description">@Model.List.Description</span>
-            <form method="post" asp-page-handler="EditDescription" class="d-none" id="edit-form">
-                <input type="hidden" name="ListId" value="@Model.List.Id" />
-                <input type="text" name="NewDescription" id="description-input" class="form-control form-control-sm ms-2 me-2" style="width: auto;" value="@Model.List.Description" />
-                <button type="submit" class="btn btn-success btn-sm me-1">✔</button>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit()">✖</button>
-            </form>
-            <button class="btn btn-outline-secondary btn-sm ms-2" onclick="startEdit()" id="edit-btn">
-                <i class="bi bi-pencil-fill"></i>
+            @if (Model.IsOwner || User.IsInRole("moderator") || User.IsInRole("admin"))
+            {
+                <div class="dropdown">
+                    <button class="btn btn-light btn-sm" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        ⋮
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                        <li>
+                            <form method="post" asp-page-handler="DeleteList" onsubmit="return confirm('¿Seguro que quieres eliminar esta lista? Esta acción no se puede deshacer.');">
+                                <input type="hidden" name="ListId" value="@Model.List.Id" />
+                                <button type="submit" class="dropdown-item text-danger">🗑 Eliminar lista</button>
+                            </form>
+                        </li>
+                        <li>
+                            <button class="dropdown-item text-warning" onclick="alert('Reportar lista aún no implementado')">🚩 Reportar lista</button>
+                        </li>
+                    </ul>
+                </div>
+            }
+        </div>
+
+        <!-- Descripción con botón de editar -->
+        <div class="d-flex align-items-start justify-content-between text-muted mb-3">
+            <div class="flex-grow-1">
+                <span id="list-description">@Model.List.Description</span>
+                <form method="post" asp-page-handler="EditDescription" class="d-none d-inline" id="edit-form">
+                    <input type="hidden" name="ListId" value="@Model.List.Id" />
+                    <input type="text" name="NewDescription" id="description-input"
+                           class="form-control form-control-sm d-inline w-auto ms-2 me-2"
+                           value="@Model.List.Description" />
+                    <button type="submit" class="btn btn-success btn-sm me-1">✔</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit()">✖</button>
+                </form>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="startEdit()" id="edit-btn" title="Editar descripción">
+                ✏️
             </button>
-        </p>
+        </div>
 
+        <!-- Autor -->
         <div class="d-flex align-items-center mb-3">
             <img src="@Model.UserData.AvatarUrl" class="rounded-circle me-2" style="width: 40px; height: 40px;" />
             <span class="fw-semibold">@Model.UserData.Username</span>
         </div>
 
-        <div class="poster-collage mb-3" id="poster-collage"
-             style="height: 180px; border-radius: 12px; overflow: hidden;">
+        <!-- Collage -->
+        <div class="poster-collage mb-3" id="poster-collage" style="height: 180px; border-radius: 12px; overflow: hidden;">
             @foreach (var game in Model.Games.Take(5))
             {
                 <img src="@game.Game.HeaderUrl" style="width: 20%; height: 100%; object-fit: cover;" />
@@ -44,6 +66,7 @@
 
         <h4 class="mt-4 mb-3">Juegos en esta lista</h4>
 
+        <!-- Formulario de búsqueda -->
         @if (Model.IsOwner)
         {
             <form method="post" asp-page-handler="Search" class="d-flex mb-4">
@@ -52,6 +75,7 @@
             </form>
         }
 
+        <!-- Resultados de búsqueda -->
         @if (Model.SearchResults?.Any() == true)
         {
             <h5 class="mb-3">Results:</h5>
@@ -75,6 +99,7 @@
             </div>
         }
 
+        <!-- Juegos actuales -->
         @if (Model.Games.Count == 0)
         {
             <div class="alert alert-info">
@@ -102,14 +127,11 @@
                             </a>
                             @if (Model.IsOwner)
                             {
-                                <form method="post" asp-page-handler="DeleteGame" 
-      onsubmit="return confirm('¿Estás seguro de que quieres eliminar este juego de la lista?');" 
-      class="position-absolute top-0 end-0 m-2">
-    <input type="hidden" name="itemId" value="@item.ItemId" />
-    <input type="hidden" name="listId" value="@Model.List.Id" />
-    <button type="submit" class="btn btn-danger btn-sm">🗑</button>
-</form>
-
+                                <form method="post" asp-page-handler="DeleteGame" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este juego de la lista?');" class="position-absolute top-0 end-0 m-2">
+                                    <input type="hidden" name="itemId" value="@item.ItemId" />
+                                    <input type="hidden" name="listId" value="@Model.List.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+                                </form>
                             }
                         </div>
                     </div>
@@ -119,7 +141,7 @@
     </div>
 </div>
 
-<!-- Modal para agregar comentario al juego -->
+<!-- Modal -->
 <div class="modal fade" id="addGameModal" tabindex="-1" aria-labelledby="addGameModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content glossy-card">
@@ -170,7 +192,6 @@
                 img.style.width = "20%";
                 img.style.height = "100%";
                 img.style.objectFit = "cover";
-                img.style.display = "inline-block";
                 collage.appendChild(img);
             });
 
@@ -178,13 +199,9 @@
             if (addGameModal) {
                 addGameModal.addEventListener('show.bs.modal', event => {
                     const button = event.relatedTarget;
-                    const gameId = button.getAttribute('data-game-id');
-                    const title = button.getAttribute('data-title');
-                    const img = button.getAttribute('data-img');
-
-                    document.getElementById('modalGameId').value = gameId;
-                    document.getElementById('modalGameTitle').innerText = title;
-                    document.getElementById('modalGameImage').src = img;
+                    document.getElementById('modalGameId').value = button.getAttribute('data-game-id');
+                    document.getElementById('modalGameTitle').innerText = button.getAttribute('data-title');
+                    document.getElementById('modalGameImage').src = button.getAttribute('data-img');
                     document.getElementById('modalNotes').value = "";
                 });
             }
@@ -205,21 +222,9 @@
 }
 
 <style>
-    .modal-backdrop {
-        z-index: 1040 !important;
-    }
-
-    .modal {
-        z-index: 1055 !important;
-    }
-
-    .glassy-modal {
-        z-index: 1056 !important;
-        position: relative;
-    }
-
-    .poster-collage {
-        position: relative;
-        z-index: 1 !important;
-    }
+    .modal-backdrop { z-index: 1040 !important; }
+    .modal { z-index: 1055 !important; }
+    .glassy-modal { z-index: 1056 !important; position: relative; }
+    .poster-collage { position: relative; z-index: 1 !important; }
+    .dropdown-menu { z-index: 2000; }
 </style>
