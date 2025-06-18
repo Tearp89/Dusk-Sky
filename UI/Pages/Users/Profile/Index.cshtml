@@ -1,0 +1,132 @@
+@page "/Users/Profile/{userId?}"
+@model ProfileModel
+@{
+    ViewData["Title"] = $"{Model.ProfileHeader.Username}'s Profile";
+}
+
+
+@section FullWidthHeader {
+    <partial name="_ProfileHeader" model="Model" />
+    <partial name="_ProfileNav" model="Model" />
+}
+
+
+<div class="container py-4">
+    <h3 class="mb-4">Actividad de @Model.ProfileHeader.Username</h3>
+    <div class="github-calendar-container p-3 border rounded mb-4">
+        @{
+            // Obtener el rango de fechas para el calendario (últimos 365 días)
+            var endDate = DateTime.UtcNow.Date;
+            var startDate = endDate.AddDays(-365); // Últimos 365 días para un año completo de datos
+            
+            // Determinar los meses a mostrar para las etiquetas
+            var months = new List<string>();
+            var currentDate = startDate;
+            // Para asegurar una alineación de meses más precisa en el calendario de GitHub, 
+            // el truco es iterar por columnas (semanas) y mostrar el mes en la primera celda de esa columna.
+            // Esto es un poco más complejo con Razor directo, pero podemos hacer una aproximación visual.
+
+            // Calculamos el número de semanas para el grid (aproximado)
+            int totalDays = (int)(endDate - startDate).TotalDays + 1;
+            int totalColumns = (int)Math.Ceiling((double)(totalDays + (int)startDate.DayOfWeek) / 7); // Días + offset inicial / 7
+
+            // Generar las etiquetas de los meses de forma que se muestren de forma general
+            // Esto no será perfecto para la alineación exacta como en GitHub (que lo hace por semana)
+            // pero dará una referencia visual de los meses.
+            months.Add("Ene"); // Puedes ajustar los nombres de los meses
+            months.Add("Feb");
+            months.Add("Mar");
+            months.Add("Abr");
+            months.Add("May");
+            months.Add("Jun");
+            months.Add("Jul");
+            months.Add("Ago");
+            months.Add("Sep");
+            months.Add("Oct");
+            months.Add("Nov");
+            months.Add("Dic");
+        }
+
+        <div class="calendar-months d-flex justify-content-between mb-2">
+            @foreach(var monthName in months)
+            {
+                <span class="month-label">@monthName</span>
+            }
+        </div>
+
+        <div class="calendar-grid d-flex flex-wrap">
+            @{
+                // Generar los días de la semana (vacíos al inicio si el startDate no es lunes)
+                // Ajustar DayOfWeek para que Lunes sea 0, Martes 1... Domingo 6.
+                // En .NET, Sunday=0, Monday=1, ..., Saturday=6
+                // Queremos que el primer día de la columna sea Lunes.
+                // Si startDate es Miércoles (DayOfWeek = 3), necesitamos 2 celdas vacías (Lunes, Martes).
+                int firstDayOffset = ((int)startDate.DayOfWeek == 0) ? 6 : (int)startDate.DayOfWeek - 1; // 0=Sunday -> 6, 1=Monday -> 0, etc.
+                
+                for (int i = 0; i < firstDayOffset; i++) 
+                {
+                    <div class="day-cell empty"></div>
+                }
+
+                for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+                {
+                    var activityCount = Model.DailyActivityCounts.GetValueOrDefault(date.Date, 0);
+                    string levelClass = "level-0"; // Por defecto, sin actividad
+                    if (activityCount > 0 && activityCount <= 2) { levelClass = "level-1"; }
+                    else if (activityCount > 2 && activityCount <= 5) { levelClass = "level-2"; }
+                    else if (activityCount > 5 && activityCount <= 10) { levelClass = "level-3"; }
+                    else if (activityCount > 10) { levelClass = "level-4"; }
+
+                    <div class="day-cell @levelClass" 
+                         data-bs-toggle="tooltip" 
+                         data-bs-placement="top" 
+                         title="@(activityCount) actividades el @date.ToString("yyyy-MM-dd")">
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    @if (Model.Friends.Any())
+    {
+        <h3 class="mb-4">Amigos de @Model.ProfileHeader.Username</h3>
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
+            @foreach(var friend in Model.Friends)
+            {
+                <div class="col">
+                    <a asp-page="/Users/Profile/Index" asp-route-userId="@friend.UserId" class="text-decoration-none">
+                        <div class="card h-100 text-center friend-card">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                                <img src="@friend.AvatarUrl" alt="Avatar de @friend.Username" class="rounded-circle mb-2 mx-auto" width="80" height="80" style="object-fit: cover;" />
+                                <h6 class="card-title mb-0 text-dark fw-bold">@friend.Username</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center p-5 border rounded bg-light">
+            @if(Model.IsOwnProfile)
+            {
+                <p class="text-muted">Aún no has añadido amigos. ¡Usa la barra de búsqueda para encontrar gente!</p>
+            }
+            else
+            {
+                <p class="text-muted">@Model.ProfileHeader.Username aún no ha añadido amigos.</p>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Inicializar tooltips de Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

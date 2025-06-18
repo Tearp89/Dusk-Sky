@@ -97,6 +97,11 @@ public class ReviewService : IReviewService
         return review?.LikedBy?.Contains(userId) ?? false;
     }
 
+    public async Task<List<ReviewDTO>> GetReviewsByUserAsync(string userId) 
+    {
+        return await _http.GetFromJsonAsync<List<ReviewDTO>>($"reviews/user/{userId}", _camelOptions) ?? new();
+    }
+
 
     
 

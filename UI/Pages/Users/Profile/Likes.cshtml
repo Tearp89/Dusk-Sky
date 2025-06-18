@@ -1,0 +1,72 @@
+@page "/Users/Profile/Likes/{userId?}"
+@model LikesModel
+@{
+    ViewData["Title"] = $"{Model.ProfileHeader.Username}'s Liked Games";
+}
+
+@section FullWidthHeader {
+    <partial name="_ProfileHeader" model="Model" />
+    <partial name="_ProfileNav" model="Model" />
+}
+
+<div class="container py-4">
+    <h3 class="mb-4">Juegos Favoritos de @Model.ProfileHeader.Username</h3>
+
+    @if (Model.LikedGames.Any())
+    {
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
+            @foreach (var game in Model.LikedGames)
+            {
+                <div class="col">
+                    <div class="card h-100 game-liked-card"> @* Nueva clase para la tarjeta de juego liked *@
+                        <a asp-page="/Games/Details" asp-route-gameId="@game.Id" class="text-decoration-none">
+                            <img src="@game.HeaderUrl" class="card-img-top game-liked-img" alt="Portada de @game.Title">
+                            <div class="card-body p-2">
+                                <p class="card-title text-center text-dark fw-bold mb-0 text-truncate">@game.Title</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center p-5 border rounded bg-light">
+            @if(Model.IsOwnProfile)
+            {
+                <p class="text-muted">Aún no has marcado ningún juego como favorito. ¡Empieza a descubrir y dar "Me gusta"!</p>
+            }
+            else
+            {
+                <p class="text-muted">@Model.ProfileHeader.Username aún no ha marcado ningún juego como favorito.</p>
+            }
+        </div>
+    }
+</div>
+
+@* Opcional: Estilos para las tarjetas de juegos "likeados" *@
+<style>
+    .game-liked-card {
+        border: none; /* Quita el borde por defecto de la tarjeta */
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .game-liked-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .game-liked-img {
+        width: 100%;
+        height: 180px; /* Altura fija para la portada del juego */
+        object-fit: cover; /* Recorta la imagen para que cubra el área */
+        object-position: center; /* Centra la imagen */
+    }
+    .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>

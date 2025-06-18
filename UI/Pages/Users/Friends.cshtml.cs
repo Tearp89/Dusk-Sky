@@ -10,21 +10,10 @@ using System.Threading.Tasks;
 // using YourApp.DTOs;
 
 // ViewModel for displaying an accepted friend
-public class FriendViewModel
-{
-    public string UserId { get; set; }
-    public string Username { get; set; }
-    public string AvatarUrl { get; set; }
-}
+
 
 // ViewModel for displaying a pending friend request
-public class FriendRequestViewModel
-{
-    public string RequestId { get; set; } // Needed for Accept/Reject actions
-    public string UserId { get; set; }
-    public string Username { get; set; }
-    public string AvatarUrl { get; set; }
-}
+
 
 public class FriendsModel : PageModel
 {

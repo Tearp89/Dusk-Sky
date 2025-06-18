@@ -8,5 +8,6 @@ public class GameDetailsDTO
     public String ReleaseDate { get; set; } = string.Empty;
     public List<string> Genres { get; set; } = new();
     public Dictionary<string, bool> Platforms { get; set; } = new();
+    
 
 }

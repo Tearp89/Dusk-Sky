@@ -5,4 +5,5 @@ public class GameTrackingDto
     public string GameId { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty; // playing, completed, etc.
     public bool Liked { get; set; }
+    public DateTime LastUpdatedAt { get; set; }
 }

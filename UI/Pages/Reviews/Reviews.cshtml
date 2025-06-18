@@ -1,0 +1,128 @@
+@page
+@model ReviewsModel
+@{
+    ViewData["Title"] = "Game Reviews";
+}
+
+<div class="container mt-5" style="padding-top: 80px;">
+    <div class="mb-5">
+        <h1 class="display-4 text-primary">Game Reviews</h1>
+        <p class="lead text-muted">See what the community is saying about their favorite games.</p>
+    </div>
+
+    <section class="mb-5">
+        <h2 class="text-dark mb-4">Popular Reviews</h2>
+        @if (Model.PopularReviews?.Any() == true)
+        {
+            <div class="row">
+                @foreach (var review in Model.PopularReviews)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 review-card-item">
+                            <div class="card-header bg-light d-flex align-items-center p-3">
+                                <img src="@review.GameImageUrl" alt="@review.GameTitle" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" />
+                                <div>
+                                    <h6 class="mb-0">@review.GameTitle</h6>
+                                    <a asp-page="/Games/GameDetails" asp-route-gameId="@review.GameId" class="text-muted small text-decoration-none">View Game</a>
+                                </div>
+                            </div>
+
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="@review.UserAvatarUrl" alt="@review.UserName" class="rounded-circle me-2" width="40" height="40" />
+                                    <div>
+                                        <strong>@review.UserName</strong>
+                                        <div class="rating-stars">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <p class="card-text text-secondary small flex-grow-1">
+                                    "@(review.Content.Length > 150 ? review.Content.Substring(0, 150) + "..." : review.Content)"
+                                </p>
+                                <a asp-page="/Reviews/Details" asp-route-reviewId="@review.ReviewId" class="small mt-auto">Read more...</a>
+                            </div>
+
+                            <div class="card-footer text-muted d-flex justify-content-between small">
+                                <span><i class="bi bi-heart-fill text-danger"></i> @review.LikesCount Likes</span>
+                                <span>@review.CreatedAt.ToString("MMM dd, yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No popular reviews to show at the moment.</p>
+        }
+    </section>
+
+    <section class="mb-5">
+        <h2 class="text-dark mb-4">Recent Reviews</h2>
+        @if (Model.RecentReviews?.Any() == true)
+        {
+            <div class="row">
+                @foreach (var review in Model.RecentReviews)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 review-card-item">
+                            <div class="card-header bg-light d-flex align-items-center p-3">
+                                <img src="@review.GameImageUrl" alt="@review.GameTitle" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" />
+                                <div>
+                                    <h6 class="mb-0">@review.GameTitle</h6>
+                                    <a asp-page="/Games/GameDetails" asp-route-gameId="@review.GameId" class="text-muted small text-decoration-none">View Game</a>
+                                </div>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="@review.UserAvatarUrl" alt="@review.UserName" class="rounded-circle me-2" width="40" height="40" />
+                                    <div>
+                                        <strong>@review.UserName</strong>
+                                        <div class="rating-stars">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">
+                                    "@(review.Content.Length > 150 ? review.Content.Substring(0, 150) + "..." : review.Content)"
+                                </p>
+                                <a href="/Reviews/Details?reviewId=@review.ReviewId" class="small mt-auto">Read more...</a>
+                            </div>
+                            <div class="card-footer text-muted d-flex justify-content-between small">
+                                <span><i class="bi bi-heart-fill text-danger"></i> @review.LikesCount Likes</span>
+                                <span>@review.CreatedAt.ToString("MMM dd, yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No recent reviews to show at the moment.</p>
+        }
+    </section>
+</div>
+
+<style>
+    .review-card-item {
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .review-card-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .rating-stars {
+        color: #ffc107; /* Color de estrella de Bootstrap */
+    }
+</style>

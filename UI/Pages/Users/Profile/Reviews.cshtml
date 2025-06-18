@@ -1,0 +1,89 @@
+@page "/Users/Profile/Reviews/{userId}"
+@model ReviewsProfileModel
+@{
+    ViewData["Title"] = $"{Model.ProfileHeader.Username}'s Reviews";
+}
+
+@section FullWidthHeader {
+    <partial name="_ProfileHeader" model="Model" />
+    <partial name="_ProfileNav" model="Model" />
+}
+
+<div class="container py-4">
+    <h3 class="mb-4">Todas las Reseñas de @Model.ProfileHeader.Username</h3>
+    <div class="row g-4">
+        @if (Model.UserReviews.Any())
+        {
+            @foreach(var review in Model.UserReviews)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 review-card-item">
+                        <a asp-page="/Games/Details" asp-route-gameId="@review.GameId" class="review-game-link">
+                            <img src="@review.GameImageUrl" class="card-img-top review-game-cover" alt="Portada de @review.GameTitle">
+                        </a>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-1">
+                                <a asp-page="/Games/Details" asp-route-gameId="@review.GameId" class="text-dark text-decoration-none">
+                                    @review.GameTitle
+                                </a>
+                            </h5>
+                            
+                            <div class="d-flex align-items-center mb-2 review-rating-stars">
+                                @{
+                                    // Aseguramos que Rating sea un double para cálculos decimales
+                                    double rating = (double)review.Rating; 
+                                    int fullStars = (int)Math.Floor(rating); // Número de estrellas completas (ej. para 3.5 es 3)
+                                    bool hasHalfStar = (rating - fullStars) >= 0.5; // Verifica si hay media estrella (para 3.5 es true)
+                                }
+
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    if (i < fullStars)
+                                    {
+                                        // Estrella completa
+                                        <i class="bi bi-star-fill text-warning me-1"></i>
+                                    }
+                                    else if (hasHalfStar && i == fullStars)
+                                    {
+                                        // Media estrella
+                                        <i class="bi bi-star-half text-warning me-1"></i>
+                                    }
+                                    else
+                                    {
+                                        // Estrella vacía
+                                        <i class="bi bi-star text-muted me-1"></i>
+                                    }
+                                }
+                                <span class="ms-2 text-muted small">@review.Rating / 5</span>
+                            </div>
+
+                            <p class="card-text text-truncate-3-lines mb-3">@review.Content</p>
+                            
+                            <div class="mt-auto d-flex justify-content-between align-items-center small text-muted border-top pt-2">
+                                <div class="d-flex align-items-center">
+                                    <a asp-page="/Users/Profile/Index" asp-route-userId="@review.UserId" class="d-flex align-items-center text-decoration-none text-muted">
+                                        <img src="@review.UserAvatarUrl" alt="Avatar de @review.UserName" class="rounded-circle me-2" width="24" height="24" style="object-fit: cover;">
+                                        <strong>@review.UserName</strong>
+                                    </a>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <span class="me-2">@review.LikesCount <i class="bi bi-heart-fill"></i></span>
+                                    <span>@review.CreatedAt.ToString("MMM dd,yyyy")</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="text-center p-5 border rounded bg-light">
+                    <p class="text-muted">Este usuario aún no ha escrito ninguna reseña.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

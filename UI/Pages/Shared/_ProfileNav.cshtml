@@ -1,0 +1,30 @@
+@model ProfileModelBase
+
+<div class="container mt-4">
+    <ul class="nav nav-tabs profile-tabs px-3 py-2 mb-4">
+        <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "Profile" ? "active" : "")" 
+               asp-page="/Users/Profile/Index" asp-route-userId="@Model.ProfileHeader.UserId">Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "Activity" ? "active" : "")" 
+               asp-page="/Users/Profile/Activity" asp-route-userId="@Model.ProfileHeader.UserId">Activity</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "Reviews" ? "active" : "")" 
+               asp-page="/Users/Profile/Reviews" asp-route-userId="@Model.ProfileHeader.UserId">Reviews</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "Lists" ? "active" : "")" 
+               asp-page="/Users/Profile/Lists" asp-route-userId="@Model.ProfileHeader.UserId">Lists</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "Likes" ? "active" : "")" 
+               asp-page="/Users/Profile/Likes" asp-route-userId="@Model.ProfileHeader.UserId">Likes</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "Network" ? "active" : "")" 
+               asp-page="/Users/Profile/Friends" asp-route-userId="@Model.ProfileHeader.UserId">Network</a>
+        </li>
+    </ul>
+</div>
