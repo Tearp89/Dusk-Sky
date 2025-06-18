@@ -45,10 +45,13 @@ public class LikedGameViewModel
     public string GameTitle { get; set; } = string.Empty;
     public string GameImageUrl { get; set; } = string.Empty;
 }
-// *** IMPORTANTE: NECESITO LA DEFINICIÓN DE TUS DTOs ***
-// Para adaptar GameLogActivityViewModel y GameListActivityViewModel correctamente,
-// por favor, muéstrame las definiciones de:
-// public class GameTrackingDto { ... }
-// public class GameListDTO { ... }
-// public class ReviewDTO { ... } // Aunque ya usaste ReviewCardViewModel, es bueno confirmar las propiedades aquí también.
-// public class GamePreviewDTO { ... } // Para GameId, Title, HeaderUrl
+
+public class QuickStatsViewModel
+{
+    public int CompletedGamesCount { get; set; }
+    public int ReviewsCount { get; set; } // Ya la tienes en ProfileHeader, pero puedes traerla aquí
+    public double AverageRating { get; set; } // Nuevo: si quieres calcularla
+    public string FavoriteGenre { get; set; } = "N/A"; // Nuevo: si tienes lógica para esto
+    // Otras insignias o estadísticas que quieras mostrar
+    public string PlayerRank { get; set; } = "Newbie"; // Ejemplo de un rango
+}
