@@ -19,19 +19,20 @@
 
 <body>
     @{
-        // Tu lógica para clases dinámicas del navbar (sin cambios)
         string? currentPage = ViewContext.RouteData.Values["page"]?.ToString()?.ToLower();
         string navbarClass = currentPage switch
         {
             "/homepage/index" => "navbar-home",
-            "/profile" => "navbar-profile",
+            "/users/profile/index" => "navbar-profile", // Ajustado para la ruta de perfil
+            "/users/profile/activity" => "navbar-profile",
+            "/users/profile/reviews" => "navbar-profile",
+            "/users/profile/lists" => "navbar-profile",
+            "/users/profile/likes" => "navbar-profile",
+            "/users/profile/friends" => "navbar-profile",
             _ => "navbar-default"
         };
     }
 
-    @{
-        // Tu lógica para el fondo de pantalla completo (sin cambios)
-    }
     @if (ViewData["ShowBackground"] as bool? == true)
     {
         var useBlur = ViewData["UseBlurEffect"] as bool? == true;
@@ -75,9 +76,9 @@
                                 </li>
                                 <li class="nav-item">
                                     <div class="btn-group">
-                                        <button type="button" class="btn btn-primary d-inline-flex align-items-center button-glass-blue" data-bs-toggle="modal" data-bs-target="#logGameModal">
-                                            <i class="bi bi-plus-lg"></i>
-                                            <span class="d-none d-lg-inline ms-1">LOG</span>
+                                        <button type="button" class="btn btn-success button-glass-blue" data-bs-toggle="modal"
+                                        data-bs-target="#logGameModal">
+                                        <i class="fas fa-plus"></i> LOG
                                         </button>
                                         <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                                             <span class="visually-hidden">Toggle Dropdown</span>
@@ -115,7 +116,6 @@
         }
         else
         {
-            <!-- NAVBAR PARA USUARIO NO LOGUEADO -->
             <nav class="custom-navbar navbar navbar-expand-lg">
                 <div class="container-fluid position-relative">
                     <a class="navbar-brand" href="#" style="color: whitesmoke;">
@@ -148,8 +148,6 @@
                                     <input type="text" name="query" class="form-control me-2" placeholder="Buscar..." />
                                     <button type="submit" class="btn btn-outline-light">🔍</button>
                                 </form>
-
-
                             </li>
                         </ul>
                     </div>
@@ -160,16 +158,46 @@
 
     @await RenderSectionAsync("FullWidthHeader", required: false)
 
-    <div class="modal fade" id="logGameModal" tabindex="-1" aria-labelledby="logGameModalLabel" aria-hidden="true">
-        </div>
-    <div class="modal fade" id="logGameFormModal" tabindex="-1" aria-hidden="true">
-        </div>
-
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+
+    <div class="modal fade" id="logGameModal" tabindex="-1" aria-labelledby="logGameModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow glassy-modal">
+                <div class="modal-header bg-primary text-white button-glass-blue">
+                    <h5 class="modal-title" id="logGameModalLabel">Log a Game</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="gameSearchInput" class="form-control mb-3"
+                        placeholder="Search for a game..." />
+                    <ul class="list-group" id="gameListContainer">
+                        </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="logGameFormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content glassy-modal p-4 rounded-4 border-0 shadow-lg text-white">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="modal">
+                        ← Back
+                    </button>
+                    <h5 class="modal-title fw-bold ms-3" id="gameLogTitle">I played...</h5>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column flex-md-row gap-4 align-items-start" id="logGameFormModalBody">
+                    </div>
+            </div>
+        </div>
+    </div>
+
 
     <footer class="border-top footer text-muted">
         <div class="container">

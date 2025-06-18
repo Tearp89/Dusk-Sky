@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 // Paso 1: Ajusta el DTO
 public class GamePreviewDTO
 {
+    [JsonPropertyName("id")]
     public Guid Id { get; set; }
 
     [JsonPropertyName("headerUrl")]

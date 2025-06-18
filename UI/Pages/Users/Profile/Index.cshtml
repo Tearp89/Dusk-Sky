@@ -49,43 +49,62 @@
             <div class="row g-0">
                 <div class="col-md-4">
                     @{
-                        // Necesitamos castear para acceder a GameId y GameImageUrl
-                        string gameId = "";
-                        string gameImageUrl = "/images/noImage.png"; // Default
-                        string gameTitle = "Juego Desconocido"; // Default
+                        string activityGameId = ""; // Usamos un nombre diferente para evitar conflictos
+                        string activityGameImageUrl = "/images/noImage.png"; // Default para actividades sin juego
+                        string activityGameTitle = "Actividad General"; // Default si no es un juego
 
                         if (Model.LatestActivity.Type == "Review")
                         {
                             var reviewAct = (ReviewActivityViewModel)Model.LatestActivity;
-                            gameId = reviewAct.GameId;
-                            gameImageUrl = reviewAct.GameImageUrl;
-                            gameTitle = reviewAct.GameTitle;
+                            activityGameId = reviewAct.GameId;
+                            activityGameImageUrl = reviewAct.GameImageUrl;
+                            activityGameTitle = reviewAct.GameTitle;
                         }
                         else if (Model.LatestActivity.Type == "GameLog")
                         {
                             var gameLogAct = (GameLogActivityViewModel)Model.LatestActivity;
-                            gameId = gameLogAct.GameId;
-                            gameImageUrl = gameLogAct.GameImageUrl;
-                            gameTitle = gameLogAct.GameTitle;
+                            activityGameId = gameLogAct.GameId;
+                            activityGameImageUrl = gameLogAct.GameImageUrl;
+                            activityGameTitle = gameLogAct.GameTitle;
                         }
-                        // Si GameList tiene una imagen de portada principal, también la castearías aquí
-                        // else if (Model.LatestActivity.Type == "GameList") { ... }
+                        // Si la actividad es una lista, no asignamos una imagen de juego específica.
+                        // Se usará el default '/images/noImage.png' y 'Actividad General'.
+                        // O podrías poner un icono de lista, ej:
+                        // else if (Model.LatestActivity.Type == "GameList") {
+                        //    activityGameImageUrl = "/images/list-icon.png"; // Un icono para listas
+                        //    activityGameTitle = ((GameListActivityViewModel)Model.LatestActivity).ListName;
+                        // }
                     }
-                    <a asp-page="/Games/Details" asp-route-gameId="@gameId">
-                        <img src="@gameImageUrl" class="img-fluid rounded-start featured-game-img" alt="Portada de @gameTitle">
-                    </a>
+                    @if (!string.IsNullOrEmpty(activityGameId)) // Solo enlaza si hay un GameId válido
+                    {
+                        <a asp-page="/Games/Details" asp-route-gameId="@activityGameId">
+                            <img src="@activityGameImageUrl" class="img-fluid rounded-start featured-game-img" alt="Portada de @activityGameTitle">
+                        </a>
+                    }
+                    else
+                    {
+                        // Si no hay GameId (ej. una lista), simplemente muestra la imagen sin enlace o un icono.
+                        <img src="@activityGameImageUrl" class="img-fluid rounded-start featured-game-img" alt="Actividad">
+                    }
                 </div>
                 <div class="col-md-8">
                     <div class="card-body d-flex flex-column justify-content-center">
                         <h5 class="card-title mb-2">
-                            <a asp-page="/Games/Details" asp-route-gameId="@gameId" class="text-dark text-decoration-none">
-                                @gameTitle
-                            </a>
+                            @if (!string.IsNullOrEmpty(activityGameId))
+                            {
+                                <a asp-page="/Games/Details" asp-route-gameId="@activityGameId" class="text-dark text-decoration-none">
+                                    @activityGameTitle
+                                </a>
+                            }
+                            else
+                            {
+                                @activityGameTitle 
+                            }
                         </h5>
                         <p class="card-text mb-2">
                             @{
                                 var actionText = "";
-                                switch (Model.LatestActivity.Type) // Usamos switch para mayor claridad
+                                switch (Model.LatestActivity.Type)
                                 {
                                     case "Review":
                                         var reviewAct = (ReviewActivityViewModel)Model.LatestActivity;

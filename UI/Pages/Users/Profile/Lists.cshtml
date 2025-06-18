@@ -1,0 +1,156 @@
+@page "/Users/Profile/Lists/{userId?}"
+@model ListsProfileModel
+@{
+    ViewData["Title"] = $"{Model.ProfileHeader.Username}'s Lists";
+}
+
+@section FullWidthHeader {
+    <partial name="_ProfileHeader" model="Model" />
+    <partial name="_ProfileNav" model="Model" />
+}
+
+<div class="container py-4">
+    <h3 class="mb-4">Listas de @Model.ProfileHeader.Username</h3>
+
+    @if (Model.UserLists.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var list in Model.UserLists)
+            {
+                <div class="col">
+                    <div class="card h-100 list-card">
+                        <div class="list-image-stack-container" id="list-images-@list.Id">
+                            @* Las imágenes se cargarán aquí con JavaScript *@
+                            @if (!list.GameImageUrls.Any())
+                            {
+                                <img src="~/images/noImage.png" alt="No Games" class="default-list-image" />
+                            }
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2">
+                                <a asp-page="/Lists/Details" asp-route-listId="@list.Id" class="text-dark text-decoration-none">
+                                    @list.Name
+                                </a>
+                                @if (!list.IsPublic)
+                                {
+                                    <span class="badge bg-secondary ms-2"><i class="bi bi-lock-fill"></i> Private</span>
+                                }
+                            </h5>
+                            <p class="card-text text-muted text-truncate-3-lines flex-grow-1">
+                                @list.Description
+                            </p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center small text-muted border-top pt-2">
+                                <span>@list.LikedBy.Count <i class="bi bi-heart-fill"></i> Likes</span>
+                                <span>Creada el: @list.CreatedAt.ToString("MMM dd,yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Script para cada lista - se coloca dentro del bucle *@
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        // Pasamos las URLs de las imágenes y el ID del contenedor
+                        const images = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(list.GameImageUrls));
+                        const container = document.getElementById("list-images-@list.Id");
+
+                        if (container && images && images.length > 0) {
+                            // Limpiamos el contenedor si tenía la imagen por defecto
+                            container.innerHTML = ''; 
+
+                            images.forEach((url, i) => {
+                                const img = document.createElement('img');
+                                img.src = url;
+                                img.alt = "Game Cover";
+                                img.classList.add('poster');
+                                img.style.position = 'absolute';
+                                img.style.left = `${i * 30}px`; // Ajusta este valor para el desplazamiento de la pila
+                                img.style.height = '100%';
+                                img.style.objectFit = 'cover';
+                                img.style.borderRadius = '6px';
+                                img.style.zIndex = images.length - i; // Para que la primera imagen esté al frente
+                                img.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)'; // Sombra para el efecto 3D
+                                img.style.transition = 'transform 0.2s ease'; // Transición para hover
+
+                                // Opcional: Efecto al pasar el ratón (hover)
+                                img.onmouseover = function() {
+                                    this.style.transform = 'translateY(-5px) scale(1.05)';
+                                };
+                                img.onmouseout = function() {
+                                    this.style.transform = 'translateY(0) scale(1)';
+                                };
+
+                                container.appendChild(img);
+                            });
+                        }
+                    });
+                </script>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center p-5 border rounded bg-light">
+            @if(Model.IsOwnProfile)
+            {
+                <p class="text-muted">Aún no has creado ninguna lista. ¡Empieza a organizar tus juegos!</p>
+                <a asp-page="/Lists/Creator" class="btn btn-primary mt-3">Crear Nueva Lista</a>
+            }
+            else
+            {
+                <p class="text-muted">@Model.ProfileHeader.Username no tiene listas públicas.</p>
+            }
+        </div>
+    }
+</div>
+
+@* Estilos CSS para las tarjetas de listas y la pila de imágenes *@
+<style>
+    .list-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        overflow: hidden; /* Importante para la pila de imágenes */
+        position: relative; /* Para que las imágenes absolutas se posicionen dentro */
+        min-height: 280px; /* Altura mínima para la tarjeta */
+    }
+    .list-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    .text-truncate-3-lines {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .list-image-stack-container {
+        position: relative;
+        width: 100%; /* El ancho del contenedor */
+        height: 150px; /* Altura de la sección de imágenes */
+        overflow: hidden; /* Recorta si las imágenes se salen */
+        background-color: #f0f0f0; /* Fondo si no hay imágenes */
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .list-image-stack-container .poster {
+        /* Estilos base ya definidos en JS, pero se pueden refinar aquí */
+        border: 2px solid white; /* Borde blanco para separar las imágenes */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        top: 0;
+        /* El width individual se ajustará en JS o con un cálculo más complejo */
+        width: calc(100% - 90px); /* Ajusta el ancho para que quepan varias solapadas */
+        /* Si quieres que se solapen más, haz el 'left' en JS más pequeño y el 'width' más grande */
+    }
+
+    .list-image-stack-container .default-list-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Para que el icono noImage se vea completo */
+        opacity: 0.5; /* Más tenue */
+        padding: 20px; /* Espaciado */
+    }
+</style>
