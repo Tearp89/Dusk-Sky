@@ -660,7 +660,7 @@ html, body {
 }
 
 .profile-tabs .nav-link {
-  color: #555; /* Texto gris */
+  color: #333333 !important; /* Texto gris */
   transition: color 0.2s ease;
 }
 

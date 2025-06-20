@@ -58,14 +58,15 @@
                     <div class="collapse navbar-collapse" id="navbarNavDropdown">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                             <li class="nav-item">
-                                <a class="nav-link" asp-page="/Games/Index">Games</a>
+                                <a class="nav-link" asp-page="/Games/Games">Games</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-page="/Lists/Index">Lists</a>
+                                <a class="nav-link" asp-page="/Lists/Lists">Lists</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-page="/Reviews/Index">Reviews</a>
+                                <a class="nav-link" asp-page="/Reviews/Reviews">Reviews</a>
                             </li>
+                            
                         </ul>
                         <div class="d-flex align-items-center ms-auto">
                             <ul class="navbar-nav flex-row align-items-center gap-3">
@@ -100,6 +101,12 @@
                                     <ul class="dropdown-menu dropdown-menu-end glassy-dropdown">
                                         <li><a class="dropdown-item" asp-page="/Users/Profile/Index" asp-route-userId="@User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)">Profile</a></li>
                                         <li><a class="dropdown-item" asp-page="/Users/Friends">Friends</a></li>
+                                        @if(User.IsInRole("admin") || User.IsInRole("moderator")){
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Admin/AdminDashboard"> Admin panel</a>
+                                </li>
+                            }
+                                        <li><a class="dropdown-item" asp-page="/Settings">Settings</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <form method="post" asp-page="/Account/Logout">

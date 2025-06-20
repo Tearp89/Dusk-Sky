@@ -55,7 +55,8 @@ public class ActivityModel : ProfileModelBase
             _userManagerService,
             _friendshipService,
             _reviewService,
-            _gameListService);
+            _gameListService,
+            _gameTrackingService);
 
         if (!userExists)
         {

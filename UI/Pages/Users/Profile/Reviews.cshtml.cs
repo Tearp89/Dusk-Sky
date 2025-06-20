@@ -21,6 +21,7 @@ public class ReviewsProfileModel : ProfileModelBase // Hereda de la clase base
     private readonly IFriendshipService _friendshipService;
     private readonly IGameListService _listService;
     private readonly IGameService _gameService;
+    private readonly IGameTrackingService _gameTrackingService;
 
     // --- Propiedad para guardar las reseñas de este usuario ---
     public List<ReviewCardViewModel> UserReviews { get; set; } = new();
@@ -31,7 +32,8 @@ public class ReviewsProfileModel : ProfileModelBase // Hereda de la clase base
         IUserManagerService userManagerService,
         IFriendshipService friendshipService,
         IGameListService listService,
-        IGameService gameService)
+        IGameService gameService,
+        IGameTrackingService gameTrackingService)
     {
         _reviewService = reviewService;
         _authService = authService;
@@ -39,6 +41,7 @@ public class ReviewsProfileModel : ProfileModelBase // Hereda de la clase base
         _friendshipService = friendshipService;
         _listService = listService;
         _gameService = gameService;
+        _gameTrackingService = gameTrackingService;
     }
 
     public async Task<IActionResult> OnGetAsync(string userId)
@@ -51,7 +54,8 @@ public class ReviewsProfileModel : ProfileModelBase // Hereda de la clase base
             _userManagerService, 
             _friendshipService,
             _reviewService,
-            _listService);
+            _listService,
+            _gameTrackingService);
             
         if (!userExists)
         {

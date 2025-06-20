@@ -1,0 +1,206 @@
+@page "/Admin/Dashboard"
+@model AdminDashboardModel
+@{
+    ViewData["Title"] = "Admin/Moderator Dashboard";
+    ViewData["ShowBackground"] = false;
+}
+
+<div class="container py-5">
+    <h2 class="mb-4 text-center fw-bold py-4">Admin/Moderator Dashboard</h2>
+
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        var alertClass = Model.StatusMessage.StartsWith("Error") ? "alert-danger" : "alert-success";
+        <div class="alert @alertClass alert-dismissible fade show" role="alert">
+            @Model.StatusMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (User.IsInRole("admin"))
+    {
+        <div class="card p-4 shadow-sm rounded-4 bg-light mb-5">
+            <h4 class="mb-4">Admin Only Actions</h4>
+
+            <div class="row mb-4">
+                @* Asignar/Quitar Moderadores *@
+                <div class="col-md-6 mb-3">
+                    <h5>Manage User Roles</h5>
+                    <p class="text-muted small">Promote or demote users to Moderator status.</p>
+                    <form method="post" asp-page-handler="PromoteUser" class="d-flex mb-2">
+                        @Html.AntiForgeryToken()
+                        <input type="text" name="userIdToPromote" class="form-control me-2" placeholder="User ID to promote" required />
+                        <button type="submit" class="btn btn-success">Promote</button>
+                    </form>
+                    <form method="post" asp-page-handler="DemoteUser" class="d-flex">
+                        @Html.AntiForgeryToken()
+                        <input type="text" name="userIdToDemote" class="form-control me-2" placeholder="User ID to demote" required />
+                        <button type="submit" class="btn btn-warning">Demote</button>
+                    </form>
+                </div>
+
+                @* Agregar Juegos *@
+                <div class="col-md-6 mb-3">
+                    <h5>Add New Game</h5>
+                    <p class="text-muted small">Import a new game from Steam using its App ID.</p>
+                    <form method="post" asp-page-handler="AddGame">
+                        @Html.AntiForgeryToken()
+                        <div class="input-group mb-3">
+                            <input asp-for="AddGameInput.SteamAppId" type="number" class="form-control" placeholder="Steam App ID" required />
+                            <button type="submit" class="btn btn-primary">Import Game</button>
+                        </div>
+                        <span asp-validation-for="AddGameInput.SteamAppId" class="text-danger"></span>
+                        @if (!string.IsNullOrEmpty(Model.AddGameInput.ImportStatusMessage))
+                        {
+                            <div class="alert @(Model.AddGameInput.ImportStatusMessage.StartsWith("Success") ? "alert-success" : "alert-danger") mt-2">
+                                @Model.AddGameInput.ImportStatusMessage
+                                @if (Model.AddGameInput.ImportedGameId.HasValue)
+                                {
+                                    <a asp-page="/Games/Details" asp-route-gameId="@Model.AddGameInput.ImportedGameId.Value" class="alert-link ms-2">View Game</a>
+                                }
+                            </div>
+                        }
+                    </form>
+                </div>
+            </div>
+            @if (Model.AllUsers.Any())
+            {
+                <h5 class="mt-4">All Users</h5>
+                <ul class="list-group">
+                    @foreach (var user in Model.AllUsers)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            @user.Username (@user.UserId)
+                            <span class="badge bg-primary rounded-pill">@string.Join(", ", user.Roles)</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    }
+
+    <div class="card p-4 shadow-sm rounded-4 bg-light mb-5">
+        <h4 class="mb-4">Reports and Sanctions Management</h4>
+
+        <div class="row">
+            @* Sección de Reportes *@
+            <div class="col-md-6 mb-4">
+                <h5>Recent Reports</h5>
+                @if (Model.RecentReports.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var report in Model.RecentReports.OrderBy(r => r.Status == "pending" ? 0 : 1).ThenByDescending(r => r.ReportedAt))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                                <div>
+                                    <strong>Report #@report.ReportId.Substring(0, 8)...</strong><br />
+                                    <small class="text-muted">
+                                        Reported: <a href="/Users/Profile/Index?userId=@report.ReportedUserId">@report.ReportedUsername</a>
+                                        (Type: @report.ContentType)
+                                    </small><br />
+                                    <small class="text-muted">By: <a href="/Users/Profile/Index?userId=@report.ReporterId">@report.ReporterUsername</a></small><br /> @* ReporterId es opcional si API no lo da *@
+                                    <p class="mb-1">Reason: @report.Reason</p>
+                                    <small class="text-muted">Status: <span class="badge @(report.Status == "pending" ? "bg-warning" : "bg-success")">@report.Status</span></small>
+                                </div>
+                                <div>
+                                    @if (report.Status == "pending")
+                                    {
+                                        <form method="post" asp-page-handler="ResolveReport" asp-route-reportId="@report.ReportId" asp-route-newStatus="resolved" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-success me-1">Resolve</button>
+                                        </form>
+                                    }
+                                    <form method="post" asp-page-handler="DeleteReport" asp-route-reportId="@report.ReportId" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">No recent reports.</p>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <h5>Create New Sanction</h5>
+                <form method="post" asp-page-handler="CreateSanction">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label asp-for="CreateSanctionInput.UserId" class="form-label">Sanctioned User ID</label> @* Usar UserId *@
+                        <input asp-for="CreateSanctionInput.UserId" class="form-control" placeholder="User ID to sanction" required /> @* Usar UserId *@
+                        <span asp-validation-for="CreateSanctionInput.UserId" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="CreateSanctionInput.Type" class="form-label">Sanction Type</label> @* Usar Type *@
+                        <select asp-for="CreateSanctionInput.Type" class="form-select" required> @* Usar Type *@
+                            <option value="">Select Type</option>
+                            <option value="suspension">Suspension</option>
+                            <option value="ban">Ban</option>
+                            <option value="warning">Warning</option>
+                        </select>
+                        <span asp-validation-for="CreateSanctionInput.Type" class="text-danger"></span> @* Usar Type *@
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="CreateSanctionInput.Reason" class="form-label">Reason</label>
+                        <textarea asp-for="CreateSanctionInput.Reason" class="form-control" rows="3" required></textarea>
+                        <span asp-validation-for="CreateSanctionInput.Reason" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="CreateSanctionInput.StartDate" class="form-label">Start Date</label>
+                        <input asp-for="CreateSanctionInput.StartDate" type="date" class="form-control" />
+                        <span asp-validation-for="CreateSanctionInput.StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="CreateSanctionInput.EndDate" class="form-label">End Date (Optional)</label>
+                        <input asp-for="CreateSanctionInput.EndDate" type="date" class="form-control" />
+                        <span asp-validation-for="CreateSanctionInput.EndDate" class="text-danger"></span>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-danger">Create Sanction</button>
+                    </div>
+                </form>
+
+                <h5 class="mt-4 mb-3">Active Sanctions</h5>
+                @if (Model.ActiveSanctions.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var sanction in Model.ActiveSanctions)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@sanction.Type for User: @sanction.UserId</strong>
+                                    (@sanction.Reason)<br />
+                                    <small class="text-muted">
+                                        @sanction.StartDate.ToString("yyyy-MM-dd")
+                                        @if (sanction.EndDate.HasValue) { <span>to @sanction.EndDate.Value.ToString("yyyy-MM-dd")</span> }
+                                    </small>
+                                </div>
+                                @if (sanction.IsActive)
+                                {
+                                    <span class="badge bg-danger">ACTIVE</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">INACTIVE</span>
+                                }
+                                @* Opcional: Botones para editar/eliminar sanción *@
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">No active sanctions.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

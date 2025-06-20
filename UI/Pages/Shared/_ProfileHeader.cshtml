@@ -12,19 +12,42 @@
                         <h1 class="display-5 fw-bold">@Model.ProfileHeader.Username</h1>
                         <p class="lead opacity-75">@Model.ProfileHeader.Bio</p>
                     </div>
+                    
                     <div class="profile-actions mt-3 mt-lg-0" style="min-height: 38px;">
                         @if (Model.IsOwnProfile)
                         {
-                            <a asp-page="/Users/EditProfile" asp-route-userId="@Model.ProfileHeader.UserId" class="btn btn-outline-light">Edit Profile</a>
+                            <a asp-page="/Users/Profile/EditProfile" asp-route-userId="@Model.ProfileHeader.UserId" class="btn btn-outline-light">Edit Profile</a>
                         }
-                        else if (Model.Friendship != null)
+                        else if (User.Identity?.IsAuthenticated ?? false)
                         {
-                            @switch (Model.Friendship.Status)
+                            @* --- LÓGICA DE AMISTAD FORZADA EXCLUSIVA --- *@
+                            @if (Model.Friendship?.Status == "friends")
                             {
-                                case "friends": <button class="btn btn-success" disabled>✔️ Friends</button> break;
-                                case "pending_outgoing": <button class="btn btn-secondary" disabled>Request Sent</button> break;
-                                // Agrega aquí los otros casos y formularios de amistad
+                                <button class="btn btn-success" disabled>✔️ Friends</button>
                             }
+                            else if (Model.Friendship?.Status == "pending_outgoing")
+                            {
+                                <button class="btn btn-secondary" disabled>Request Sent</button>
+                            }
+                            else if (Model.Friendship?.Status == "pending_incoming")
+                            {
+                                <form method="post" asp-page-handler="AcceptRequest" asp-route-profileUserId="@Model.ProfileHeader.UserId" asp-route-requestId="@Model.Friendship.RequestId">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-primary me-2">Accept</button>
+                                </form>
+                                <form method="post" asp-page-handler="RejectRequest" asp-route-profileUserId="@Model.ProfileHeader.UserId" asp-route-requestId="@Model.Friendship.RequestId">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger">Reject</button>
+                                </form>
+                            }
+                            else if (Model.Friendship?.Status == "not_friends")
+                            {
+                                <form method="post" asp-page-handler="SendRequest" asp-route-profileUserId="@Model.ProfileHeader.UserId">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-primary">Add Friend</button>
+                                </form>
+                            }
+                            @* --- FIN LÓGICA DE AMISTAD FORZADA EXCLUSIVA --- *@
                         }
                     </div>
                 </div>

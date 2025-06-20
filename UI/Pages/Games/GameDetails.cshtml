@@ -105,7 +105,7 @@
                                 }
                             </div>
                             <p class="mb-2">@review.Content.Substring(0, Math.Min(180, review.Content.Length))...</p>
-                            <a href="/Reviews/Details/@review.Id" class="btn btn-sm btn-outline-primary">Read more</a>
+                            <a href="/Reviews/Details?reviewId=@review.Id"  class="btn btn-sm btn-outline-primary">Read more</a>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,8 @@
 // Archivo: ViewModels/ProfileViewModels.cs
 
 // Para el encabezado del perfil
+using System.Text.Json.Serialization;
+
 public class ProfileHeaderViewModel
 {
     public string UserId { get; set; }
@@ -50,6 +52,7 @@ public class CommentViewModel
         public string UserName { get; set; } = "";
         public string UserAvatarUrl { get; set; } = "";
         public string Content { get; set; } = "";
+        [JsonPropertyName("date")]
         public DateTime CreatedAt { get; set; }
     }
 

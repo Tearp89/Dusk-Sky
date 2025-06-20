@@ -1,0 +1,13 @@
+@page "/AccessDenied"
+@model AccessDeniedModel
+@{
+    ViewData["Title"] = "Access Denied";
+    ViewData["ShowBackground"] = false; // Puedes desactivar el fondo si es para una página de error
+}
+
+<div class="container text-center py-5" style="margin-top: 100px;">
+    <h1 class="display-4 text-danger">Access Denied</h1>
+    <p class="lead">You do not have permission to view this resource.</p>
+    <p>If you believe this is an error, please contact the administrator.</p>
+    <a asp-page="/Index" class="btn btn-primary mt-4">Go to Home Page</a>
+</div>

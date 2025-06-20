@@ -56,7 +56,7 @@ public class ListsProfileModel : ProfileModelBase
             _friendshipService,
             _reviewService,
             _gameListService
-            /* , _gameTrackingService si lo usa ProfileModelBase */ ); 
+            , _gameTrackingService ); 
 
         if (!userExists)
         {

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 // using YourApp.Services;
 // using YourApp.ViewModels;
 
-public class LikesModel : ProfileModelBase
+public class PlaylistProfileModel : ProfileModelBase
 {
     // --- Servicios inyectados ---
     private readonly IGameTrackingService _gameTrackingService;
@@ -18,14 +18,13 @@ public class LikesModel : ProfileModelBase
     private readonly IAuthService _authService;
     private readonly IUserManagerService _userManagerService;
     private readonly IFriendshipService _friendshipService;
-    private readonly IReviewService _reviewService; // Para LoadProfileHeaderData
-    private readonly IGameListService _gameListService; // Para LoadProfileHeaderData
+    private readonly IReviewService _reviewService;
+    private readonly IGameListService _gameListService;
 
+    // --- Propiedad para la lista de juegos en "backlog" ---
+    public List<GamePreviewDTO> BacklogGames { get; set; } = new();
 
-    // --- Propiedad para la lista de juegos "likeados" ---
-    public List<GamePreviewDTO> LikedGames { get; set; } = new();
-
-    public LikesModel(
+    public PlaylistProfileModel(
         IGameTrackingService gameTrackingService,
         IGameService gameService,
         IAuthService authService,
@@ -45,7 +44,7 @@ public class LikesModel : ProfileModelBase
 
     public async Task<IActionResult> OnGetAsync(string userId)
     {
-        ActiveTab = "Likes"; // Para que la pestaña "Likes" se resalte
+        ActiveTab = "Playlist"; // Para que la pestaña "Playlist" se resalte
 
         // 1. Cargar los datos del encabezado del perfil
         var userExists = await LoadProfileHeaderData(
@@ -54,34 +53,33 @@ public class LikesModel : ProfileModelBase
             _userManagerService,
             _friendshipService,
             _reviewService,
-            _gameListService,
-            _gameTrackingService);
+            _gameListService
+            , _gameTrackingService  ); 
 
         if (!userExists)
         {
             return NotFound();
         }
 
-        // 2. Obtener los IDs de los juegos que el usuario ha "likeado"
-        var likedGameIdsStrings = await _gameTrackingService.GetLikedGameIdsAsync(userId);
+        // 2. Obtener los IDs de los juegos en "backlog"
+        // Asumo que tu GameTrackingService.GetGameIdsByStatusAsync puede filtrar por "backlog"
+        var backlogGameIdsStrings = await _gameTrackingService.GetGameIdsByStatusAsync(userId, "backlog");
         
         // Convertir los IDs de string a Guid y filtrarlos si son inválidos
-        var likedGameIds = likedGameIdsStrings
+        var backlogGameIds = backlogGameIdsStrings
             .Where(id => Guid.TryParse(id, out _))
             .Select(Guid.Parse)
             .ToList();
 
-        // 3. Obtener los detalles de los juegos "likeados" de forma concurrente
+        // 3. Obtener los detalles de los juegos en "backlog" de forma concurrente
         var gamePreviewTasks = new List<Task<GamePreviewDTO?>>();
-        foreach (var gameId in likedGameIds)
+        foreach (var gameId in backlogGameIds)
         {
             gamePreviewTasks.Add(_gameService.GetGamePreviewByIdAsync(gameId));
         }
 
-        var gamePreviews = await Task.WhenAll(gamePreviewTasks);
-
-        // 4. Filtrar los juegos que realmente se encontraron y asignarlos a la propiedad
-        LikedGames = gamePreviews.Where(gp => gp != null).ToList()!; // El ! asegura que no es nulo si gp no es nulo
+        BacklogGames = (await Task.WhenAll(gamePreviewTasks))
+            .Where(gp => gp != null).ToList()!;
         
         return Page();
     }
