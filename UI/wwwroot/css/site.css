@@ -1124,11 +1124,21 @@ input[type="checkbox"]#likedCheckbox:checked + label .heart-icon {
     box-shadow: 0 6px 12px rgba(0, 85, 255, 0.1);
 }
 
-[id]::before {
+a[id]::before { /* Solo si el ID está en una etiqueta <a> */
     content: "";
     display: block;
     height: 80px; /* altura de tu navbar */
     margin-top: -80px;
+}
+
+input[id]::before, /* Para inputs con ID */
+div[id].modal-body *::before, /* Para cualquier elemento dentro de un modal-body con ID */
+div[id].user-search-results::before /* Para el div específico de resultados */
+{
+    content: none !important; /* Elimina el pseudo-elemento */
+    display: none !important; /* Asegura que no se muestre */
+    height: auto !important; /* Resetea la altura */
+    margin-top: 0 !important; /* Resetea el margen */
 }
 
 /* Estilo del menú lateral */
@@ -1480,4 +1490,14 @@ sidebar-card,
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.modal-body .form-control {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.modal-body .list-group {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
