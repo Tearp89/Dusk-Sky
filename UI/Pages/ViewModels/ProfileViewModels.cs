@@ -1,6 +1,7 @@
 // Archivo: ViewModels/ProfileViewModels.cs
 
 // Para el encabezado del perfil
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 public class ProfileHeaderViewModel
@@ -74,4 +75,14 @@ public class ProfileActivityViewModel
     public string ReviewId { get; set; }
     public System.DateTime WatchedDate { get; set; }
 }
+
+public class ReportReviewInputModel
+{
+    public string ContentId { get; set; } = string.Empty; // ID de la review
+    public string ReporterId { get; set; } = string.Empty; // Usuario que reporta
+    public string ContentType { get; set; } = "review"; // Literal, para que se guarde como tipo "review"
+    public string Reason { get; set; } = "Inappropriate content"; // Puedes cambiar o hacer dinámico si lo deseas
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Momento del reporte
+}
+
 

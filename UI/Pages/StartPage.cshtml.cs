@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -23,6 +24,7 @@ public class StartPageModel : PageModel
     private readonly IUserManagerService _userService;
 
     private readonly IReviewService _reviewService;
+    private readonly IModerationSanctionService _sanctionService;
     [BindProperty]
     public AuthRequestDto LoginData { get; set; } = new();
 
@@ -34,13 +36,13 @@ public class StartPageModel : PageModel
     public List<GamePreviewDTO> Games { get; set; }
     public List<ReviewDTO> Reviews { get; set; }
 
-    public List<ReviewWithUserDto> ReviewCards {get; set;}
+    public List<ReviewFullDto> ReviewCards { get; set; }
     public List<GameListWithUserDto> RecentLists { get; set; }
 
     public List<ImageReviewDto> ReviewImages { get; set; }
-    
+
     public List<UserSearchResultDto> Users { get; set; }
-    public StartPageModel(ILogger<StartPageModel> logger, IAuthService authService, IGameService gameService, IReviewService reviewService, IUserManagerService userService, IGameListItemService gameListItemService, IGameListService gameListService, UserSessionManager userSessionManager)
+    public StartPageModel(ILogger<StartPageModel> logger, IAuthService authService, IGameService gameService, IReviewService reviewService, IUserManagerService userService, IGameListItemService gameListItemService, IGameListService gameListService, UserSessionManager userSessionManager, IModerationSanctionService sanctionService)
     {
         _logger = logger;
         _authService = authService;
@@ -50,117 +52,68 @@ public class StartPageModel : PageModel
         _gameListItemService = gameListItemService;
         _gameListService = gameListService;
         _sessionManager = userSessionManager;
+        _sanctionService = sanctionService;
     }
 
-   public async Task<IActionResult> OnPostLoginAsync()
-{
-    var result = await _authService.LoginAsync(LoginData);
-
-    if (result != null && !string.IsNullOrWhiteSpace(result.AccessToken))
+    public async Task<IActionResult> OnPostLoginAsync()
     {
-        var token = result.AccessToken;
+        var result = await _authService.LoginAsync(LoginData);
 
-        // Buscar usuarios por nombre exacto
-        var users = await _authService.SearchUsersAsync(LoginData.Username);
-        var user = users.FirstOrDefault(u => u.Username == LoginData.Username);
-
-        if (user == null)
+        if (result != null && !string.IsNullOrWhiteSpace(result.AccessToken))
         {
-            ErrorMessage = "No se encontró el usuario con ese nombre.";
-            return Page();
-        }
+            var token = result.AccessToken;
 
-        var profile = await _userService.GetProfileAsync(user.Id);
-        if (profile == null)
-        {
-            ErrorMessage = "No se pudo obtener el perfil del usuario.";
-            return Page();
-        }
-
-        UserSessionManager.Instance.SetSession(token, user.Id.ToString(), user.Username);
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim("avatar_url", profile.AvatarUrl ?? "/images/default_avatar.png"),
-            new Claim(ClaimTypes.Role, user.Role ?? "user") 
-        };
-
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            principal,
-            new AuthenticationProperties
-            {
-                IsPersistent = true,
-                ExpiresUtc = DateTime.UtcNow.AddDays(7)
-            });
-
-        Response.Cookies.Append("DuskSkyToken", token, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddDays(7)
-        });
-
-        return RedirectToPage("/Homepage/Index");
-    }
-
-    ErrorMessage = "Email o contraseña incorrectos.";
-        return Page();
-}
-
-
-
-
-
-    public async Task<IActionResult> OnPostRegisterAsync()
-{
-    var registerResult = await _authService.RegisterAsync(RegisterData);
-    if (registerResult != null)
-    {
-        var loginRequest = new AuthRequestDto
-        {
-            Username = RegisterData.Username,
-            Password = RegisterData.Password
-        };
-
-        var loginResult = await _authService.LoginAsync(loginRequest);
-        if (loginResult != null && !string.IsNullOrWhiteSpace(loginResult.AccessToken))
-        {
-            var token = loginResult.AccessToken;
-
-            // Buscar usuario
-            var users = await _authService.SearchUsersAsync(RegisterData.Username);
-            var user = users.FirstOrDefault(u => u.Username == RegisterData.Username);
-           
+            // Buscar usuarios por nombre exacto
+            var users = await _authService.SearchUsersAsync(LoginData.Username);
+            var user = users.FirstOrDefault(u => u.Username == LoginData.Username);
 
             if (user == null)
-                {
-                    ErrorMessage = "Registro exitoso, pero no se encontró el usuario.";
-                    return Page();
-                }
+            {
+                ErrorMessage = "No se encontró el usuario con ese nombre.";
+                return Page();
+            }
+
+            var sanctions = await _sanctionService.GetAllAsync();
+
+            var hasActiveSanction = sanctions.Any(s =>
+                s.UserId.Trim() == user.Id.Trim() &&
+                (
+                    s.Type == SanctionType.ban ||
+                    (s.Type == SanctionType.suspension &&
+                     s.StartDate <= DateTime.UtcNow &&
+                     s.EndDate >= DateTime.UtcNow)
+                )
+            );
+            Console.WriteLine($"User logging in: {user.Id}");
+
+            foreach (var s in sanctions)
+            {
+                Console.WriteLine($"Sanction for: {s.UserId} | Type: {s.Type} | Dates: {s.StartDate} - {s.EndDate}");
+            }
+
+            if (hasActiveSanction)
+            {
+                ErrorMessage = "Access denied: your account is currently banned or suspended.";
+                return Page();
+            }
 
             var profile = await _userService.GetProfileAsync(user.Id);
             if (profile == null)
             {
-                ErrorMessage = "Registro exitoso, pero no se pudo obtener el perfil del usuario.";
+                ErrorMessage = "No se pudo obtener el perfil del usuario.";
                 return Page();
             }
 
+            // Guardar sesión
             UserSessionManager.Instance.SetSession(token, user.Id.ToString(), user.Username);
 
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim("avatar_url", profile.AvatarUrl ?? "/images/default_avatar.png"),
-                new Claim(ClaimTypes.Role, user.Role ?? "user")  
-            };
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim("avatar_url", profile.AvatarUrl ?? "/images/default_avatar.png"),
+            new Claim(ClaimTypes.Role, user.Role ?? "user")
+        };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
@@ -170,8 +123,8 @@ public class StartPageModel : PageModel
                 principal,
                 new AuthenticationProperties
                 {
-                    IsPersistent = true,
-                    ExpiresUtc = DateTime.UtcNow.AddDays(7)
+                    IsPersistent = LoginData.RememberMe,
+                    ExpiresUtc = LoginData.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null
                 });
 
             Response.Cookies.Append("DuskSkyToken", token, new CookieOptions
@@ -179,19 +132,95 @@ public class StartPageModel : PageModel
                 HttpOnly = true,
                 Secure = false,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7)
+                Expires = LoginData.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null
             });
 
             return RedirectToPage("/Homepage/Index");
         }
 
-        ErrorMessage = "Registro exitoso, pero fallo al iniciar sesión.";
+        ErrorMessage = "Email o contraseña incorrectos.";
         return Page();
     }
 
-    ErrorMessage = "Registro fallido.";
-    return Page();
-}
+
+
+
+
+
+    public async Task<IActionResult> OnPostRegisterAsync()
+    {
+        var registerResult = await _authService.RegisterAsync(RegisterData);
+        if (registerResult != null)
+        {
+            var loginRequest = new AuthRequestDto
+            {
+                Username = RegisterData.Username,
+                Password = RegisterData.Password
+            };
+
+            var loginResult = await _authService.LoginAsync(loginRequest);
+            if (loginResult != null && !string.IsNullOrWhiteSpace(loginResult.AccessToken))
+            {
+                var token = loginResult.AccessToken;
+
+                // Buscar usuario
+                var users = await _authService.SearchUsersAsync(RegisterData.Username);
+                var user = users.FirstOrDefault(u => u.Username == RegisterData.Username);
+
+
+                if (user == null)
+                {
+                    ErrorMessage = "Registro exitoso, pero no se encontró el usuario.";
+                    return Page();
+                }
+
+                var profile = await _userService.GetProfileAsync(user.Id);
+                if (profile == null)
+                {
+                    ErrorMessage = "Registro exitoso, pero no se pudo obtener el perfil del usuario.";
+                    return Page();
+                }
+
+                UserSessionManager.Instance.SetSession(token, user.Id.ToString(), user.Username);
+
+                var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim("avatar_url", profile.AvatarUrl ?? "/images/default_avatar.png"),
+                new Claim(ClaimTypes.Role, user.Role ?? "user")
+            };
+
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    principal,
+                    new AuthenticationProperties
+                    {
+                        IsPersistent = RegisterData.RememberMe,
+                        ExpiresUtc = RegisterData.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null
+                    });
+
+                Response.Cookies.Append("DuskSkyToken", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = RegisterData.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null
+                });
+
+                return RedirectToPage("/Homepage/Index");
+            }
+
+            ErrorMessage = "Registro exitoso, pero fallo al iniciar sesión.";
+            return Page();
+        }
+
+        ErrorMessage = "Registro fallido.";
+        return Page();
+    }
 
 
     public async Task<IActionResult> OnGetAsync()
@@ -207,11 +236,11 @@ public class StartPageModel : PageModel
 
         ReviewImages = new();
 
-        var seen = new HashSet<Guid>(); 
+        var seen = new HashSet<Guid>();
 
         foreach (var review in top10)
         {
-            if (!seen.Add(review.GameId)) 
+            if (!seen.Add(review.GameId))
                 continue;
 
             var game = await _gameService.GetGamePreviewByIdAsync(review.GameId);
@@ -225,7 +254,7 @@ public class StartPageModel : PageModel
         }
 
         var recentReviewsCards = await _reviewService.GetRecentReviewsAsync(6);
-        ReviewCards = new List<ReviewWithUserDto>();
+        ReviewCards = new List<ReviewFullDto>();
 
 
         foreach (var review in recentReviewsCards)
@@ -233,14 +262,15 @@ public class StartPageModel : PageModel
             var user = await _userService.GetProfileAsync(review.UserId); // 👈 aquí llamas al método
             var game = await _gameService.GetGamePreviewByIdAsync(review.GameId);
             var userWithName = await _authService.SearchUserByIdAsync(review.UserId);
-            
-            ReviewCards.Add(new ReviewWithUserDto
+
+            ReviewCards.Add(new ReviewFullDto
             {
                 Id = review.Id,
                 Content = review.Content,
                 Likes = review.Likes,
                 Rating = review.Rating,
-                GameId = review.GameId,
+                GameTitle = game.Title,
+                GameId = review.GameId.ToString(),
                 UserName = userWithName?.Username ?? "Usuario desconocido",
                 ProfileImageUrl = user?.AvatarUrl ?? "/Images/noImage.png",
                 GameImageUrl = game.HeaderUrl ?? "/Images/noImage.png"
@@ -266,7 +296,7 @@ public class StartPageModel : PageModel
         {
             var userTask = _userService.GetProfileAsync(list.UserId);
             if (string.IsNullOrWhiteSpace(list.Id))
-            continue;
+                continue;
             var itemsTask = _gameListItemService.GetItemsByListIdAsync(list.Id);
             var userWithName = await _authService.SearchUserByIdAsync(list.UserId);
 
@@ -320,5 +350,5 @@ public class StartPageModel : PageModel
 
     }
 
-    
+
 }

@@ -7,7 +7,7 @@ public class ReportDTO
     [JsonPropertyName("id")] // Mapea al campo 'id'
     public string Id { get; set; } = string.Empty;
 
-    [JsonPropertyName("reported_user_id")] // Mapea a 'reported_user_id'
+    [JsonPropertyName("reportedUserId")] // Mapea a 'reported_user_id'
     public string ReportedUserId { get; set; } = string.Empty;
 
     [JsonPropertyName("content_type")] // Mapea a 'content_type' (ej. "comment", "review", "profile")
@@ -16,7 +16,7 @@ public class ReportDTO
     [JsonPropertyName("reason")] // Mapea a 'reason'
     public string Reason { get; set; } = string.Empty;
 
-    [JsonPropertyName("reported_at")] // <-- Mapea a 'reported_at' (DateTime)
+    [JsonPropertyName("reportedAt")] // <-- Mapea a 'reported_at' (DateTime)
     public DateTime ReportedAt { get; set; }
 
     [JsonPropertyName("status")] // Mapea a 'status' (ej. "pending", "resolved")

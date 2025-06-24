@@ -85,7 +85,7 @@
             Tell your friends what’s good. <br>
         </h2>
         <p></p>
-        <button type="button" class="btn btn-primary btn-lg button-glass-blue">Get Started - it´s free</button>
+        <button type="button" class="btn btn-primary btn-lg button-glass-blue" data-bs-toggle="modal" data-bs-target="#createAccountModal">Get Started - it´s free</button>
         <p>
             <br>The social network for gamers.
         </p>
@@ -313,7 +313,7 @@
                     <div class="flex-3 p-3 d-flex flex-column justify-content-between">
                         <div>
                             <h5 class="card-title">
-                                @review.Content.Substring(0, Math.Min(30, review.Content.Length))...
+                                @review.GameTitle
                                 <span class="year">@review.CreatedAt.ToString("yyyy")</span>
                             </h5>
 
@@ -412,19 +412,24 @@
                     <div class="mb-3">
                         <label asp-for="RegisterData.Email" class="form-label">Email address</label>
                         <input asp-for="RegisterData.Email" class="form-control input-glass" type="email" />
-                        <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                        <span asp-validation-for="RegisterData.Email" class="text-danger"></span> <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
                     </div>
                     <div class="mb-3">
                         <label asp-for="RegisterData.Username" class="form-label">Username</label>
                         <input asp-for="RegisterData.Username" class="form-control input-glass" />
-                    </div>
+                        <span asp-validation-for="RegisterData.Username" class="text-danger"></span> </div>
                     <div class="mb-3">
                         <label asp-for="RegisterData.Password" class="form-label">Password</label>
                         <input asp-for="RegisterData.Password" class="form-control input-glass" type="password" />
+                        <span asp-validation-for="RegisterData.Password" class="text-danger"></span> </div>
+                    <div class="mb-3">
+                        <label asp-for="RegisterData.ConfirmPassword" class="form-label">Confirm Password</label>
+                        <input asp-for="RegisterData.ConfirmPassword" class="form-control input-glass" type="password" />
+                        <span asp-validation-for="RegisterData.ConfirmPassword" class="text-danger"></span>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="exampleCheck2">
-                        <label class="form-check-label" for="exampleCheck2">Remember me</label>
+                        <input asp-for="RegisterData.RememberMe" type="checkbox" class="form-check-input" id="exampleCheck2">
+                        <label asp-for="RegisterData.RememberMe" class="form-check-label" for="exampleCheck2">Remember me</label>
                     </div>
 
                     <div class="modal-footer">
@@ -447,19 +452,19 @@
             </div>
             <div class="modal-body">
                 @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
-{
-    <div class="alert alert-danger">@Model.ErrorMessage</div>
-}
+                {
+                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                }
 
                 <form method="post" asp-page-handler="Login">
                     <div class="mb-3">
                         <label asp-for="LoginData.Username" class="form-label">Email or Username</label>
                         <input asp-for="LoginData.Username" class="form-control input-glass" type="text" />
-                    </div>
+                        <span asp-validation-for="LoginData.Username" class="text-danger"></span> </div>
                     <div class="mb-3">
                         <label asp-for="LoginData.Password" class="form-label">Password</label>
                         <input asp-for="LoginData.Password" class="form-control input-glass" type="password" />
-                    </div>
+                        <span asp-validation-for="LoginData.Password" class="text-danger"></span> </div>
                     <div class="mb-3">
                         <a class="form-label" href="/Homepage/Index">Forgotten?</a>
                     </div>

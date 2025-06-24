@@ -38,7 +38,7 @@ public class GameService : IGameService
 
         public async Task<(bool success, string? message, Guid? gameId)> ImportGameAsync(int steamAppId)
         {
-            var response = await _http.PostAsync($"api/game/import/{steamAppId}", null);
+            var response = await _http.PostAsync($"import/{steamAppId}", null);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
             {

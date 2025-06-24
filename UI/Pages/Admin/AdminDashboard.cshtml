@@ -2,11 +2,11 @@
 @model AdminDashboardModel
 @{
     ViewData["Title"] = "Admin/Moderator Dashboard";
-    ViewData["ShowBackground"] = false;
+    ViewData["ShowBackground"] = false; // Asumo que esta es una propiedad que manejas para el fondo
 }
 
 <div class="container py-4">
-    <h2 class="mb-4 text-center fw-bold">Admin/Moderator Dashboard</h2>
+    <h2 class="mb-4 text-center fw-bold py-5">Admin/Moderator Dashboard</h2>
 
     @if (!string.IsNullOrEmpty(Model.StatusMessage))
     {
@@ -70,12 +70,17 @@
                 <h6 class="mb-3">Promote User to Moderator</h6>
                 <div class="mb-4">
                     <input type="text" id="promoteUserSearchInput" class="form-control mb-2" placeholder="Search username to promote..." />
-                    <div id="promoteUserSearchResults" class="list-group user-search-results">
-                        </div>
-                    <form method="post" asp-page-handler="PromoteUser" class="ajax-form d-none mt-3" id="promoteUserForm" data-success-message="User promoted." data-error-message="Failed to promote." data-handler="PromoteUser"> 
+                    <div id="promoteUserSearchResults" class="list-group user-search-results"></div>
+
+                    <form method="post" asp-page-handler="PromoteUser" class="d-none mt-3" id="promoteUserForm">
                         @Html.AntiForgeryToken()
-                        <input type="hidden" name="userIdToPromote" id="selectedPromoteUserId" />
-                        <p class="mb-2">Promote: <strong id="promoteSelectedUsername"></strong> (Current Role: <span id="promoteCurrentUserRole" class="badge"></span>)</p>
+                        @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en PromoteUserInput *@
+                        <input type="hidden" name="input.UserId" id="selectedPromoteUserId" /> 
+                        <p class="mb-2">
+                            Promote: <strong id="promoteSelectedUsername"></strong>
+                            (Current Role:
+                            <span id="promoteCurrentUserRole" class="badge"></span>)
+                        </p>
                         <button type="submit" class="btn btn-success w-100">Confirm Promote</button>
                     </form>
                 </div>
@@ -86,21 +91,27 @@
                 <h6 class="mb-3">Demote Moderator to User</h6>
                 <div class="mb-4">
                     <input type="text" id="demoteUserSearchInput" class="form-control mb-2" placeholder="Search username to demote..." />
-                    <div id="demoteUserSearchResults" class="list-group user-search-results">
-                        </div>
-                    <form method="post" asp-page-handler="DemoteUser" class="ajax-form d-none mt-3" id="demoteUserForm" data-success-message="User demoted." data-error-message="Failed to demote." data-handler="DemoteUser"> 
+                    <div id="demoteUserSearchResults" class="list-group user-search-results"></div>
+
+                    <form method="post" asp-page-handler="DemoteUser" class="d-none mt-3" id="demoteUserForm">
                         @Html.AntiForgeryToken()
-                        <input type="hidden" name="userIdToDemote" id="selectedDemoteUserId" />
-                        <p class="mb-2">Demote: <strong id="demoteSelectedUsername"></strong> (Current Role: <span id="demoteCurrentUserRole" class="badge"></span>)</p>
+                        @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en DemoteUserInput *@
+                        <input type="hidden" name="input.UserId" id="selectedDemoteUserId" />
+                        <p class="mb-2">
+                            Demote: <strong id="demoteSelectedUsername"></strong>
+                            (Current Role:
+                            <span id="demoteCurrentUserRole" class="badge"></span>)
+                        </p>
                         <button type="submit" class="btn btn-warning w-100">Confirm Demote</button>
                     </form>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
 
-@* Modal: Add New Game (Admin Only) - SIN CAMBIOS *@
+@* Modal: Add New Game (Admin Only) *@
 <div class="modal fade" id="addGameModal" tabindex="-1" aria-labelledby="addGameModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -109,22 +120,41 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted small">Import a new game from Steam using its App ID.</p>
-                <form method="post" asp-page-handler="AddGame" class="ajax-form" data-success-message="Game imported!" data-error-message="Error importing game." data-handler="AddGame"> 
+                <p class="text-muted small">Enter a valid Steam store URL for the game.</p>
+                <form method="post" asp-page-handler="AddGame">
                     @Html.AntiForgeryToken()
                     <div class="input-group mb-3">
-                        <input asp-for="AddGameInput.SteamAppId" type="number" class="form-control" placeholder="Steam App ID" required />
+                        @* NOTA: Aquí asp-for ya no puede referenciar a Model.AddGameInput porque ya no existe como propiedad.
+                           Pero Razor Pages es inteligente. Para el 'asp-for' puedes seguir usando 'AddGameInput.SteamLink'
+                           porque sabe que es un ViewModel que se espera como parámetro en el handler.
+                           Para el 'name', es crucial que sea 'addGameInput.SteamLink' para que el model binder lo encuentre. *@
+                        <input asp-for="addGameInput.SteamLink" name="addGameInput.SteamLink" type="text" class="form-control" placeholder="https://store.steampowered.com/app/XXXXX/Game_Name/" required />
                         <button type="submit" class="btn btn-primary">Import Game</button>
                     </div>
-                    <span asp-validation-for="AddGameInput.SteamAppId" class="text-danger"></span>
-                    @if (!string.IsNullOrEmpty(Model.AddGameInput.ImportStatusMessage))
+                    <span asp-validation-for="addGameInput.SteamLink" class="text-danger"></span>
+
+                    @* Mostrar resultado de la importación (si existe). Esto sí usa Model.AddGameResult, que es una propiedad del PageModel. *@
+                    @if (!string.IsNullOrEmpty(Model.AddGameResult.ImportStatusMessage))
                     {
-                        <div class="alert @(Model.AddGameInput.ImportStatusMessage.StartsWith("Success") ? "alert-success" : "alert-danger") mt-2">
-                            @Model.AddGameInput.ImportStatusMessage
-                            @if (Model.AddGameInput.ImportedGameId.HasValue)
+                        <div class="alert @(Model.AddGameResult.ImportStatusMessage.StartsWith("Success") ? "alert-success" : "alert-danger") mt-2">
+                            @Model.AddGameResult.ImportStatusMessage
+                            @if (Model.AddGameResult.ImportedGameId.HasValue)
                             {
-                                <a asp-page="/Games/Details" asp-route-gameId="@Model.AddGameInput.ImportedGameId.Value" class="alert-link ms-2">View Game</a>
+                                <a asp-page="/Games/Details" asp-route-gameId="@Model.AddGameResult.ImportedGameId.Value" class="alert-link ms-2">View Game</a>
                             }
+                        </div>
+                    }
+                     @* Mostrar errores específicos del modal si hay (ej. después de un error de validación) *@
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey("addGameInput.SteamLink"))
+                    {
+                        <div class="alert alert-danger mt-2">
+                            <strong>Errores en el enlace:</strong>
+                            <ul>
+                                @foreach (var error in ViewData.ModelState["addGameInput.SteamLink"].Errors)
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
                         </div>
                     }
                 </form>
@@ -133,7 +163,7 @@
     </div>
 </div>
 
-@* Modal: View All Users (Admin Only) - SIN CAMBIOS *@
+@* Modal: View All Users (Admin Only) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewAllUsersModal" tabindex="-1" aria-labelledby="viewAllUsersModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -164,7 +194,7 @@
     </div>
 </div>
 
-@* Modal: View Reports (Admin & Moderator) - SIN CAMBIOS *@
+@* Modal: View Reports (Admin & Moderator) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewReportsModal" tabindex="-1" aria-labelledby="viewReportsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
@@ -194,14 +224,16 @@
                                     <div class="text-end">
                                         @if (report.Status == "pending")
                                         {
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-success me-1 resolve-report-btn"
-                                                    data-report-id="@report.ReportId"
-                                                    data-reported-user-id="@report.ReportedUserId">
-                                                Resolve & Sanction
-                                            </button>
+                                            <form method="post" asp-page-handler="PrepareSanction" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="reportId" value="@report.ReportId" />
+                                                <input type="hidden" name="reportedUserId" value="@report.ReportedUserId" />
+                                                <button type="submit" class="btn btn-sm btn-success me-1">
+                                                    Resolve & Sanction
+                                                </button>
+                                            </form>
                                         }
-                                        <form method="post" asp-page-handler="DeleteReport" asp-route-reportId="@report.ReportId" class="d-inline ajax-form" data-success-message="Report deleted!" data-error-message="Failed to delete report.">
+                                        <form method="post" asp-page-handler="DeleteReport" class="d-inline ajax-form" data-success-message="Report deleted!" data-error-message="Failed to delete report.">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                         </form>
@@ -220,57 +252,73 @@
     </div>
 </div>
 
-@* Modal: Create Sanction (Admin & Moderator) - SIN CAMBIOS *@
+@* Modal: Create Sanction (Admin & Moderator) - Afectado por los cambios de Model Binding *@
+<!-- Modal para crear sanción -->
 <div class="modal fade" id="createSanctionModal" tabindex="-1" aria-labelledby="createSanctionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="createSanctionModalLabel">Create New Sanction</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" asp-page-handler="CreateSanction" class="ajax-form" data-success-message="Sanction created!" data-error-message="Error creating sanction." data-handler="CreateSanction"> 
-                    @Html.AntiForgeryToken()
+            <form method="post" asp-page-handler="CreateSanction">
+                @Html.AntiForgeryToken()
+                <partial name="_ValidationScriptsPartial" />
+<div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createSanctionModalLabel">Crear sanción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- ReportId oculto -->
+                    <input asp-for="CreateSanctionInput.ReportId" id="createSanctionReportId" type="hidden" />
+
+                    <!-- UserId oculto -->
+                    <input asp-for="CreateSanctionInput.UserId" id="createSanctionUserId" type="hidden" />
+
+                    <!-- Tipo de sanción -->
                     <div class="mb-3">
-                        <label asp-for="CreateSanctionInput.UserId" class="form-label">Sanctioned User ID</label> 
-                        <input asp-for="CreateSanctionInput.UserId" class="form-control" placeholder="User ID to sanction" required /> 
-                        <span asp-validation-for="CreateSanctionInput.UserId" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="CreateSanctionInput.Type" class="form-label">Sanction Type</label>
-                        <select asp-for="CreateSanctionInput.Type" class="form-select" required> 
-                            <option value="">Select Type</option>
-                            <option value="suspension">Suspension</option>
+                        <label asp-for="CreateSanctionInput.Type" class="form-label"></label>
+                        <select asp-for="CreateSanctionInput.Type" class="form-select">
+                            <option value="">Selecciona tipo de sanción</option>
                             <option value="ban">Ban</option>
-                            <option value="warning">Warning</option>
+                            <option value="suspension">Suspensión</option>
                         </select>
-                        <span asp-validation-for="CreateSanctionInput.Type" class="text-danger"></span> 
+                        <span asp-validation-for="CreateSanctionInput.Type" class="text-danger"></span>
                     </div>
+
+                    <!-- Razón -->
                     <div class="mb-3">
-                        <label asp-for="CreateSanctionInput.Reason" class="form-label">Reason</label>
-                        <textarea asp-for="CreateSanctionInput.Reason" class="form-control" rows="3" required></textarea>
+                        <label asp-for="CreateSanctionInput.Reason" class="form-label"></label>
+                        <textarea asp-for="CreateSanctionInput.Reason" class="form-control"></textarea>
                         <span asp-validation-for="CreateSanctionInput.Reason" class="text-danger"></span>
                     </div>
+
+                    <!-- Fecha de inicio -->
                     <div class="mb-3">
-                        <label asp-for="CreateSanctionInput.StartDate" class="form-label">Start Date</label>
+                        <label asp-for="CreateSanctionInput.StartDate" class="form-label"></label>
                         <input asp-for="CreateSanctionInput.StartDate" type="date" class="form-control" />
                         <span asp-validation-for="CreateSanctionInput.StartDate" class="text-danger"></span>
                     </div>
+
+                    <!-- Fecha de fin (opcional si es suspensión) -->
                     <div class="mb-3">
-                        <label asp-for="CreateSanctionInput.EndDate" class="form-label">End Date (Optional)</label>
+                        <label asp-for="CreateSanctionInput.EndDate" class="form-label"></label>
                         <input asp-for="CreateSanctionInput.EndDate" type="date" class="form-control" />
                         <span asp-validation-for="CreateSanctionInput.EndDate" class="text-danger"></span>
                     </div>
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-danger">Create Sanction</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Crear sanción</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+
+            </form>
         </div>
     </div>
 </div>
 
-@* Modal: View Sanctions (Admin & Moderator) - SIN CAMBIOS *@
+
+@* Modal: View Sanctions (Admin & Moderator) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewSanctionsModal" tabindex="-1" aria-labelledby="viewSanctionsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -319,20 +367,20 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Manejador genérico para formularios AJAX (sin cambios significativos)
+            // Manejador genérico para formularios AJAX 
             document.querySelectorAll('form.ajax-form').forEach(form => {
                 form.addEventListener('submit', async function (e) {
-                    e.preventDefault(); // Prevenir el envío estándar del formulario
+                    e.preventDefault();
 
                     const formData = new FormData(this);
-                    const handler = this.dataset.handler; // Leer el atributo data-handler
+                    const handler = this.dataset.handler;
 
                     const successMessage = this.dataset.successMessage || 'Action completed successfully.';
                     const errorMessage = this.dataset.errorMessage || 'An error occurred. Please try again.';
 
                     try {
                         let url = `@Url.Page("/Admin/Dashboard")?handler=${handler}`;
-                        
+
                         const routeParams = {};
                         if (this.action.includes('?')) {
                             const queryString = this.action.split('?')[1];
@@ -349,7 +397,7 @@
                             }
                         }
 
-                        const requestVerificationToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                        const requestVerificationToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
                         if (requestVerificationToken) {
                             formData.append('__RequestVerificationToken', requestVerificationToken);
                         }
@@ -360,22 +408,19 @@
                         });
 
                         if (response.ok) {
-                            const resultText = await response.text(); 
+                            const resultText = await response.text();
                             let result = { success: true };
                             try {
-                                result = JSON.parse(resultText); 
+                                result = JSON.parse(resultText);
                             } catch (e) {
-                                result.success = true; 
+                                result.success = true;
                             }
-                            
+
                             if (result.success) {
                                 showAlert(successMessage, 'success');
                                 const modal = bootstrap.Modal.getInstance(this.closest('.modal'));
-                                if (modal) {
-                                    modal.hide();
-                                }
-                                window.location.reload(); 
-
+                                if (modal) modal.hide();
+                                window.location.reload();
                             } else {
                                 showAlert(`Error: ${result.message || errorMessage}`, 'danger');
                             }
@@ -399,179 +444,38 @@
                 });
             });
 
-            // Función para mostrar alertas (sin cambios)
+            const shouldOpenSanctionModal = @(ViewData["OpenCreateSanctionModal"] as bool? ?? false).ToString().ToLower();
+
+            if (shouldOpenSanctionModal) {
+                const sanctionModalElement = document.getElementById('createSanctionModal');
+                if (sanctionModalElement) {
+                    const sanctionModal = new bootstrap.Modal(sanctionModalElement);
+                    sanctionModal.show();
+                }
+            }
+        });
+
             function showAlert(message, type) {
                 const alertContainer = document.querySelector('.container .alert');
                 if (!alertContainer) return;
+                if (!message) {
+                    alertContainer.classList.add('d-none');
+                    return;
+                }
 
                 alertContainer.textContent = message;
                 alertContainer.classList.remove('d-none', 'alert-success', 'alert-danger');
                 alertContainer.classList.add(`alert-${type}`);
-                
-                alertContainer.querySelector('.btn-close').onclick = () => alertContainer.classList.add('d-none');
+
+                const closeButton = alertContainer.querySelector('.btn-close');
+                if (closeButton) closeButton.onclick = () => alertContainer.classList.add('d-none');
 
                 setTimeout(() => {
                     alertContainer.classList.add('d-none');
-                }, 5000); 
+                }, 5000);
             }
 
-            // --- FUNCIONALIDAD DE BÚSQUEDA DE USUARIOS (PROMOTE/DEMOTE) ---
-            const promoteUserSearchInput = document.getElementById('promoteUserSearchInput');
-            const promoteUserSearchResults = document.getElementById('promoteUserSearchResults');
-            const promoteUserForm = document.getElementById('promoteUserForm');
-            const promoteSelectedUsername = document.getElementById('promoteSelectedUsername');
-            const promoteCurrentUserRole = document.getElementById('promoteCurrentUserRole');
-            const selectedPromoteUserId = document.getElementById('selectedPromoteUserId');
-
-            const demoteUserSearchInput = document.getElementById('demoteUserSearchInput');
-            const demoteUserSearchResults = document.getElementById('demoteUserSearchResults');
-            const demoteUserForm = document.getElementById('demoteUserForm');
-            const demoteSelectedUsername = document.getElementById('demoteSelectedUsername');
-            const demoteCurrentUserRole = document.getElementById('demoteCurrentUserRole');
-            const selectedDemoteUserId = document.getElementById('selectedDemoteUserId');
-
-            let searchTimeout;
-
-            function setupUserSearch(searchInput, resultsContainer, targetForm, selectedUsernameSpan, currentUserRoleSpan, selectedUserIdInput) {
-                if (!searchInput) {
-                    return; // No hacer nada si el input no existe
-                }
-                searchInput.addEventListener('input', function () {
-                    clearTimeout(searchTimeout);
-                    const query = this.value;
-
-                    resultsContainer.innerHTML = '';
-                    targetForm.classList.add('d-none'); // Ocultar formulario de acción al buscar
-                    selectedUsernameSpan.textContent = '';
-                    currentUserRoleSpan.textContent = '';
-                    selectedUserIdInput.value = '';
-
-                    if (query.length < 2) { 
-                        return;
-                    }
-
-                    searchTimeout = setTimeout(async () => {
-                        try {
-                            const url = `@Url.Page("/Admin/Dashboard")?handler=SearchUsersForRoles&query=${encodeURIComponent(query)}`;
-                            const response = await fetch(url);
-                            const users = await response.json();
-
-                            if (users.length > 0) {
-                                users.forEach(user => {
-                                    const userItem = document.createElement('a');
-                                    userItem.href = '#'; 
-                                    userItem.classList.add('list-group-item', 'list-group-item-action', 'd-flex', 'align-items-center');
-                                    userItem.innerHTML = `
-                                        <img src="${user.avatarUrl || '/images/default_avatar.png'}" alt="Avatar" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
-                                        ${user.username || 'N/A'} 
-                                        <span class="badge bg-secondary ms-auto">${user.role || 'N/A'}</span>
-                                    `;
-                                    userItem.dataset.userId = user.userId;
-                                    userItem.dataset.username = user.username;
-                                    userItem.dataset.role = user.role;
-                                    
-                                    userItem.addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                        selectedUserIdInput.value = this.dataset.userId;
-                                        selectedUsernameSpan.textContent = this.dataset.username;
-                                        currentUserRoleSpan.textContent = this.dataset.role;
-                                        currentUserRoleSpan.classList.remove('bg-primary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-secondary'); 
-                                        currentUserRoleSpan.classList.add(getRoleBadgeClass(this.dataset.role)); 
-                                        targetForm.classList.remove('d-none'); 
-                                        resultsContainer.innerHTML = ''; 
-                                    });
-                                    resultsContainer.appendChild(userItem);
-                                });
-                            } else {
-                                resultsContainer.innerHTML = '<div class="list-group-item text-muted">No users found.</div>';
-                            }
-                        } catch (error) {
-                            console.error('Error during user search fetch:', error); 
-                            resultsContainer.innerHTML = '<div class="list-group-item text-danger">Error searching users.</div>';
-                        }
-                    }, 300);
-                });
-            }
-
-            // Función para obtener la clase de badge según el rol (para el UI)
-            function getRoleBadgeClass(role) {
-                switch(role.toLowerCase()) {
-                    case 'admin': return 'bg-danger';
-                    case 'moderator': return 'bg-warning';
-                    case 'user': return 'bg-primary';
-                    default: return 'bg-secondary';
-                }
-            }
-
-            // Llamadas a setupUserSearch para ambos campos
-            setupUserSearch(promoteUserSearchInput, promoteUserSearchResults, promoteUserForm, promoteSelectedUsername, promoteCurrentUserRole, selectedPromoteUserId);
-            setupUserSearch(demoteUserSearchInput, demoteUserSearchResults, demoteUserForm, demoteSelectedUsername, demoteCurrentUserRole, selectedDemoteUserId);
-
-            // --- MANEJADOR PARA EL BOTÓN "RESOLVE & SANCTION" ---
-            document.querySelectorAll('.resolve-report-btn').forEach(button => {
-                button.addEventListener('click', async function () {
-                    const reportId = this.dataset.reportId;
-                    const reportedUserId = this.dataset.reportedUserId; 
-                    
-                    if (!confirm('Are you sure you want to resolve this report and proceed to sanction?')) {
-                        return;
-                    }
-
-                    try {
-                        const formData = new FormData();
-                        formData.append('reportId', reportId);
-                        formData.append('newStatus', 'resolved'); 
-
-                        const url = `@Url.Page("/Admin/Dashboard")?handler=ResolveReport`; 
-
-                        const response = await fetch(url, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value 
-                            }
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            showAlert(result.message, 'success');
-                            
-                            const reportsModal = bootstrap.Modal.getInstance(document.getElementById('viewReportsModal'));
-                            if (reportsModal) {
-                                reportsModal.hide();
-                            }
-
-                            const createSanctionModalElement = document.getElementById('createSanctionModal');
-                            const userIdInput = createSanctionModalElement.querySelector('input[name="CreateSanctionInput.UserId"]');
-                            if (userIdInput) {
-                                userIdInput.value = reportedUserId; 
-                            }
-
-                            const createSanctionModal = new bootstrap.Modal(createSanctionModalElement);
-                            createSanctionModal.show();
-
-                        } else {
-                            showAlert(`Error: ${result.message || errorMessage}`, 'danger');
-                        }
-                    } catch (error) {
-                        console.error('Error resolving report:', error);
-                        showAlert('An unexpected error occurred while resolving the report.', 'danger');
-                    }
-                });
-            });
-
-            // Inicializar modales (para recargar datos al abrirse si se cargan por AJAX) - sin cambios aquí
-            const modalsToReload = ['#viewReportsModal', '#viewSanctionsModal', '#viewAllUsersModal'];
-            modalsToReload.forEach(modalSelector => {
-                const modalElement = document.querySelector(modalSelector);
-                if (modalElement) {
-                    modalElement.addEventListener('show.bs.modal', async function (event) {
-                        const form = this.querySelector('form');
-                        if (form) form.reset();
-                    });
-                }
-            });
+            
         });
     </script>
 }

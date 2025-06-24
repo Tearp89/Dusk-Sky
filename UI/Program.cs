@@ -74,6 +74,8 @@ builder.Services.AddAuthentication("Cookies")
     {
         options.LoginPath = "/StartPage"; // o donde esté tu login
         options.AccessDeniedPath = "/AccessDenied"; // opcional
+        options.ExpireTimeSpan = TimeSpan.FromDays(30); // Define que la cookie durará 30 días si es persistente
+        options.SlidingExpiration = true; 
     });
 
 builder.Services.AddAuthorization();
@@ -86,6 +88,10 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
 
 
 

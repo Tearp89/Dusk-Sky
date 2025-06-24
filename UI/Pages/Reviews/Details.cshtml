@@ -35,6 +35,35 @@ else
                 <img src="@Model.Review.GameImageUrl" class="rounded shadow" style="width: 160px;" alt="Game Cover">
                 <div class="flex-grow-1">
                     <p class="text-muted mb-1">Review by <strong>@Model.Review.UserName</strong></p>
+                    <div class="dropdown position-absolute end-0 me-2">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                            id="reviewActionsMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reviewActionsMenu">
+                            @if (Model.Review.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+                            {
+                                <li>
+                                    <button class="dropdown-item text-danger" data-bs-toggle="modal"
+                                        data-bs-target="#reportModal">
+                                        Report review
+                                    </button>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("admin") || User.IsInRole("moderator"))
+                            {
+                                <li>
+                                    <form method="post" asp-page-handler="DeleteReview"
+                                        onsubmit="return confirm('Are you sure you want to delete this review?');">
+                                        <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
+                                        <button type="submit" class="dropdown-item text-danger">Delete review</button>
+                                    </form>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
                     <h2 class="fw-bold mb-2">
                         @Model.GamePreview.Title
                         <small class="text-muted">@Model.Review.CreatedAt.ToString("yyyy")</small>
@@ -270,6 +299,33 @@ else
         </div>
     </div>
 
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="ReportReview">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="reportModalLabel">Report review</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="ContentId" value="@Model.Review.Id" />
+                    <input type="hidden" name="ContentType" value="review" />
+                    <input type="hidden" name="CreatedAt" value="@DateTime.UtcNow.ToString("o")" />
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason</label>
+                        <textarea class="form-control" id="reason" name="Reason" rows="4"
+                            placeholder="Explain why you're reporting this review..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 
     <!-- Mensaje de éxito para listas -->
     <div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
@@ -407,9 +463,9 @@ else
         event.target.classList.add('active');
     }
 
-   /* function goToCreateListPage() {
-        const title = document.getElementById("searchListInput")?.value || "";
-        const gameId = document.getElementById("listModalTitle")?.dataset.gameId || "";
-        window.location.href = `/Lists/Creator?defaultName=${encodeURIComponent(title)}&gameId=${gameId}`;
-    }*/
+    /* function goToCreateListPage() {
+         const title = document.getElementById("searchListInput")?.value || "";
+         const gameId = document.getElementById("listModalTitle")?.dataset.gameId || "";
+         window.location.href = `/Lists/Creator?defaultName=${encodeURIComponent(title)}&gameId=${gameId}`;
+     }*/
 </script>

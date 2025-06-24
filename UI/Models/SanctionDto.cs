@@ -4,25 +4,34 @@ using System.Text.Json.Serialization; // <-- ¡Necesario!
 
 public class SanctionDTO
 {
-    [JsonPropertyName("id")] 
-    public string Id { get; set; } = string.Empty;
+    [JsonPropertyName("id")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string Id { get; set; }
 
-    [JsonPropertyName("report_id")] 
-    public string? ReportId { get; set; } 
+    [JsonPropertyName("ReportId")]
+    public string? ReportId { get; set; }
 
-    [JsonPropertyName("user_id")] 
+    [JsonPropertyName("UserId")]
     public string UserId { get; set; } = string.Empty;
 
-    [JsonPropertyName("type")] 
-    public string Type { get; set; } = string.Empty; 
+    [JsonPropertyName("Type")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public SanctionType Type { get; set; } // un enum
 
-    [JsonPropertyName("start_date")] 
+    
+    [JsonPropertyName("StartDate")]
     public DateTime StartDate { get; set; }
 
-    [JsonPropertyName("end_date")] 
+    [JsonPropertyName("EndDate")]
     public DateTime? EndDate { get; set; }
 
-    [JsonPropertyName("reason")] 
+    [JsonPropertyName("Reason")]
     public string Reason { get; set; } = string.Empty;
 
+}
+
+public enum SanctionType
+{
+    suspension,
+    ban
 }

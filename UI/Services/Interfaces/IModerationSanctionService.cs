@@ -5,4 +5,6 @@ public interface IModerationSanctionService
     Task<bool> CreateAsync(SanctionDTO sanction);
     Task<bool> UpdateAsync(string id, SanctionDTO sanction);
     Task<bool> DeleteAsync(string id);
+    Task<List<SanctionDTO>> GetActiveSanctionsForUserAsync(string userId);
+    Task<bool> HasActiveSanctionAsync(string userId);
 }
