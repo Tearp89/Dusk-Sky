@@ -5,4 +5,5 @@ public interface IModerationReportService
     Task<bool> CreateAsync(ReportDTO report);
     Task<bool> UpdateAsync(string id, ReportDTO report);
     Task<bool> DeleteAsync(string id);
+    Task<bool> ResolveReportAsync(string reportId);
 }

@@ -33,7 +33,7 @@ public class AdminDashboardModel : PageModel
 
     [TempData]
     public string StatusMessage { get; set; } = string.Empty;
-    
+
 
 
     public AdminDashboardModel(
@@ -208,39 +208,39 @@ public class AdminDashboardModel : PageModel
     }
 
     [Authorize(Roles = "admin,moderator")]
-public async Task<IActionResult> OnPostPrepareSanctionAsync(string reportId, string reportedUserId)
-{
-    // 1. Marcar el reporte como resuelto (lógica del antiguo OnPostResolveReportAsync)
-    var report = await _reportService.GetByIdAsync(reportId);
-    if (report != null)
+    public async Task<IActionResult> OnPostPrepareSanctionAsync(string reportId, string reportedUserId)
     {
-        report.Status = "resolved";
-        await _reportService.UpdateAsync(reportId, report);
-        StatusMessage = $"Reporte {reportId.Substring(0, 8)}... marcado como resuelto. Proceda con la sanción.";
+        // 1. Marcar el reporte como resuelto (lógica del antiguo OnPostResolveReportAsync)
+        var report = await _reportService.GetByIdAsync(reportId);
+        if (report != null)
+        {
+            report.Status = "resolved";
+            await _reportService.UpdateAsync(reportId, report);
+            StatusMessage = $"Reporte {reportId.Substring(0, 8)}... marcado como resuelto. Proceda con la sanción.";
+        }
+
+        // 2. Preparar el ViewModel para el modal de sanción
+        CreateSanctionInput = new SanctionViewModel
+        {
+            ReportId = reportId,
+            UserId = reportedUserId.Trim(),
+            StartDate = DateTime.UtcNow // Pre-llenar con la fecha actual
+        };
+
+        // 3. Cargar los datos necesarios para la página
+        await LoadReportsAsync();
+        await LoadSanctionsAsync();
+        if (User.IsInRole("admin"))
+        {
+            await LoadAllUsersAsync();
+        }
+
+        // 4. Añadir una bandera para que JavaScript sepa que debe abrir el modal
+        ViewData["OpenCreateSanctionModal"] = true;
+
+        // 5. Devolver la página para que se recargue con el estado actualizado
+        return Page();
     }
-
-    // 2. Preparar el ViewModel para el modal de sanción
-    CreateSanctionInput = new SanctionViewModel
-    {
-        ReportId = reportId,
-        UserId = reportedUserId.Trim(),
-        StartDate = DateTime.UtcNow // Pre-llenar con la fecha actual
-    };
-
-    // 3. Cargar los datos necesarios para la página
-    await LoadReportsAsync();
-    await LoadSanctionsAsync();
-    if (User.IsInRole("admin"))
-    {
-        await LoadAllUsersAsync();
-    }
-
-    // 4. Añadir una bandera para que JavaScript sepa que debe abrir el modal
-    ViewData["OpenCreateSanctionModal"] = true;
-
-    // 5. Devolver la página para que se recargue con el estado actualizado
-    return Page();
-}
 
 
     // --- Métodos OnPost (Acciones de Admin/Moderador) ---
@@ -399,83 +399,91 @@ public async Task<IActionResult> OnPostPrepareSanctionAsync(string reportId, str
     [Authorize(Roles = "admin,moderator")]
     public async Task<IActionResult> OnPostDeleteReportAsync(string reportId)
     {
+        if (string.IsNullOrEmpty(reportId))
+        {
+            TempData["StatusMessage"] = "Error: Se requiere el ID del reporte para eliminarlo.";
+            return RedirectToPage();
+        }
+
         var success = await _reportService.DeleteAsync(reportId);
         if (success)
         {
-            StatusMessage = $"Reporte {reportId} eliminado.";
+            // Usamos TempData para que el mensaje sobreviva a la redirección
+            TempData["StatusMessage"] = $"Reporte #{reportId.Substring(0, 8)}... fue eliminado exitosamente.";
         }
         else
         {
-            StatusMessage = $"Error: Falló la eliminación del reporte.";
+            TempData["StatusMessage"] = "Error: Falló la eliminación del reporte. Es posible que esté asociado a una sanción.";
         }
-        await LoadReportsAsync();
-        return Page();
+
+        // Redirigimos a la misma página para ver el resultado
+        return RedirectToPage();
     }
 
     [Authorize(Roles = "admin,moderator")]
-public async Task<IActionResult> OnPostCreateSanctionAsync() 
-{
-    if (!ModelState.IsValid)
+    public async Task<IActionResult> OnPostCreateSanctionAsync()
     {
-        await LoadReportsAsync();
-        await LoadSanctionsAsync();
-        if (User.IsInRole("admin")) await LoadAllUsersAsync();
-        ViewData["OpenCreateSanctionModal"] = true; 
-        return Page();
+        if (!ModelState.IsValid)
+        {
+            await LoadReportsAsync();
+            await LoadSanctionsAsync();
+            if (User.IsInRole("admin")) await LoadAllUsersAsync();
+            ViewData["OpenCreateSanctionModal"] = true;
+            return Page();
+        }
+
+        // Verificar sanciones existentes
+        var sanctions = await _sanctionService.GetAllAsync();
+
+        var now = DateTime.UtcNow;
+
+        var hasConflict = sanctions.Any(s =>
+            s.UserId.Trim() == CreateSanctionInput.UserId.Trim() &&
+            (
+                // Ban permanente
+                s.Type == SanctionType.ban ||
+
+                // Superposición de suspensión: [start, end] intersects with [existing.Start, existing.End]
+                (s.Type == SanctionType.suspension &&
+                 CreateSanctionInput.StartDate < s.EndDate &&
+                 CreateSanctionInput.EndDate > s.StartDate)
+            )
+        );
+
+        if (hasConflict)
+        {
+            ModelState.AddModelError(string.Empty, "The user already has an active or overlapping sanction.");
+            await LoadReportsAsync();
+            await LoadSanctionsAsync();
+            if (User.IsInRole("admin")) await LoadAllUsersAsync();
+            ViewData["OpenCreateSanctionModal"] = true;
+            return Page();
+        }
+
+        var sanctionDto = new SanctionDTO
+        {
+            ReportId = CreateSanctionInput.ReportId,
+            UserId = CreateSanctionInput.UserId.Trim(),
+            Type = CreateSanctionInput.Type,
+            Reason = CreateSanctionInput.Reason,
+            StartDate = DateTime.SpecifyKind(CreateSanctionInput.StartDate, DateTimeKind.Utc),
+            EndDate = CreateSanctionInput.EndDate.HasValue
+                        ? DateTime.SpecifyKind(CreateSanctionInput.EndDate.Value, DateTimeKind.Utc)
+                        : (DateTime?)null
+        };
+
+        var success = await _sanctionService.CreateAsync(sanctionDto);
+        if (success)
+        {
+            TempData["StatusMessage"] = "Sanción creada exitosamente.";
+        }
+        else
+        {
+            TempData["StatusMessage"] = "Error: Falló la creación de la sanción.";
+        }
+
+        return RedirectToPage();
     }
-
-    // Verificar sanciones existentes
-    var sanctions = await _sanctionService.GetAllAsync();
-
-    var now = DateTime.UtcNow;
-
-    var hasConflict = sanctions.Any(s =>
-        s.UserId.Trim() == CreateSanctionInput.UserId.Trim() &&
-        (
-            // Ban permanente
-            s.Type == SanctionType.ban ||
-
-            // Superposición de suspensión: [start, end] intersects with [existing.Start, existing.End]
-            (s.Type == SanctionType.suspension &&
-             CreateSanctionInput.StartDate < s.EndDate &&
-             CreateSanctionInput.EndDate > s.StartDate)
-        )
-    );
-
-    if (hasConflict)
-    {
-        ModelState.AddModelError(string.Empty, "The user already has an active or overlapping sanction.");
-        await LoadReportsAsync();
-        await LoadSanctionsAsync();
-        if (User.IsInRole("admin")) await LoadAllUsersAsync();
-        ViewData["OpenCreateSanctionModal"] = true;
-        return Page();
-    }
-
-    var sanctionDto = new SanctionDTO
-    {
-        ReportId = CreateSanctionInput.ReportId,
-        UserId = CreateSanctionInput.UserId.Trim(),
-        Type = CreateSanctionInput.Type,
-        Reason = CreateSanctionInput.Reason,
-        StartDate = DateTime.SpecifyKind(CreateSanctionInput.StartDate, DateTimeKind.Utc),
-        EndDate = CreateSanctionInput.EndDate.HasValue 
-                    ? DateTime.SpecifyKind(CreateSanctionInput.EndDate.Value, DateTimeKind.Utc)
-                    : (DateTime?)null
-    };
-
-    var success = await _sanctionService.CreateAsync(sanctionDto);
-    if (success)
-    {
-        TempData["StatusMessage"] = "Sanción creada exitosamente.";
-    }
-    else
-    {
-        TempData["StatusMessage"] = "Error: Falló la creación de la sanción.";
-    }
-
-    return RedirectToPage();
-}
 
 
     [Authorize(Roles = "admin,moderator")]
@@ -525,4 +533,3 @@ public async Task<IActionResult> OnPostCreateSanctionAsync()
         return RedirectToPage();
     }
 }
-

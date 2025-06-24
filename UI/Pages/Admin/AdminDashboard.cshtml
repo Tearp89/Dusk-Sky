@@ -233,9 +233,17 @@
                                                 </button>
                                             </form>
                                         }
-                                        <form method="post" asp-page-handler="DeleteReport" class="d-inline ajax-form" data-success-message="Report deleted!" data-error-message="Failed to delete report.">
+                                        <form method="post" asp-page-handler="DeleteReport" class="d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            
+                                            @* --- AÑADE ESTA LÍNEA CRUCIAL --- *@
+                                            <input type="hidden" name="reportId" value="@report.ReportId" />
+
+                                            @* --- RECOMENDADO: Añadir confirmación para evitar borrados accidentales --- *@
+                                            <button type="submit" class="btn btn-sm btn-danger" 
+                                                    onclick="return confirm('¿Estás seguro de que quieres eliminar este reporte? Esta acción no se puede deshacer.');">
+                                                Eliminar
+                                            </button>
                                         </form>
                                     </div>
                                 </div>

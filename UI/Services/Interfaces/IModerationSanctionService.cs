@@ -7,4 +7,5 @@ public interface IModerationSanctionService
     Task<bool> DeleteAsync(string id);
     Task<List<SanctionDTO>> GetActiveSanctionsForUserAsync(string userId);
     Task<bool> HasActiveSanctionAsync(string userId);
+    
 }

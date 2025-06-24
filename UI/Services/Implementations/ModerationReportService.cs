@@ -42,4 +42,15 @@ public class ModerationReportService : IModerationReportService
         var response = await _http.DeleteAsync($"/moderation/reports/{id}");
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<bool> ResolveReportAsync(string reportId)
+{
+    var report = await GetByIdAsync(reportId);
+        report.Status = "resolved";
+    if (report == null) return false;
+
+   
+
+    return await UpdateAsync(reportId, report);
+}
 }

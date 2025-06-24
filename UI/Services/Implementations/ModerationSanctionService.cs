@@ -77,16 +77,19 @@ public class ModerationSanctionService : IModerationSanctionService
     }
 
     public async Task<bool> HasActiveSanctionAsync(string userId)
-{
-    var sanctions = await GetAllAsync(); // Replace with endpoint that only fetches user's sanctions if possible
-    var now = DateTime.UtcNow;
+    {
+        var sanctions = await GetAllAsync(); // Replace with endpoint that only fetches user's sanctions if possible
+        var now = DateTime.UtcNow;
 
-    return sanctions.Any(s =>
-        s.UserId == userId &&
-        (
-            s.Type == SanctionType.ban ||
-            (s.Type == SanctionType.suspension && s.StartDate <= now && s.EndDate >= now)
-        ));
-}
+        return sanctions.Any(s =>
+            s.UserId == userId &&
+            (
+                s.Type == SanctionType.ban ||
+                (s.Type == SanctionType.suspension && s.StartDate <= now && s.EndDate >= now)
+            ));
+    }
+
+
+
 
 }
