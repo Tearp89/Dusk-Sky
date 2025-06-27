@@ -15,6 +15,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    
+    @* Mover FontAwesome aquí si lo usas en el HEAD, o si ya lo tienes en tu site.js y funciona, déjalo allí. *@
+    <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script> 
+
+    @* IMPORTANTE: Carga jQuery primero en el HEAD si tus scripts de validación se cargan en el HEAD o justo después.
+       Esto asegura que jQuery esté disponible cuando se necesite. *@
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    @* Carga jQuery Validation y Unobtrusive Validation justo después de jQuery *@
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+
 </head>
 
 <body>
@@ -109,12 +121,11 @@
                                         <li><a class="dropdown-item" asp-page="/Settings">Settings</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <form method="post" asp-page="/Account/Logout">
-                                                <button type="submit" class="dropdown-item">Sign Out</button>
-                                            </form>
-                                        </li>
+    <a class="dropdown-item" href="/StartPage?logout=true">Sign Out</a>
+</li>
+
                                     </ul>
-                                </li>
+                                </li> 
                             </ul>
                         </div>
                     </div>
@@ -123,9 +134,9 @@
         }
         else
         {
-            <nav class="custom-navbar navbar navbar-expand-lg">
+            <nav class="custom-navbar-layout navbar navbar-expand-lg">
                 <div class="container-fluid position-relative">
-                    <a class="navbar-brand" href="#" style="color: whitesmoke;">
+                    <a class="navbar-brand" asp-page="/Startpage" style="color: whitesmoke;">
                         <img src="~/Images/logo_dusk.png" alt="Logo" height="40"> Dusk Sky
                     </a>
 
@@ -144,9 +155,9 @@
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                                     aria-expanded="false">Access</a>
                                 <ul class="dropdown-menu glassy-dropdown">
-                                    <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal"
+                                    <li><button class="dropdown-item " type="button" data-bs-toggle="modal"
                                             data-bs-target="#signInModal">Sign In</button></li>
-                                    <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal"
+                                    <li><button class="dropdown-item " type="button" data-bs-toggle="modal"
                                             data-bs-target="#createAccountModal">Create Account</button></li>
                                 </ul>
                             </li>
@@ -224,6 +235,10 @@
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
+    @await Html.PartialAsync("_LoginRegisterModals")
+
+    
+    
 
 </body>
 </html>

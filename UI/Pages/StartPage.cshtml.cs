@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 
 public class StartPageModel : PageModel
 {
@@ -25,6 +27,7 @@ public class StartPageModel : PageModel
 
     private readonly IReviewService _reviewService;
     private readonly IModerationSanctionService _sanctionService;
+
     [BindProperty]
     public AuthRequestDto LoginData { get; set; } = new();
 
@@ -223,8 +226,32 @@ public class StartPageModel : PageModel
     }
 
 
-    public async Task<IActionResult> OnGetAsync()
+    public async Task<IActionResult> OnGetAsync([FromQuery] string? logout)
     {
+        if (logout == "true")
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            UserSessionManager.Instance.ClearSession();
+
+            // Borrado correcto de la cookie DuskSkyToken
+            Response.Cookies.Delete("DuskSkyToken", new CookieOptions
+            {
+                Path = "/",
+                Domain = "localhost",
+                SameSite = SameSiteMode.Strict,
+                Secure = false,
+                HttpOnly = true
+            });
+
+            // También borra todas las cookies restantes como refuerzo (opcional)
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                Response.Cookies.Delete(cookie);
+            }
+
+            return RedirectToPage("/StartPage");
+        }
+
         var previews = await _gameService.GetGamePreviewsAsync();
         foreach (var preview in previews)
         {

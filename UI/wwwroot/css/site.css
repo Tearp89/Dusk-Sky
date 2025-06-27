@@ -1501,3 +1501,8 @@ sidebar-card,
     margin-top: 0 !important;
     margin-bottom: 0 !important;
 }
+
+.dropdown-menu {
+    z-index: 2000 !important;
+    position: absolute !important;
+}

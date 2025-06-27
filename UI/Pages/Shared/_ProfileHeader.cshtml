@@ -48,6 +48,19 @@
                                 </form>
                             }
                             @* --- FIN LÓGICA DE AMISTAD FORZADA EXCLUSIVA --- *@
+
+                            <div class="dropdown ms-2"> @* ms-2 para un pequeño margen a la izquierda de los botones de amistad *@
+                                <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i> @* Icono de tres puntos (menú kebab) *@
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#reportUserModal">
+                                            <i class="bi bi-flag-fill me-2"></i> Reportar Usuario
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         }
                     </div>
                 </div>
@@ -66,6 +79,32 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="reportUserModal" tabindex="-1" aria-labelledby="reportUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportUserModalLabel">Reportar a @Model.ProfileHeader.Username</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="ReportUser" asp-route-profileUserId="@Model.ProfileHeader.UserId">
+                @Html.AntiForgeryToken() @* Es buena práctica incluir el token aquí también *@
+                <div class="modal-body">
+                    <p>Por favor, explica por qué estás reportando a este usuario:</p>
+                    <div class="mb-3">
+                        <label for="reportReason" class="form-label">Motivo del reporte:</label>
+                        <textarea class="form-control" id="reportReason" name="Reason" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Enviar Reporte</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

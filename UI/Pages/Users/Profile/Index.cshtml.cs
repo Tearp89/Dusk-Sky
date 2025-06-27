@@ -18,15 +18,16 @@ public class ProfileModel : ProfileModelBase
     private readonly IUserManagerService _userManagerService_private; // Usar nombres diferentes para no confundir con los de la base
     private readonly IReviewService _reviewService_private;
     private readonly IGameListService _listService_private;
-    private readonly IGameTrackingService _gameTrackingService_private; 
-    private readonly IGameService _gameService_private; 
+    private readonly IGameTrackingService _gameTrackingService_private;
+    private readonly IGameService _gameService_private;
     private readonly IGameListItemService _gameListItemService_private;
+    private readonly IModerationReportService _moderationService;
 
     // --- Propiedades para las nuevas secciones ---
-    public List<FriendViewModel> Friends { get; set; } = new(); 
+    public List<FriendViewModel> Friends { get; set; } = new();
     public QuickStatsViewModel QuickStats { get; set; } = new();
     public ActivityFeedItemViewModel? LatestActivity { get; set; }
-    public List<GamePreviewDTO> RecentLikedGames { get; set; } = new(); 
+    public List<GamePreviewDTO> RecentLikedGames { get; set; } = new();
 
     public ProfileModel(
         IAuthService authService, // Este servicio irá a ProfileModelBase._authService
@@ -34,9 +35,10 @@ public class ProfileModel : ProfileModelBase
         IFriendshipService friendshipService, // Este servicio irá a ProfileModelBase._friendshipService
         IReviewService reviewService,
         IGameListService listService,
-        IGameTrackingService gameTrackingService, 
+        IGameTrackingService gameTrackingService,
         IGameService gameService,
-        IGameListItemService gameListItemService) 
+        IGameListItemService gameListItemService,
+        IModerationReportService moderationService)
     {
         // Asignar los servicios a las propiedades PROTEGIDAS de ProfileModelBase
         _authService = authService; // Asignado a campo protegido en base
@@ -49,6 +51,7 @@ public class ProfileModel : ProfileModelBase
         _gameTrackingService_private = gameTrackingService;
         _gameService_private = gameService;
         _gameListItemService_private = gameListItemService;
+        _moderationService = moderationService;
     }
 
     public async Task<IActionResult> OnGetAsync(string userId)
@@ -107,12 +110,13 @@ public class ProfileModel : ProfileModelBase
     {
         var completedGameIds = await _gameTrackingService_private.GetGameIdsByStatusAsync(userId, "played");
         QuickStats.CompletedGamesCount = completedGameIds?.Count ?? 0;
-        QuickStats.ReviewsCount = ProfileHeader.ReviewCount; 
-        var userReviews = await _reviewService_private.GetFriendsReviewsAsync(new List<string> {userId}); 
+        QuickStats.ReviewsCount = ProfileHeader.ReviewCount;
+        var userReviews = await _reviewService_private.GetFriendsReviewsAsync(new List<string> { userId });
         if (userReviews != null && userReviews.Any())
         {
-            QuickStats.AverageRating = Math.Round(userReviews.Average(r => r.Rating), 1); 
-        } else { QuickStats.AverageRating = 0.0; }
+            QuickStats.AverageRating = Math.Round(userReviews.Average(r => r.Rating), 1);
+        }
+        else { QuickStats.AverageRating = 0.0; }
         if (QuickStats.CompletedGamesCount > 20) QuickStats.PlayerRank = "Veteran";
         else if (QuickStats.CompletedGamesCount > 5) QuickStats.PlayerRank = "Explorer";
         else QuickStats.PlayerRank = "Newbie";
@@ -120,7 +124,7 @@ public class ProfileModel : ProfileModelBase
 
     private async Task LoadLatestActivity(string userId)
     {
-        var reviewsTask = _reviewService_private.GetFriendsReviewsAsync(new List<string> {userId}); 
+        var reviewsTask = _reviewService_private.GetFriendsReviewsAsync(new List<string> { userId });
         var gameTrackingsTask = _gameTrackingService_private.GetTrackingsByUserAsync(userId);
         var gameListsTask = _listService_private.GetUserListsAsync(userId);
 
@@ -141,7 +145,8 @@ public class ProfileModel : ProfileModelBase
         var gameListActivityTasks = new List<Task<GameListActivityViewModel>>();
         foreach (var gl in gameListsTask.Result)
         {
-            gameListActivityTasks.Add(Task.Run(async () => {
+            gameListActivityTasks.Add(Task.Run(async () =>
+            {
                 var listItems = await _gameListItemService_private.GetItemsByListIdAsync(gl.Id);
                 // ... mapeo ...
                 return new GameListActivityViewModel { /* ... */ ItemCount = listItems?.Count ?? 0 };
@@ -159,15 +164,15 @@ public class ProfileModel : ProfileModelBase
         foreach (var gameId in likedGameIds.Take(6)) { gamePreviewTasks.Add(_gameService_private.GetGamePreviewByIdAsync(gameId)); }
         RecentLikedGames = (await Task.WhenAll(gamePreviewTasks)).Where(gp => gp != null).ToList()!;
     }
-    
+
     // --- Métodos OnPost para manejar las acciones de amistad ---
     // (Estos métodos no necesitan cambios adicionales, ya están en ProfileModel)
 
-    [ValidateAntiForgeryToken] 
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostSendRequestAsync(string profileUserId)
     {
         string? loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(loggedInUserId)) return Forbid(); 
+        if (string.IsNullOrEmpty(loggedInUserId)) return Forbid();
 
         if (loggedInUserId == profileUserId)
         {
@@ -184,7 +189,7 @@ public class ProfileModel : ProfileModelBase
         {
             TempData["StatusMessage"] = "Error: No se pudo enviar la solicitud de amistad. Ya existe una pendiente o ya son amigos.";
         }
-        return RedirectToPage(new { userId = profileUserId }); 
+        return RedirectToPage(new { userId = profileUserId });
     }
 
     [ValidateAntiForgeryToken]
@@ -193,7 +198,7 @@ public class ProfileModel : ProfileModelBase
         string? loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(loggedInUserId)) return Forbid();
 
-        var success = await _friendshipService.AcceptRequestAsync(requestId); 
+        var success = await _friendshipService.AcceptRequestAsync(requestId);
         if (success)
         {
             TempData["StatusMessage"] = "Solicitud de amistad aceptada. ¡Ahora son amigos!";
@@ -220,6 +225,65 @@ public class ProfileModel : ProfileModelBase
         {
             TempData["StatusMessage"] = "Error: No se pudo rechazar la solicitud de amistad.";
         }
+        return RedirectToPage(new { userId = profileUserId });
+    }
+    
+    [ValidateAntiForgeryToken] // Siempre para formularios POST que modifican datos
+    public async Task<IActionResult> OnPostReportUserAsync(string profileUserId, string reason)
+    {
+        // 1. Obtener el ID del usuario que está realizando el reporte
+        string? reporterUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        // 2. Validar que el usuario esté autenticado
+        if (string.IsNullOrEmpty(reporterUserId))
+        {
+            TempData["StatusMessage"] = "Error: Debes iniciar sesión para reportar un usuario.";
+            return RedirectToPage(new { userId = profileUserId });
+        }
+
+        // 3. Validar que no se esté reportando a sí mismo
+        if (reporterUserId == profileUserId)
+        {
+            TempData["StatusMessage"] = "Error: No puedes reportarte a ti mismo.";
+            return RedirectToPage(new { userId = profileUserId });
+        }
+
+        // 4. Validar el motivo del reporte
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            TempData["StatusMessage"] = "Error: El motivo del reporte no puede estar vacío.";
+            // Si quieres que el modal se mantenga abierto con el error, necesitarías un manejo más complejo de AJAX.
+            // Por ahora, redirigimos para mostrar el TempData.
+            return RedirectToPage(new { userId = profileUserId });
+        }
+
+        // 5. Crear el objeto ReportDTO con los datos del reporte
+        var report = new ReportDTO
+        {
+            // Asume que Id se genera en el servicio o la base de datos, o aquí si es un GUID nuevo.
+            // Para este ejemplo, lo generamos aquí si tu DTO no tiene un constructor predeterminado que lo haga.
+            Id = Guid.NewGuid().ToString(), // Descomentar si tu ReportDTO no genera un ID automáticamente.
+            ReportedUserId = profileUserId,   // El ID del usuario que está siendo reportado
+            Reason = reason,
+            ContentType = "User",              // Indica que este reporte es sobre un usuario
+            Status = "pending",               // El estado inicial del reporte (a la espera de moderación)
+            ReportedAt = DateTime.UtcNow       // Marca de tiempo de cuando se creó el reporte
+        };
+
+        // 6. Enviar el reporte a través de tu servicio de moderación
+        bool success = await _moderationService.CreateAsync(report);
+
+        // 7. Manejar el resultado y mostrar un mensaje al usuario
+        if (success)
+        {
+            TempData["SuccessMessage"] = "El usuario ha sido reportado con éxito. Gracias por tu ayuda, investigaremos tu reporte.";
+        }
+        else
+        {
+            TempData["StatusMessage"] = "Error: No se pudo enviar el reporte. Por favor, inténtalo de nuevo más tarde.";
+        }
+
+        // 8. Redirigir de nuevo a la página de perfil para mostrar el mensaje
         return RedirectToPage(new { userId = profileUserId });
     }
 }

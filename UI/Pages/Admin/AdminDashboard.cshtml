@@ -1,4 +1,5 @@
 @page "/Admin/Dashboard"
+@using System.Text.Json
 @model AdminDashboardModel
 @{
     ViewData["Title"] = "Admin/Moderator Dashboard";
@@ -260,15 +261,14 @@
     </div>
 </div>
 
-@* Modal: Create Sanction (Admin & Moderator) - Afectado por los cambios de Model Binding *@
-<!-- Modal para crear sanción -->
+@* Modal: Create Sanction (Admin & Moderator) *@
 <div class="modal fade" id="createSanctionModal" tabindex="-1" aria-labelledby="createSanctionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="post" asp-page-handler="CreateSanction">
                 @Html.AntiForgeryToken()
                 <partial name="_ValidationScriptsPartial" />
-<div asp-validation-summary="All" class="text-danger"></div>
+                <div asp-validation-summary="All" class="text-danger"></div>
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="createSanctionModalLabel">Crear sanción</h5>
@@ -276,16 +276,30 @@
                 </div>
 
                 <div class="modal-body">
-                    <!-- ReportId oculto -->
+                    <h6 class="mb-3">Usuario a Sancionar</h6>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <input type="text" id="sanctionUserSearchInput" class="form-control" placeholder="Buscar usuario por nombre de usuario..." />
+                            <button class="btn btn-outline-secondary" type="button" id="searchSanctionUserBtn">Buscar</button>
+                        </div>
+                        <div id="sanctionUserSearchResults" class="list-group user-search-results mt-2">
+                            </div>
+
+                        <div id="selectedSanctionUserDisplay" class="alert alert-info mt-2 @(Model.SelectedSanctionUser != null ? "" : "d-none")">
+                            Usuario seleccionado: <strong id="sanctionSelectedUsernameDisplay">@(Model.SelectedSanctionUser?.Username)</strong>
+                            (<span id="sanctionSelectedUserRoleDisplay">@(Model.SelectedSanctionUser?.Role)</span>)
+                            <button type="button" class="btn-close float-end" aria-label="Limpiar selección" onclick="clearSanctionUserSelection()"></button>
+                        </div>
+                    </div>
+
                     <input asp-for="CreateSanctionInput.ReportId" id="createSanctionReportId" type="hidden" />
 
-                    <!-- UserId oculto -->
-                    <input asp-for="CreateSanctionInput.UserId" id="createSanctionUserId" type="hidden" />
+                    <input asp-for="CreateSanctionInput.UserId" id="createSanctionUserId" type="hidden" required />
+                    <span asp-validation-for="CreateSanctionInput.UserId" class="text-danger"></span>
 
-                    <!-- Tipo de sanción -->
                     <div class="mb-3">
                         <label asp-for="CreateSanctionInput.Type" class="form-label"></label>
-                        <select asp-for="CreateSanctionInput.Type" class="form-select">
+                        <select asp-for="CreateSanctionInput.Type" class="form-select" required>
                             <option value="">Selecciona tipo de sanción</option>
                             <option value="ban">Ban</option>
                             <option value="suspension">Suspensión</option>
@@ -293,21 +307,18 @@
                         <span asp-validation-for="CreateSanctionInput.Type" class="text-danger"></span>
                     </div>
 
-                    <!-- Razón -->
                     <div class="mb-3">
                         <label asp-for="CreateSanctionInput.Reason" class="form-label"></label>
-                        <textarea asp-for="CreateSanctionInput.Reason" class="form-control"></textarea>
+                        <textarea asp-for="CreateSanctionInput.Reason" class="form-control" rows="3" required></textarea>
                         <span asp-validation-for="CreateSanctionInput.Reason" class="text-danger"></span>
                     </div>
 
-                    <!-- Fecha de inicio -->
                     <div class="mb-3">
                         <label asp-for="CreateSanctionInput.StartDate" class="form-label"></label>
-                        <input asp-for="CreateSanctionInput.StartDate" type="date" class="form-control" />
+                        <input asp-for="CreateSanctionInput.StartDate" type="date" class="form-control" required />
                         <span asp-validation-for="CreateSanctionInput.StartDate" class="text-danger"></span>
                     </div>
 
-                    <!-- Fecha de fin (opcional si es suspensión) -->
                     <div class="mb-3">
                         <label asp-for="CreateSanctionInput.EndDate" class="form-label"></label>
                         <input asp-for="CreateSanctionInput.EndDate" type="date" class="form-control" />
@@ -319,7 +330,6 @@
                     <button type="submit" class="btn btn-danger">Crear sanción</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 </div>
-
             </form>
         </div>
     </div>
@@ -375,7 +385,7 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Manejador genérico para formularios AJAX 
+            // Your existing generic AJAX form handler (keep it as is)
             document.querySelectorAll('form.ajax-form').forEach(form => {
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
@@ -452,38 +462,158 @@
                 });
             });
 
-            const shouldOpenSanctionModal = @(ViewData["OpenCreateSanctionModal"] as bool? ?? false).ToString().ToLower();
 
-            if (shouldOpenSanctionModal) {
+            // --- NEW: LOGIC FOR CREATE SANCTION MODAL: USER SEARCH (AJAX) ---
+            const sanctionUserSearchInput = document.getElementById('sanctionUserSearchInput');
+            const searchSanctionUserBtn = document.getElementById('searchSanctionUserBtn');
+            const sanctionUserSearchResults = document.getElementById('sanctionUserSearchResults');
+            const selectedSanctionUserDisplay = document.getElementById('selectedSanctionUserDisplay');
+            const sanctionSelectedUsernameDisplay = document.getElementById('sanctionSelectedUsernameDisplay');
+            const sanctionSelectedUserRoleDisplay = document.getElementById('sanctionSelectedUserRoleDisplay');
+            const createSanctionUserIdInput = document.getElementById('createSanctionUserId'); // Hidden input for UserId
+
+            let searchTimeout = null;
+
+            // Function to perform user search via AJAX
+            async function performUserSearch(query) {
+                if (query.length < 2) {
+                    sanctionUserSearchResults.innerHTML = '';
+                    return;
+                }
+
+                try {
+                    // Call the OnGetSearchUsersForSanctionAsync handler
+                    const url = `@Url.Page("/Admin/Dashboard")?handler=SearchUsersForSanction&query=${encodeURIComponent(query)}`;
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const users = await response.json();
+                    displayUserSearchResults(users);
+                } catch (error) {
+                    console.error('Error searching users:', error);
+                    sanctionUserSearchResults.innerHTML = '<div class="list-group-item text-danger">Error al buscar usuarios.</div>';
+                }
+            }
+
+            // Displays search results in the designated container
+            function displayUserSearchResults(users) {
+                sanctionUserSearchResults.innerHTML = ''; // Clear previous results
+                if (users && users.length > 0) {
+                    users.forEach(user => {
+                        const listItem = document.createElement('button');
+                        listItem.type = 'button'; // Important: use button type to prevent accidental form submission
+                        listItem.classList.add('list-group-item', 'list-group-item-action', 'd-flex', 'align-items-center');
+                        listItem.innerHTML = `
+                            <img src="${user.avatarUrl || '/images/default_avatar.png'}" class="rounded-circle me-2" width="24" height="24" style="object-fit: cover;">
+                            <strong>${user.username}</strong> (<span class="badge bg-secondary">${user.role}</span>)
+                        `;
+                        // When a result is clicked, select the user
+                        listItem.addEventListener('click', () => selectSanctionUser(user));
+                        sanctionUserSearchResults.appendChild(listItem);
+                    });
+                } else {
+                    sanctionUserSearchResults.innerHTML = '<div class="list-group-item text-muted">No se encontraron usuarios.</div>';
+                }
+            }
+
+            // Selects a user for sanction, populating the hidden input
+            function selectSanctionUser(user) {
+                createSanctionUserIdInput.value = user.userId; // Set the ID in the hidden input
+
+                // Display selected user's information
+                sanctionSelectedUsernameDisplay.textContent = user.username;
+                sanctionSelectedUserRoleDisplay.textContent = user.role;
+                selectedSanctionUserDisplay.classList.remove('d-none');
+
+                // Clear search input and results for better UX
+                sanctionUserSearchInput.value = '';
+                sanctionUserSearchResults.innerHTML = '';
+
+                // Optional: focus the next field in the sanction form
+                document.getElementById('CreateSanctionInput_Type').focus();
+            }
+
+            // Clears the selected user
+            window.clearSanctionUserSelection = function() {
+                createSanctionUserIdInput.value = ''; // Clear the ID in the hidden input
+                sanctionSelectedUsernameDisplay.textContent = '';
+                sanctionSelectedUserRoleDisplay.textContent = '';
+                selectedSanctionUserDisplay.classList.add('d-none');
+                // Clear validation errors for UserId if any
+                const userIdValidationSpan = document.querySelector('span[data-valmsg-for="CreateSanctionInput.UserId"]');
+                if (userIdValidationSpan) userIdValidationSpan.textContent = '';
+            };
+
+            // Event listener for real-time search (on input)
+            sanctionUserSearchInput.addEventListener('input', function () {
+                clearTimeout(searchTimeout); // Clear previous timeout
+                const query = this.value;
+                searchTimeout = setTimeout(() => {
+                    performUserSearch(query);
+                }, 300); // 300ms delay to avoid excessive requests
+            });
+
+            // Event listener for explicit search button click
+            searchSanctionUserBtn.addEventListener('click', function () {
+                performUserSearch(sanctionUserSearchInput.value);
+            });
+
+            // --- Control modal opening on page reload (e.g., after validation errors) ---
+            const shouldOpenSanctionModal = @(ViewData["OpenCreateSanctionModal"] as bool? ?? false).ToString().toLowerCase();
+            if (shouldOpenSanctionModal === 'true') {
                 const sanctionModalElement = document.getElementById('createSanctionModal');
                 if (sanctionModalElement) {
                     const sanctionModal = new bootstrap.Modal(sanctionModalElement);
                     sanctionModal.show();
                 }
             }
-        });
 
-            function showAlert(message, type) {
-                const alertContainer = document.querySelector('.container .alert');
-                if (!alertContainer) return;
-                if (!message) {
-                    alertContainer.classList.add('d-none');
-                    return;
-                }
+            // --- Reset sanction modal on hide ---
+            const createSanctionModalElement = document.getElementById('createSanctionModal');
+            if (createSanctionModalElement) {
+                createSanctionModalElement.addEventListener('hidden.bs.modal', function () {
+                    this.querySelector('form').reset(); // Reset all form fields
+                    clearSanctionUserSelection(); // Clear user selection
 
-                alertContainer.textContent = message;
-                alertContainer.classList.remove('d-none', 'alert-success', 'alert-danger');
-                alertContainer.classList.add(`alert-${type}`);
-
-                const closeButton = alertContainer.querySelector('.btn-close');
-                if (closeButton) closeButton.onclick = () => alertContainer.classList.add('d-none');
-
-                setTimeout(() => {
-                    alertContainer.classList.add('d-none');
-                }, 5000);
+                    // Clear search results and validation messages
+                    sanctionUserSearchResults.innerHTML = '';
+                    const validationSummary = this.querySelector('[asp-validation-summary="All"]');
+                    if (validationSummary) validationSummary.innerHTML = '';
+                    this.querySelectorAll('.text-danger').forEach(span => span.textContent = '');
+                });
             }
 
-            
+            // --- Pre-select user if modal is opened due to a server-side pre-selection (e.g., from "Resolve & Sanction" or validation error) ---
+            // This ensures the selected user is shown correctly after a page reload.
+            @if (Model.SelectedSanctionUser != null)
+            {
+                <text>
+                    const preSelectedUser = @Html.Raw(JsonSerializer.Serialize(Model.SelectedSanctionUser));
+                    selectSanctionUser(preSelectedUser);
+                </text>
+            }
         });
+
+        // Your existing showAlert function (keep it as is)
+        function showAlert(message, type) {
+            const alertContainer = document.querySelector('.container .alert');
+            if (!alertContainer) return;
+            if (!message) {
+                alertContainer.classList.add('d-none');
+                return;
+            }
+
+            alertContainer.textContent = message;
+            alertContainer.classList.remove('d-none', 'alert-success', 'alert-danger');
+            alertContainer.classList.add(`alert-${type}`);
+
+            const closeButton = alertContainer.querySelector('.btn-close');
+            if (closeButton) closeButton.onclick = () => alertContainer.classList.add('d-none');
+
+            setTimeout(() => {
+                alertContainer.classList.add('d-none');
+            }, 5000);
+        }
     </script>
 }

@@ -123,7 +123,8 @@ app.UseCookiePolicy();
 app.UseAuthentication(); // 👈 Obligatorio
 app.UseAuthorization();
 
-app.MapGet("/", () => Results.Redirect("/StartPage"));
+
 app.MapRazorPages();
+app.MapFallbackToPage("/StartPage");
 
 app.Run();

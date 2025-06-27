@@ -33,6 +33,11 @@ public class AdminDashboardModel : PageModel
 
     [TempData]
     public string StatusMessage { get; set; } = string.Empty;
+    [TempData]
+    public string? SelectedSanctionUserJson { get; set; }
+
+    // New: Property to hold the deserialized selected user for the view
+    public UserRoleViewModel? SelectedSanctionUser { get; set; }
 
 
 
@@ -67,6 +72,16 @@ public class AdminDashboardModel : PageModel
             AddGameResult = new AddGameViewModel(); // Asegúrate de que siempre esté inicializado
         }
 
+        if (!string.IsNullOrEmpty(SelectedSanctionUserJson))
+        {
+            SelectedSanctionUser = JsonSerializer.Deserialize<UserRoleViewModel>(SelectedSanctionUserJson);
+            // If a user is pre-selected, pre-fill the UserId in the sanction form
+            if (SelectedSanctionUser != null)
+            {
+                CreateSanctionInput.UserId = SelectedSanctionUser.UserId;
+            }
+        }
+
         await LoadReportsAsync();
         await LoadSanctionsAsync();
         if (User.IsInRole("admin"))
@@ -77,6 +92,45 @@ public class AdminDashboardModel : PageModel
     }
 
     // --- Métodos de carga de datos ---
+
+    [Authorize(Roles = "admin,moderator")]
+    public async Task<JsonResult> OnGetSearchUsersForSanctionAsync(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+        {
+            return new JsonResult(new List<UserRoleViewModel>());
+        }
+
+        try
+        {
+            var authUsers = await _authService.SearchUsersAsync(query);
+
+            if (authUsers == null || !authUsers.Any())
+            {
+                return new JsonResult(new List<UserRoleViewModel>());
+            }
+
+            var userViewModels = new List<UserRoleViewModel>();
+            foreach (var user in authUsers)
+            {
+                var profile = await _userManagerService.GetProfileAsync(user.Id);
+                userViewModels.Add(new UserRoleViewModel
+                {
+                    UserId = user.Id,
+                    Username = user.Username,
+                    Role = user.Role,
+                    AvatarUrl = profile?.AvatarUrl ?? "/images/default_avatar.png"
+                });
+            }
+
+            return new JsonResult(userViewModels);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching users for sanction: {ex.Message}");
+            return new JsonResult(new { success = false, message = "Error interno al buscar usuarios." }) { StatusCode = 500 };
+        }
+    }
 
     private async Task LoadAllUsersAsync()
     {
@@ -210,7 +264,7 @@ public class AdminDashboardModel : PageModel
     [Authorize(Roles = "admin,moderator")]
     public async Task<IActionResult> OnPostPrepareSanctionAsync(string reportId, string reportedUserId)
     {
-        // 1. Marcar el reporte como resuelto (lógica del antiguo OnPostResolveReportAsync)
+        // 1. Mark the report as resolved
         var report = await _reportService.GetByIdAsync(reportId);
         if (report != null)
         {
@@ -219,27 +273,34 @@ public class AdminDashboardModel : PageModel
             StatusMessage = $"Reporte {reportId.Substring(0, 8)}... marcado como resuelto. Proceda con la sanción.";
         }
 
-        // 2. Preparar el ViewModel para el modal de sanción
+        // 2. Pre-fill CreateSanctionInput and set SelectedSanctionUser
         CreateSanctionInput = new SanctionViewModel
         {
             ReportId = reportId,
             UserId = reportedUserId.Trim(),
-            StartDate = DateTime.UtcNow // Pre-llenar con la fecha actual
+            StartDate = DateTime.UtcNow // Pre-fill with current date
         };
 
-        // 3. Cargar los datos necesarios para la página
-        await LoadReportsAsync();
-        await LoadSanctionsAsync();
-        if (User.IsInRole("admin"))
+        var user = await _authService.SearchUserByIdAsync(reportedUserId);
+        if (user != null)
         {
-            await LoadAllUsersAsync();
+            var profile = await _userManagerService.GetProfileAsync(user.Id);
+            SelectedSanctionUser = new UserRoleViewModel
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Role = user.Role,
+                AvatarUrl = profile?.AvatarUrl ?? "/images/default_avatar.png"
+            };
+            // Store the selected user in TempData for persistence across redirect
+            SelectedSanctionUserJson = JsonSerializer.Serialize(SelectedSanctionUser);
         }
 
-        // 4. Añadir una bandera para que JavaScript sepa que debe abrir el modal
+        // 3. Set a flag for JavaScript to open the modal
         ViewData["OpenCreateSanctionModal"] = true;
 
-        // 5. Devolver la página para que se recargue con el estado actualizado
-        return Page();
+        // 4. Redirect to the same page. OnGetAsync will rehydrate the data.
+        return RedirectToPage();
     }
 
 
@@ -423,40 +484,47 @@ public class AdminDashboardModel : PageModel
     [Authorize(Roles = "admin,moderator")]
     public async Task<IActionResult> OnPostCreateSanctionAsync()
     {
+        // If validation fails, we need to re-open the modal and show errors.
+        // Also, rehydrate the SelectedSanctionUser from TempData.
         if (!ModelState.IsValid)
         {
+            if (!string.IsNullOrEmpty(SelectedSanctionUserJson))
+            {
+                SelectedSanctionUser = JsonSerializer.Deserialize<UserRoleViewModel>(SelectedSanctionUserJson);
+            }
+            ViewData["OpenCreateSanctionModal"] = true; // Flag to reopen modal
             await LoadReportsAsync();
             await LoadSanctionsAsync();
             if (User.IsInRole("admin")) await LoadAllUsersAsync();
-            ViewData["OpenCreateSanctionModal"] = true;
             return Page();
         }
 
-        // Verificar sanciones existentes
+        // Your existing sanction conflict check logic
         var sanctions = await _sanctionService.GetAllAsync();
-
         var now = DateTime.UtcNow;
 
         var hasConflict = sanctions.Any(s =>
-            s.UserId.Trim() == CreateSanctionInput.UserId.Trim() &&
+            s.UserId.Trim().Equals(CreateSanctionInput.UserId.Trim(), StringComparison.OrdinalIgnoreCase) &&
             (
-                // Ban permanente
-                s.Type == SanctionType.ban ||
-
-                // Superposición de suspensión: [start, end] intersects with [existing.Start, existing.End]
-                (s.Type == SanctionType.suspension &&
+                s.Type.ToString().Equals("ban", StringComparison.OrdinalIgnoreCase) ||
+                (s.Type.ToString().Equals("suspension", StringComparison.OrdinalIgnoreCase) &&
                  CreateSanctionInput.StartDate < s.EndDate &&
-                 CreateSanctionInput.EndDate > s.StartDate)
+                 (CreateSanctionInput.EndDate == null || CreateSanctionInput.EndDate > s.StartDate))
             )
         );
 
         if (hasConflict)
         {
             ModelState.AddModelError(string.Empty, "The user already has an active or overlapping sanction.");
+            // If conflict, rehydrate SelectedSanctionUser and keep modal open
+            if (!string.IsNullOrEmpty(SelectedSanctionUserJson))
+            {
+                SelectedSanctionUser = JsonSerializer.Deserialize<UserRoleViewModel>(SelectedSanctionUserJson);
+            }
+            ViewData["OpenCreateSanctionModal"] = true;
             await LoadReportsAsync();
             await LoadSanctionsAsync();
             if (User.IsInRole("admin")) await LoadAllUsersAsync();
-            ViewData["OpenCreateSanctionModal"] = true;
             return Page();
         }
 
@@ -468,18 +536,25 @@ public class AdminDashboardModel : PageModel
             Reason = CreateSanctionInput.Reason,
             StartDate = DateTime.SpecifyKind(CreateSanctionInput.StartDate, DateTimeKind.Utc),
             EndDate = CreateSanctionInput.EndDate.HasValue
-                        ? DateTime.SpecifyKind(CreateSanctionInput.EndDate.Value, DateTimeKind.Utc)
-                        : (DateTime?)null
+                            ? DateTime.SpecifyKind(CreateSanctionInput.EndDate.Value, DateTimeKind.Utc)
+                            : (DateTime?)null
         };
 
         var success = await _sanctionService.CreateAsync(sanctionDto);
         if (success)
         {
             TempData["StatusMessage"] = "Sanción creada exitosamente.";
+            TempData.Remove("SelectedSanctionUserJson"); // Clear selected user from TempData after successful creation
         }
         else
         {
             TempData["StatusMessage"] = "Error: Falló la creación de la sanción.";
+            // If creation fails, rehydrate SelectedSanctionUser and keep modal open
+            if (!string.IsNullOrEmpty(SelectedSanctionUserJson))
+            {
+                SelectedSanctionUser = JsonSerializer.Deserialize<UserRoleViewModel>(SelectedSanctionUserJson);
+            }
+            ViewData["OpenCreateSanctionModal"] = true;
         }
 
         return RedirectToPage();

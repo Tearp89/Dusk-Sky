@@ -1,83 +1,18 @@
-@page
+@page "/"
 @using System.Text.Json
 @model StartPageModel
 @{
-    Layout = null;
-    ViewData["Title"] = "Página de inicio"; // Esto asegura que no se use el layout predeterminado
+    Layout = "_Layout";
+    ViewData["Title"] = "Start Page"; // Esto asegura que no se use el layout predeterminado
+    ViewData["ShowBackground"] = true;
+    ViewData["UseBlurEffect"] = false;
+    ViewData["BackgroundImage"] = Url.Content("~/Images/startpage.png");
     int index = 0;
     
 }
 
-<!doctype html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dusk sky</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-    <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-        rel="stylesheet">
-</head>
-
-<body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
-        crossorigin="anonymous"></script>
-    <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
-   <nav class="custom-navbar navbar navbar-expand-lg">
-    <div class="container-fluid position-relative">
-
-        <!-- Logo (a la izquierda) -->
-        <a class="navbar-brand" href="#" style="color: whitesmoke;">
-             <img src="~/Images/logo_dusk.png" alt="Logo" height="40">
-            Dusk Sky
-        </a>
-           
-
-        <!-- Botón hamburguesa para móviles -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <!-- Menú centrado -->
-        <div class="collapse navbar-collapse justify-content-center" id="navbarNavDropdown">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link active" href="#">Lists</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Members</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Journals</a></li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        Access
-                    </a>
-                    <ul class="dropdown-menu glassy-dropdown">
-                        <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#signInModal">Sign In</button></li>
-                        <li><button class="dropdown-item btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createAccountModal">Create Account</button></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <form class="d-flex" role="search">
-                        <input class="form-control me-2 searchInput input-glass" type="search" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-primary button-glass-blue" type="submit">Search</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
-
-    </div>
-</nav>
 
 
-    <div class="container-img">
-        <img src="../Images/startpage.png" alt="...">
-    </div>
     <div class="container-quote">
         <h2>
             Track games you’ve played. <br>
@@ -399,94 +334,10 @@
 
 
 
-   <div class="modal fade" id="createAccountModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content custom-modal">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">Sign Up</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" asp-page-handler="Register">
-                    <div class="mb-3">
-                        <label asp-for="RegisterData.Email" class="form-label">Email address</label>
-                        <input asp-for="RegisterData.Email" class="form-control input-glass" type="email" />
-                        <span asp-validation-for="RegisterData.Email" class="text-danger"></span> <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="RegisterData.Username" class="form-label">Username</label>
-                        <input asp-for="RegisterData.Username" class="form-control input-glass" />
-                        <span asp-validation-for="RegisterData.Username" class="text-danger"></span> </div>
-                    <div class="mb-3">
-                        <label asp-for="RegisterData.Password" class="form-label">Password</label>
-                        <input asp-for="RegisterData.Password" class="form-control input-glass" type="password" />
-                        <span asp-validation-for="RegisterData.Password" class="text-danger"></span> </div>
-                    <div class="mb-3">
-                        <label asp-for="RegisterData.ConfirmPassword" class="form-label">Confirm Password</label>
-                        <input asp-for="RegisterData.ConfirmPassword" class="form-control input-glass" type="password" />
-                        <span asp-validation-for="RegisterData.ConfirmPassword" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input asp-for="RegisterData.RememberMe" type="checkbox" class="form-check-input" id="exampleCheck2">
-                        <label asp-for="RegisterData.RememberMe" class="form-check-label" for="exampleCheck2">Remember me</label>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary button-glass-blue">Sign Up</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-    <div class="modal fade" id="signInModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-     aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content custom-modal">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">Sign In</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
-                {
-                    <div class="alert alert-danger">@Model.ErrorMessage</div>
-                }
-
-                <form method="post" asp-page-handler="Login">
-                    <div class="mb-3">
-                        <label asp-for="LoginData.Username" class="form-label">Email or Username</label>
-                        <input asp-for="LoginData.Username" class="form-control input-glass" type="text" />
-                        <span asp-validation-for="LoginData.Username" class="text-danger"></span> </div>
-                    <div class="mb-3">
-                        <label asp-for="LoginData.Password" class="form-label">Password</label>
-                        <input asp-for="LoginData.Password" class="form-control input-glass" type="password" />
-                        <span asp-validation-for="LoginData.Password" class="text-danger"></span> </div>
-                    <div class="mb-3">
-                        <a class="form-label" href="/Homepage/Index">Forgotten?</a>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                        <label class="form-check-label" for="exampleCheck1">Remember me</label>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary button-glass-blue">Sign In</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+   
 
 
 
 
     </div>
     
-</body>
-
-</html>
