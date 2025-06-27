@@ -28,7 +28,7 @@
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title mb-2">
-                                <a asp-page="/Lists/Details" asp-route-listId="@list.Id" class="text-dark text-decoration-none">
+                                <a href="/Lists/ListDetails/@list.Id" class="text-dark text-decoration-none">
                                     @list.Name
                                 </a>
                                 @if (!list.IsPublic)

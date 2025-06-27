@@ -16,14 +16,16 @@ public class IndexModel : PageModel
     private readonly IGameListItemService _gameListItemService;
     private readonly IReviewService _reviewService;
     private readonly IUserManagerService _userService;
-    
+
     private readonly IAuthService _authService;
 
-    public List<ReviewWithUserDto> ReviewCards { get; set; } = new List<ReviewWithUserDto>();
+    public List<ReviewFullDto> RecentReviewCards { get; set; } = new List<ReviewFullDto>();
+    public List<ReviewFullDto> PopularReviewCards { get; set; } = new List<ReviewFullDto>();
+    public List<ReviewFullDto> ReviewCards { get; set; } = new List<ReviewFullDto>();
     public List<ImageReviewDto> ReviewImages { get; set; } = new List<ImageReviewDto>();
     public List<GameListWithUserDto> RecentLists { get; set; } = new List<GameListWithUserDto>();
     public List<GamePreviewDTO> Games { get; set; } = new List<GamePreviewDTO>();
-    
+
     [BindProperty]
     public string UserId { get; set; }
 
@@ -38,82 +40,43 @@ public class IndexModel : PageModel
         _authService = authService;
     }
 
-public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
-{
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-    var userLiked = await _reviewService.HasUserLikedAsync(ReviewId, userId);
-
-    bool nowLiked;
-
-    if (userLiked)
+    public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
     {
-        await _reviewService.UnlikeReviewAsync(ReviewId, userId);
-        nowLiked = false;
-    }
-    else
-    {
-        await _reviewService.LikeReviewAsync(ReviewId, userId);
-        nowLiked = true;
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+        var userLiked = await _reviewService.HasUserLikedAsync(ReviewId, userId);
+
+        bool nowLiked;
+
+        if (userLiked)
+        {
+            await _reviewService.UnlikeReviewAsync(ReviewId, userId);
+            nowLiked = false;
+        }
+        else
+        {
+            await _reviewService.LikeReviewAsync(ReviewId, userId);
+            nowLiked = true;
+        }
+
+        return new JsonResult(new { liked = nowLiked });
     }
 
-    return new JsonResult(new { liked = nowLiked });
-}
 
-    
 
     public async Task<IActionResult> OnGetAsync()
     {
-        // Dado que la página es [Authorize], sabemos que el usuario está autenticado.
-        // Obtén el ID del usuario actual.
-        UserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value; // Usar ! ya que [Authorize] garantiza que no es null.
+        UserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value; 
 
-        // Puedes usar el Username del usuario autenticado directamente.
         ViewData["WelcomeMessage"] = $"Welcome back, {User.Identity?.Name ?? "User"}. Here’s what we’ve been watching…";
 
+        var popularReviewsData = await _reviewService.GetTopReviewsAsync(10);
+        await LoadReviewCards(popularReviewsData, PopularReviewCards);
 
-        // Carga de reseñas recientes para las tarjetas
-        var recentReviewsCardsData = await _reviewService.GetRecentReviewsAsync(20);
+        var recentReviewsData = await _reviewService.GetRecentReviewsAsync(10);
+        await LoadReviewCards(recentReviewsData, RecentReviewCards);
+
         
-        if (recentReviewsCardsData != null)
-        {
-            foreach (var review in recentReviewsCardsData)
-            {
-                var userProfileTask = _userService.GetProfileAsync(review.UserId);
-                var gamePreviewTask = _gameService.GetGamePreviewByIdAsync(review.GameId);
-                var authUserTask = _authService.SearchUserByIdAsync(review.UserId);
-
-                await Task.WhenAll(userProfileTask, gamePreviewTask, authUserTask);
-
-                var user = userProfileTask.Result;
-                var game = gamePreviewTask.Result;
-                var authUser = authUserTask.Result;
-
-                var gameImageUrl = game?.HeaderUrl ?? "/Images/noImage.png";
-                var profileImageUrl = user?.AvatarUrl ?? "/Images/noImage.png";
-                var userNameDisplay = authUser?.Username ?? "Usuario desconocido";
-                
-                // Asumimos que review.LikedBy no es null si el servicio lo devuelve así,
-                // o que tu ReviewDto lo inicializa como new List<string>().
-                var userLiked = review.LikedBy != null && review.LikedBy.Contains(UserId);
-
-                ReviewCards.Add(new ReviewWithUserDto
-                {
-                    Id = review.Id,
-                    Content = review.Content,
-                    Likes = review.Likes,
-                    Rating = review.Rating,
-                    GameId = review.GameId,
-                    UserName = userNameDisplay,
-                    ProfileImageUrl = profileImageUrl,
-                    GameImageUrl = gameImageUrl,
-                    CreatedAt = review.CreatedAt,
-                    UserLiked = userLiked
-                });
-            }
-        }
-
-        // Carga de ReviewImages
-        var reviewsForImagesSource = await _reviewService.GetRecentReviewsAsync();
+        var reviewsForImagesSource = await _reviewService.GetRecentReviewsAsync(10);
         var topReviewsForImages = reviewsForImagesSource?.Take(10).ToList() ?? new List<ReviewDTO>();
 
         ReviewImages = new List<ImageReviewDto>();
@@ -140,17 +103,17 @@ public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
             ReviewImages.Add(new ImageReviewDto { HeaderUrl = "/Images/noImage.png" });
         }
 
-        // Carga de Games
         var gamePreviewsSource = await _gameService.GetGamePreviewsAsync();
         Games = gamePreviewsSource?.Take(24).ToList() ?? new List<GamePreviewDTO>();
 
 
-        // Carga de listas recientes
         var listsDataSource = await _gameListService.GetRecentListsAsync();
+
 
         if (listsDataSource != null)
         {
-            foreach (var list in listsDataSource)
+            var publicLists = listsDataSource.Where(list => list.IsPublic).ToList();
+            foreach (var list in publicLists)
             {
                 var userTask = _userService.GetProfileAsync(list.UserId);
                 var itemsTask = _gameListItemService.GetItemsByListIdAsync(list.Id);
@@ -174,7 +137,7 @@ public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
                             headersUrl.Add("/Images/noImage.png");
                     }
                 }
-                
+
                 if (headersUrl.Count == 0)
                     headersUrl.Add("/Images/noImage.png");
 
@@ -195,5 +158,50 @@ public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
 
         return Page();
     }
+    
+    // Dentro de IndexModel.cs, en el método LoadReviewCards
+private async Task LoadReviewCards(List<ReviewDTO>? reviews, List<ReviewFullDto> targetList) // Nota: 'targetList' es List<ReviewFullDto>
+{
+    if (reviews != null)
+    {
+        foreach (var review in reviews)
+        {
+            // Llama a IUserManagerService para obtener el perfil del usuario
+            var userProfileTask = _userService.GetProfileAsync(review.UserId);
+            // Llama a IGameService para obtener la vista previa del juego
+            var gamePreviewTask = _gameService.GetGamePreviewByIdAsync(review.GameId);
+            // Llama a IAuthService para obtener el nombre de usuario (authUser)
+            var authUserTask = _authService.SearchUserByIdAsync(review.UserId);
+
+            await Task.WhenAll(userProfileTask, gamePreviewTask, authUserTask); // Ejecuta en paralelo
+
+            var user = userProfileTask.Result;
+            var game = gamePreviewTask.Result;
+            var authUser = authUserTask.Result;
+
+            var gameImageUrl = game?.HeaderUrl ?? "/Images/noImage.png";
+            var profileImageUrl = user?.AvatarUrl ?? "/Images/noImage.png";
+            var userNameDisplay = authUser?.Username ?? "Usuario desconocido";
+            var gameTitleDisplay = game?.Title ?? "Juego desconocido"; // <--- AQUÍ SE OBTIENE EL TÍTULO DEL JUEGO
+
+            var userLiked = review.LikedBy != null && review.LikedBy.Contains(UserId);
+
+            targetList.Add(new ReviewFullDto // <--- AQUÍ SE CREA EL ReviewFullDto
+            {
+                Id = review.Id,
+                Content = review.Content,
+                Likes = review.Likes,
+                Rating = review.Rating,
+                GameId = review.GameId.ToString(),
+                UserName = userNameDisplay,
+                ProfileImageUrl = profileImageUrl,
+                GameImageUrl = gameImageUrl,
+                CreatedAt = review.CreatedAt,
+                UserLiked = userLiked,
+                GameTitle = gameTitleDisplay // <--- Y AQUÍ SE ASIGNA EL TÍTULO AL DTO COMPLETO
+            });
+        }
+    }
+}
     
 }

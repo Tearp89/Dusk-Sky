@@ -33,7 +33,7 @@ public class GameDetailsModel : PageModel
     [BindProperty(SupportsGet = true)]
     public Guid gameId { get; set; }
 
-    public GameDetailsDTO? Game { get; set; }
+    public GameDetailsDTO? Game { get; set; } = default!;
     public GamePreviewDTO GamePreview { get; set; }
     public List<ReviewFullDto> Reviews { get; set; } = new();
     public GameTrackingDto? Tracking { get; set; }
@@ -48,44 +48,68 @@ public class GameDetailsModel : PageModel
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        // 1. Cargar GameDetailsDTO completo (ya tiene HeaderUrl y RandomScreenshot)
         Game = await _gameService.GetGameByIdAsync(gameId);
-        GamePreview = await _gameService.GetGamePreviewByIdAsync(gameId);
         if (Game == null) return NotFound();
 
+        // 2. Configurar el fondo borroso
+        // Usa un screenshot aleatorio. Si no hay, usa el HeaderUrl. Si tampoco, usa un default.
+        var backgroundImageUrl = !string.IsNullOrEmpty(Game.RandomScreenshot)
+                                 ? Game.RandomScreenshot
+                                 : (string.IsNullOrEmpty(Game.HeaderUrl) ? "/Images/default-game-background.png" : Game.HeaderUrl);
+        
+        ViewData["BackgroundImage"] = Url.Content(backgroundImageUrl);
+        ViewData["UseBlurEffect"] = true; // Asegura que el blur está activo para el fondo
+
+        // 3. Cargar las listas del usuario
         UserLists = await _gameListService.GetUserListsAsync(userId);
 
-
+        // 4. Cargar el estado de seguimiento del juego para el usuario actual
         Tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, gameId.ToString());
 
-        var allReviews = await _reviewService.GetReviewsByGameAsync(gameId.ToString());
-        var reviewDtos = new List<ReviewFullDto>();
+        // 5. Cargar y enriquecer las reseñas del juego
+        var allReviews = await _reviewService.GetTopReviewsByGameAsync(gameId.ToString());
+        var reviewTasks = new List<Task<ReviewFullDto>>(); // Para ejecutar en paralelo
 
-        foreach (var review in allReviews)
+        if (allReviews != null)
         {
-            var profile = await _userService.GetProfileAsync(review.UserId);
-            var account = await _authService.SearchUserByIdAsync(review.UserId);
-
-            reviewDtos.Add(new ReviewFullDto
+            foreach (var review in allReviews)
             {
-                Id = review.Id,
-                GameId = review.GameId.ToString(),
-                GameTitle = Game.Title,
-                GameImageUrl = "", // opcional
-                UserId = review.UserId,
-                UserName = account?.Username ?? "Unknown",
-                ProfileImageUrl = profile?.AvatarUrl ?? "/Images/noImage.png",
-                Content = review.Content,
-                Rating = review.Rating,
-                CreatedAt = review.CreatedAt,
-                Likes = review.Likes,
-                LikedBy = review.LikedBy,
-                UserLiked = userId != null && review.LikedBy.Contains(userId)
-            });
+                reviewTasks.Add(EnrichReviewFullDtoAsync(review, Game.Title, Game.HeaderUrl, userId));
+            }
+            Reviews = (await Task.WhenAll(reviewTasks)).OrderByDescending(r => r.CreatedAt).ToList();
         }
-
-        Reviews = reviewDtos.OrderByDescending(r => r.CreatedAt).ToList();
-
+        
         return Page();
+    }
+
+    // Método auxiliar para enriquecer ReviewFullDto (similar a LoadReviewCards)
+    private async Task<ReviewFullDto> EnrichReviewFullDtoAsync(ReviewDTO review, string gameTitle, string gameImageUrl, string? currentUserId)
+    {
+        var profileTask = _userService.GetProfileAsync(review.UserId);
+        var accountTask = _authService.SearchUserByIdAsync(review.UserId);
+
+        await Task.WhenAll(profileTask, accountTask);
+
+        var profile = profileTask.Result;
+        var account = accountTask.Result;
+
+        return new ReviewFullDto
+        {
+            Id = review.Id,
+            GameId = review.GameId.ToString(), 
+            GameTitle = gameTitle, 
+            GameImageUrl = gameImageUrl, 
+            UserId = review.UserId,
+            UserName = account?.Username ?? "Unknown",
+            ProfileImageUrl = profile?.AvatarUrl ?? "/Images/noImage.png",
+            Content = review.Content,
+            Rating = review.Rating,
+            CreatedAt = review.CreatedAt,
+            Likes = review.Likes,
+            LikedBy = review.LikedBy,
+            UserLiked = currentUserId != null && review.LikedBy.Contains(currentUserId)
+        };
     }
 
     public async Task<IActionResult> OnPostToggleTrackingAsync(string trackingType)

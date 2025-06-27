@@ -31,8 +31,9 @@
                 </div>
             }
         </div>
-
-        <!-- Descripción con botón de editar -->
+        @if (Model.IsOwner)
+        {
+            <!-- Descripción con botón de editar -->
         <div class="d-flex align-items-start justify-content-between text-muted mb-3">
             <div class="flex-grow-1">
                 <span id="list-description">@Model.List.Description</span>
@@ -49,6 +50,10 @@
                 ✏️
             </button>
         </div>
+
+        }
+
+        
 
         <!-- Autor -->
         <div class="d-flex align-items-center mb-3">

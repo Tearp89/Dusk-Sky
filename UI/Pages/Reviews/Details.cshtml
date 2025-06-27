@@ -127,25 +127,25 @@ else
         <div class="col-md-4">
             <div class="bg-light border rounded p-3 shadow-sm">
                 <div class="d-flex justify-content-between mb-3 gap-2">
-                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2" id="btn-watch"
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-0" id="btn-watch"
                         data-review-id="@Model.Review.Id" data-tracking-type="watch"
                         data-active="@Model.IsWatched.ToString().ToLower()" onclick="toggleTracking(this)">
                         <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i>
                         <span>@(Model.IsWatched ? "Watched" : "Watch")</span>
                     </button>
 
-                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2" id="btn-like"
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-0" id="btn-like"
                         data-review-id="@Model.Review.Id" data-tracking-type="like"
                         data-active="@Model.IsLiked.ToString().ToLower()" onclick="toggleTracking(this)">
                         <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i>
                         <span>@(Model.IsLiked ? "Liked" : "Like")</span>
                     </button>
 
-                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-2"
+                    <button class="btn flex-fill d-flex align-items-center justify-content-center gap-0"
                         id="btn-watchlist" data-review-id="@Model.Review.Id" data-tracking-type="watchlist"
                         data-active="@Model.IsInWatchlist.ToString().ToLower()" onclick="toggleTracking(this)">
                         <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i>
-                        <span>@(Model.IsInWatchlist ? "Saved" : "Watchlist")</span>
+                        <span>@(Model.IsInWatchlist ? "Saved" : "Playlist")</span>
                     </button>
                 </div>
 

@@ -13,7 +13,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-
+[AllowAnonymous]
 public class StartPageModel : PageModel
 {
     private readonly ILogger<StartPageModel> _logger;
@@ -251,6 +251,12 @@ public class StartPageModel : PageModel
 
             return RedirectToPage("/StartPage");
         }
+
+        if (User.Identity!.IsAuthenticated)
+            {
+                // Si el usuario está autenticado, redirígelo a la página de inicio (Index.cshtml)
+                return RedirectToPage("/Homepage/Index");
+            }
 
         var previews = await _gameService.GetGamePreviewsAsync();
         foreach (var preview in previews)
