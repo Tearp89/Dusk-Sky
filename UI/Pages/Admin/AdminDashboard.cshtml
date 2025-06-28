@@ -3,7 +3,7 @@
 @model AdminDashboardModel
 @{
     ViewData["Title"] = "Admin/Moderator Dashboard";
-    ViewData["ShowBackground"] = false; 
+    ViewData["ShowBackground"] = false; // Asumo que esta es una propiedad que manejas para el fondo
 }
 
 <div class="container py-4">
@@ -75,6 +75,7 @@
 
                     <form method="post" asp-page-handler="PromoteUser" class="d-none mt-3" id="promoteUserForm">
                         @Html.AntiForgeryToken()
+                        @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en PromoteUserInput *@
                         <input type="hidden" name="input.UserId" id="selectedPromoteUserId" /> 
                         <p class="mb-2">
                             Promote: <strong id="promoteSelectedUsername"></strong>
@@ -95,6 +96,7 @@
 
                     <form method="post" asp-page-handler="DemoteUser" class="d-none mt-3" id="demoteUserForm">
                         @Html.AntiForgeryToken()
+                        @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en DemoteUserInput *@
                         <input type="hidden" name="input.UserId" id="selectedDemoteUserId" />
                         <p class="mb-2">
                             Demote: <strong id="demoteSelectedUsername"></strong>
@@ -123,12 +125,16 @@
                 <form method="post" asp-page-handler="AddGame">
                     @Html.AntiForgeryToken()
                     <div class="input-group mb-3">
-                       
+                        @* NOTA: Aquí asp-for ya no puede referenciar a Model.AddGameInput porque ya no existe como propiedad.
+                           Pero Razor Pages es inteligente. Para el 'asp-for' puedes seguir usando 'AddGameInput.SteamLink'
+                           porque sabe que es un ViewModel que se espera como parámetro en el handler.
+                           Para el 'name', es crucial que sea 'addGameInput.SteamLink' para que el model binder lo encuentre. *@
                         <input asp-for="addGameInput.SteamLink" name="addGameInput.SteamLink" type="text" class="form-control" placeholder="https://store.steampowered.com/app/XXXXX/Game_Name/" required />
                         <button type="submit" class="btn btn-primary">Import Game</button>
                     </div>
                     <span asp-validation-for="addGameInput.SteamLink" class="text-danger"></span>
 
+                    @* Mostrar resultado de la importación (si existe). Esto sí usa Model.AddGameResult, que es una propiedad del PageModel. *@
                     @if (!string.IsNullOrEmpty(Model.AddGameResult.ImportStatusMessage))
                     {
                         <div class="alert @(Model.AddGameResult.ImportStatusMessage.StartsWith("Success") ? "alert-success" : "alert-danger") mt-2">
@@ -139,6 +145,7 @@
                             }
                         </div>
                     }
+                     @* Mostrar errores específicos del modal si hay (ej. después de un error de validación) *@
                     @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey("addGameInput.SteamLink"))
                     {
                         <div class="alert alert-danger mt-2">
@@ -157,6 +164,7 @@
     </div>
 </div>
 
+@* Modal: View All Users (Admin Only) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewAllUsersModal" tabindex="-1" aria-labelledby="viewAllUsersModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -187,6 +195,7 @@
     </div>
 </div>
 
+@* Modal: View Reports (Admin & Moderator) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewReportsModal" tabindex="-1" aria-labelledby="viewReportsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
@@ -228,8 +237,10 @@
                                         <form method="post" asp-page-handler="DeleteReport" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             
+                                            @* --- AÑADE ESTA LÍNEA CRUCIAL --- *@
                                             <input type="hidden" name="reportId" value="@report.ReportId" />
 
+                                            @* --- RECOMENDADO: Añadir confirmación para evitar borrados accidentales --- *@
                                             <button type="submit" class="btn btn-sm btn-danger" 
                                                     onclick="return confirm('¿Estás seguro de que quieres eliminar este reporte? Esta acción no se puede deshacer.');">
                                                 Eliminar
@@ -325,6 +336,7 @@
 </div>
 
 
+@* Modal: View Sanctions (Admin & Moderator) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewSanctionsModal" tabindex="-1" aria-labelledby="viewSanctionsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -373,6 +385,33 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // =========================================================================
+            // Lógica General: Mostrar Alertas
+            // =========================================================================
+            function showAlert(message, type) {
+                const alertContainer = document.querySelector('.container .alert');
+                if (!alertContainer) return;
+                if (!message) {
+                    alertContainer.classList.add('d-none');
+                    return;
+                }
+
+                alertContainer.textContent = message;
+                alertContainer.classList.remove('d-none', 'alert-success', 'alert-danger');
+                alertContainer.classList.add(`alert-${type}`);
+
+                const closeButton = alertContainer.querySelector('.btn-close');
+                if (closeButton) closeButton.onclick = () => alertContainer.classList.add('d-none');
+
+                setTimeout(() => {
+                    alertContainer.classList.add('d-none');
+                }, 5000);
+            }
+
+            // =========================================================================
+            // Lógica General: Manejador de Formularios AJAX
+            // =========================================================================
+            // Tu manejador de formularios AJAX genérico (se mantiene tal cual)
             document.querySelectorAll('form.ajax-form').forEach(form => {
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
@@ -414,10 +453,11 @@
 
                         if (response.ok) {
                             const resultText = await response.text();
-                            let result = { success: true };
+                            let result = { success: true }; // Default to success if no JSON response
                             try {
                                 result = JSON.parse(resultText);
                             } catch (e) {
+                                // If response is not JSON, assume success for basic operations
                                 result.success = true;
                             }
 
@@ -425,7 +465,7 @@
                                 showAlert(successMessage, 'success');
                                 const modal = bootstrap.Modal.getInstance(this.closest('.modal'));
                                 if (modal) modal.hide();
-                                window.location.reload();
+                                window.location.reload(); // Reload page to reflect changes
                             } else {
                                 showAlert(`Error: ${result.message || errorMessage}`, 'danger');
                             }
@@ -450,6 +490,143 @@
             });
 
 
+            // =========================================================================
+            // Lógica Específica: Modal "Manage User Roles" (Promoción/Degradación)
+            // =========================================================================
+
+            // Función genérica para configurar la búsqueda de usuarios para roles
+            function setupRoleUserSearch(type, searchInputId, resultsContainerId, selectedUserIdInputId, selectedUsernameDisplayId, currentUserRoleDisplayId, userFormId) {
+                const searchInput = document.getElementById(searchInputId);
+                const searchResults = document.getElementById(resultsContainerId);
+                const selectedUserIdInput = document.getElementById(selectedUserIdInputId);
+                const selectedUsernameDisplay = document.getElementById(selectedUsernameDisplayId);
+                const currentUserRoleDisplay = document.getElementById(currentUserRoleDisplayId);
+                const userForm = document.getElementById(userFormId);
+
+                let searchTimeout = null;
+
+                async function performRoleUserSearch(query) {
+                    if (query.length < 2) {
+                        searchResults.innerHTML = '';
+                        userForm.classList.add('d-none'); // Esconder el formulario si la búsqueda se borra
+                        return;
+                    }
+
+                    try {
+                        const url = `@Url.Page("/Admin/Dashboard")?handler=SearchUsersForRoles&query=${encodeURIComponent(query)}`;
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const users = await response.json();
+                        displayRoleUserSearchResults(users, searchResults, selectedUserIdInput, selectedUsernameDisplay, currentUserRoleDisplay, userForm, type);
+                    } catch (error) {
+                        console.error('Error searching users for roles:', error);
+                        searchResults.innerHTML = '<div class="list-group-item text-danger">Error al buscar usuarios para roles.</div>';
+                    }
+                }
+
+                // Muestra los resultados de la búsqueda en el contenedor designado
+                function displayRoleUserSearchResults(users, searchResultsContainer, selectedUserIdInputElem, selectedUsernameDisplayElem, currentUserRoleDisplayElem, userFormElem, actionType) {
+                    searchResultsContainer.innerHTML = ''; // Limpiar resultados previos
+                    let hasEligibleUsers = false;
+
+                    if (users && users.length > 0) {
+                        users.forEach(user => {
+                            let isEligible = false;
+                            if (actionType === 'promote') {
+                                // Para promoción, el usuario no debe ser ya 'admin' o 'moderator'
+                                if (user.role.toLowerCase() !== 'admin' && user.role.toLowerCase() !== 'moderator') {
+                                    isEligible = true;
+                                }
+                            } else if (actionType === 'demote') {
+                                // Para degradación, el usuario debe ser 'moderator'
+                                if (user.role.toLowerCase() === 'moderator') {
+                                    isEligible = true;
+                                }
+                            }
+
+                            if (isEligible) {
+                                hasEligibleUsers = true;
+                                const listItem = document.createElement('button');
+                                listItem.type = 'button'; // Importante: usar tipo botón para evitar envíos accidentales del formulario
+                                listItem.classList.add('list-group-item', 'list-group-item-action', 'd-flex', 'align-items-center');
+                                listItem.innerHTML = `
+                                    <img src="${user.avatarUrl || '/images/default_avatar.png'}" class="rounded-circle me-2" width="24" height="24" style="object-fit: cover;">
+                                    <strong>${user.username}</strong> (<span class="badge bg-secondary">${user.role}</span>)
+                                `;
+                                // Al hacer clic en un resultado, seleccionar el usuario
+                                listItem.addEventListener('click', () => selectRoleUser(user, selectedUserIdInputElem, selectedUsernameDisplayElem, currentUserRoleDisplayElem, userFormElem, searchResultsContainer));
+                                searchResultsContainer.appendChild(listItem);
+                            }
+                        });
+
+                        if (!hasEligibleUsers) {
+                            searchResultsContainer.innerHTML = '<div class="list-group-item text-muted">No se encontraron usuarios elegibles para esta acción.</div>';
+                        }
+                    } else {
+                        searchResultsContainer.innerHTML = '<div class="list-group-item text-muted">No se encontraron usuarios.</div>';
+                    }
+                }
+
+                // Selecciona un usuario para el rol, llenando el input oculto
+                function selectRoleUser(user, selectedUserIdInputElem, selectedUsernameDisplayElem, currentUserRoleDisplayElem, userFormElem, searchResultsContainerElem) {
+                    selectedUserIdInputElem.value = user.userId; // Establecer el ID en el input oculto
+
+                    // Mostrar la información del usuario seleccionado
+                    selectedUsernameDisplayElem.textContent = user.username;
+                    currentUserRoleDisplayElem.textContent = user.role;
+                    // Actualizar la clase del badge para el rol si es necesario
+                    currentUserRoleDisplayElem.className = 'badge ' + (user.role.toLowerCase() === 'admin' ? 'bg-danger' : user.role.toLowerCase() === 'moderator' ? 'bg-info' : 'bg-secondary');
+
+                    userFormElem.classList.remove('d-none'); // Mostrar el formulario de acción
+
+                    // Limpiar input de búsqueda y resultados para una mejor UX
+                    searchInput.value = '';
+                    searchResultsContainerElem.innerHTML = '';
+                }
+
+                // Listener de evento para búsqueda en tiempo real (al escribir en el input)
+                searchInput.addEventListener('input', function () {
+                    clearTimeout(searchTimeout); // Limpiar timeout anterior
+                    const query = this.value;
+                    searchTimeout = setTimeout(() => {
+                        performRoleUserSearch(query);
+                    }, 300); // Retraso de 300ms para evitar peticiones excesivas
+                });
+            }
+
+            // --- LLAMADAS PARA ACTIVAR LA BÚSQUEDA DE ROLES EN AMBAS SECCIONES ---
+            setupRoleUserSearch('promote', 'promoteUserSearchInput', 'promoteUserSearchResults', 'selectedPromoteUserId', 'promoteSelectedUsername', 'promoteCurrentUserRole', 'promoteUserForm');
+            setupRoleUserSearch('demote', 'demoteUserSearchInput', 'demoteUserSearchResults', 'selectedDemoteUserId', 'demoteSelectedUsername', 'demoteCurrentUserRole', 'demoteUserForm');
+
+            // --- Resetear modal de gestión de roles al ocultarse ---
+            const manageRolesModalElement = document.getElementById('manageRolesModal');
+            if (manageRolesModalElement) {
+                manageRolesModalElement.addEventListener('hidden.bs.modal', function () {
+                    // Resetear la sección de promoción
+                    document.getElementById('promoteUserSearchInput').value = '';
+                    document.getElementById('promoteUserSearchResults').innerHTML = '';
+                    document.getElementById('promoteUserForm').classList.add('d-none');
+                    document.getElementById('selectedPromoteUserId').value = '';
+                    document.getElementById('promoteSelectedUsername').textContent = '';
+                    document.getElementById('promoteCurrentUserRole').textContent = '';
+
+                    // Resetear la sección de degradación
+                    document.getElementById('demoteUserSearchInput').value = '';
+                    document.getElementById('demoteUserSearchResults').innerHTML = '';
+                    document.getElementById('demoteUserForm').classList.add('d-none');
+                    document.getElementById('selectedDemoteUserId').value = '';
+                    document.getElementById('demoteSelectedUsername').textContent = '';
+                    document.getElementById('demoteCurrentUserRole').textContent = '';
+                });
+            }
+
+
+            // =========================================================================
+            // Lógica Específica: Modal "Create Sanction" (Crear Sanción)
+            // =========================================================================
+
             const sanctionUserSearchInput = document.getElementById('sanctionUserSearchInput');
             const searchSanctionUserBtn = document.getElementById('searchSanctionUserBtn');
             const sanctionUserSearchResults = document.getElementById('sanctionUserSearchResults');
@@ -458,40 +635,43 @@
             const sanctionSelectedUserRoleDisplay = document.getElementById('sanctionSelectedUserRoleDisplay');
             const createSanctionUserIdInput = document.getElementById('createSanctionUserId'); // Hidden input for UserId
 
-            let searchTimeout = null;
+            let sanctionSearchTimeout = null; // Renombrado para evitar conflicto con el timeout de roles
 
-            async function performUserSearch(query) {
+            // Función para realizar la búsqueda de usuarios vía AJAX para sanciones
+            async function performSanctionUserSearch(query) {
                 if (query.length < 2) {
                     sanctionUserSearchResults.innerHTML = '';
                     return;
                 }
 
                 try {
+                    // Llama al manejador OnGetSearchUsersForSanctionAsync
                     const url = `@Url.Page("/Admin/Dashboard")?handler=SearchUsersForSanction&query=${encodeURIComponent(query)}`;
                     const response = await fetch(url);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const users = await response.json();
-                    displayUserSearchResults(users);
+                    displaySanctionUserSearchResults(users);
                 } catch (error) {
-                    console.error('Error searching users:', error);
+                    console.error('Error searching users for sanction:', error);
                     sanctionUserSearchResults.innerHTML = '<div class="list-group-item text-danger">Error al buscar usuarios.</div>';
                 }
             }
 
-            function displayUserSearchResults(users) {
-                sanctionUserSearchResults.innerHTML = ''; 
+            // Muestra los resultados de la búsqueda en el contenedor designado
+            function displaySanctionUserSearchResults(users) {
+                sanctionUserSearchResults.innerHTML = ''; // Limpiar resultados previos
                 if (users && users.length > 0) {
                     users.forEach(user => {
                         const listItem = document.createElement('button');
-                        listItem.type = 'button'; 
+                        listItem.type = 'button'; // Importante: usar tipo botón para evitar envíos accidentales del formulario
                         listItem.classList.add('list-group-item', 'list-group-item-action', 'd-flex', 'align-items-center');
                         listItem.innerHTML = `
                             <img src="${user.avatarUrl || '/images/default_avatar.png'}" class="rounded-circle me-2" width="24" height="24" style="object-fit: cover;">
                             <strong>${user.username}</strong> (<span class="badge bg-secondary">${user.role}</span>)
                         `;
-                        
+                        // Al hacer clic en un resultado, seleccionar el usuario
                         listItem.addEventListener('click', () => selectSanctionUser(user));
                         sanctionUserSearchResults.appendChild(listItem);
                     });
@@ -500,41 +680,50 @@
                 }
             }
 
+            // Selecciona un usuario para sanción, llenando el input oculto
             function selectSanctionUser(user) {
-                createSanctionUserIdInput.value = user.userId; 
+                createSanctionUserIdInput.value = user.userId; // Establecer el ID en el input oculto
 
+                // Mostrar la información del usuario seleccionado
                 sanctionSelectedUsernameDisplay.textContent = user.username;
                 sanctionSelectedUserRoleDisplay.textContent = user.role;
                 selectedSanctionUserDisplay.classList.remove('d-none');
 
+                // Limpiar input de búsqueda y resultados para una mejor UX
                 sanctionUserSearchInput.value = '';
                 sanctionUserSearchResults.innerHTML = '';
 
+                // Opcional: enfocar el siguiente campo en el formulario de sanción
                 document.getElementById('CreateSanctionInput_Type').focus();
             }
 
-            window.clearSanctionUserSelection = function() {
-                createSanctionUserIdInput.value = ''; 
+            // Limpia el usuario seleccionado para sanción
+            window.clearSanctionUserSelection = function () {
+                createSanctionUserIdInput.value = ''; // Limpiar el ID en el input oculto
                 sanctionSelectedUsernameDisplay.textContent = '';
                 sanctionSelectedUserRoleDisplay.textContent = '';
                 selectedSanctionUserDisplay.classList.add('d-none');
+                // Limpiar errores de validación para UserId si existen
                 const userIdValidationSpan = document.querySelector('span[data-valmsg-for="CreateSanctionInput.UserId"]');
                 if (userIdValidationSpan) userIdValidationSpan.textContent = '';
             };
 
+            // Listener de evento para búsqueda en tiempo real (al escribir en el input)
             sanctionUserSearchInput.addEventListener('input', function () {
-                clearTimeout(searchTimeout); 
+                clearTimeout(sanctionSearchTimeout); // Limpiar timeout anterior
                 const query = this.value;
-                searchTimeout = setTimeout(() => {
-                    performUserSearch(query);
-                }, 300); 
+                sanctionSearchTimeout = setTimeout(() => {
+                    performSanctionUserSearch(query);
+                }, 300); // Retraso de 300ms para evitar peticiones excesivas
             });
 
+            // Listener de evento para el clic explícito en el botón de búsqueda
             searchSanctionUserBtn.addEventListener('click', function () {
-                performUserSearch(sanctionUserSearchInput.value);
+                performSanctionUserSearch(sanctionUserSearchInput.value);
             });
 
-            const shouldOpenSanctionModal = @(ViewData["OpenCreateSanctionModal"] as bool? ?? false).ToString().toLowerCase();
+            // --- Controlar la apertura del modal al recargar la página (ej. después de errores de validación) ---
+            const shouldOpenSanctionModal = "@((ViewData["OpenCreateSanctionModal"] as bool? ?? false).ToString().ToLowerInvariant())"; // Corrección aquí
             if (shouldOpenSanctionModal === 'true') {
                 const sanctionModalElement = document.getElementById('createSanctionModal');
                 if (sanctionModalElement) {
@@ -543,12 +732,14 @@
                 }
             }
 
+            // --- Resetear modal de sanción al ocultarse ---
             const createSanctionModalElement = document.getElementById('createSanctionModal');
             if (createSanctionModalElement) {
                 createSanctionModalElement.addEventListener('hidden.bs.modal', function () {
-                    this.querySelector('form').reset(); 
-                    clearSanctionUserSelection();
+                    this.querySelector('form').reset(); // Resetear todos los campos del formulario
+                    clearSanctionUserSelection(); // Limpiar la selección de usuario
 
+                    // Limpiar resultados de búsqueda y mensajes de validación
                     sanctionUserSearchResults.innerHTML = '';
                     const validationSummary = this.querySelector('[asp-validation-summary="All"]');
                     if (validationSummary) validationSummary.innerHTML = '';
@@ -556,33 +747,15 @@
                 });
             }
 
+            // --- Pre-seleccionar usuario si el modal se abre debido a una pre-selección del servidor (ej. desde "Resolve & Sanction" o error de validación) ---
+            // Esto asegura que el usuario seleccionado se muestre correctamente después de una recarga de página.
             @if (Model.SelectedSanctionUser != null)
             {
                 <text>
-                    const preSelectedUser = @Html.Raw(JsonSerializer.Serialize(Model.SelectedSanctionUser));
-                    selectSanctionUser(preSelectedUser);
+                    const preSelectedSanctionUser = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SelectedSanctionUser));
+                    selectSanctionUser(preSelectedSanctionUser);
                 </text>
             }
         });
-
-        function showAlert(message, type) {
-            const alertContainer = document.querySelector('.container .alert');
-            if (!alertContainer) return;
-            if (!message) {
-                alertContainer.classList.add('d-none');
-                return;
-            }
-
-            alertContainer.textContent = message;
-            alertContainer.classList.remove('d-none', 'alert-success', 'alert-danger');
-            alertContainer.classList.add(`alert-${type}`);
-
-            const closeButton = alertContainer.querySelector('.btn-close');
-            if (closeButton) closeButton.onclick = () => alertContainer.classList.add('d-none');
-
-            setTimeout(() => {
-                alertContainer.classList.add('d-none');
-            }, 5000);
-        }
     </script>
 }

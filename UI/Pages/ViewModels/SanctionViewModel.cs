@@ -22,6 +22,7 @@ public class SanctionViewModel // Para crear nuevas sanciones y mostrar existent
 
     [DataType(DataType.Date)]
     public DateTime? EndDate { get; set; }
+    public string Username { get; set; }
 
     // Si tu API devuelve 'is_active' (calculado por la API), añádelo
     public bool IsActive { get; set; }
