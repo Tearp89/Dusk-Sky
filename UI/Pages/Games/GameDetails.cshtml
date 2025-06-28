@@ -20,8 +20,7 @@
                 <input type="hidden" name="trackingType" value="watch" />
                 <input type="hidden" name="gameId" value="@Model.Game.Id" />
                 <button class="btn btn-outline-light btn-sm button-glass" type="submit">
-                    <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i> Watch
-                </button>
+                    <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i> Played                </button>
             </form>
             <form method="post" asp-page-handler="ToggleTracking">
                 <input type="hidden" name="trackingType" value="like" />
@@ -34,7 +33,7 @@
                 <input type="hidden" name="trackingType" value="watchlist" />
                 <input type="hidden" name="gameId" value="@Model.Game.Id" />
                 <button class="btn btn-outline-light btn-sm button-glass" type="submit">
-                    <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i> Watchlist
+                    <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i> Playlist
                 </button>
             </form>
             <button type="button" class="btn btn-outline-light btn-sm button-glass" data-bs-toggle="modal" data-bs-target="#reviewLogModal">

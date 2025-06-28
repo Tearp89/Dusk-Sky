@@ -76,7 +76,7 @@
                     <form method="post" asp-page-handler="PromoteUser" class="d-none mt-3" id="promoteUserForm">
                         @Html.AntiForgeryToken()
                         @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en PromoteUserInput *@
-                        <input type="hidden" name="input.UserId" id="selectedPromoteUserId" /> 
+                        <input type="hidden" name="promoteInput.UserId" id="selectedPromoteUserId" /> 
                         <p class="mb-2">
                             Promote: <strong id="promoteSelectedUsername"></strong>
                             (Current Role:
@@ -97,7 +97,7 @@
                     <form method="post" asp-page-handler="DemoteUser" class="d-none mt-3" id="demoteUserForm">
                         @Html.AntiForgeryToken()
                         @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en DemoteUserInput *@
-                        <input type="hidden" name="input.UserId" id="selectedDemoteUserId" />
+                        <input type="hidden" name="demoteInput.UserId" id="selectedDemoteUserId" />
                         <p class="mb-2">
                             Demote: <strong id="demoteSelectedUsername"></strong>
                             (Current Role:
@@ -129,10 +129,10 @@
                            Pero Razor Pages es inteligente. Para el 'asp-for' puedes seguir usando 'AddGameInput.SteamLink'
                            porque sabe que es un ViewModel que se espera como parámetro en el handler.
                            Para el 'name', es crucial que sea 'addGameInput.SteamLink' para que el model binder lo encuentre. *@
-                        <input asp-for="addGameInput.SteamLink" name="addGameInput.SteamLink" type="text" class="form-control" placeholder="https://store.steampowered.com/app/XXXXX/Game_Name/" required />
+                        <input asp-for="AddGameInput.SteamLink"  type="text" class="form-control" placeholder="https://store.steampowered.com/app/XXXXX/Game_Name/" required />
                         <button type="submit" class="btn btn-primary">Import Game</button>
                     </div>
-                    <span asp-validation-for="addGameInput.SteamLink" class="text-danger"></span>
+                    <span asp-validation-for="AddGameInput.SteamLink" class="text-danger"></span>
 
                     @* Mostrar resultado de la importación (si existe). Esto sí usa Model.AddGameResult, que es una propiedad del PageModel. *@
                     @if (!string.IsNullOrEmpty(Model.AddGameResult.ImportStatusMessage))
@@ -411,39 +411,36 @@
             // =========================================================================
             // Lógica General: Manejador de Formularios AJAX
             // =========================================================================
-            // Tu manejador de formularios AJAX genérico (se mantiene tal cual)
             document.querySelectorAll('form.ajax-form').forEach(form => {
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
 
                     const formData = new FormData(this);
-                    const handler = this.dataset.handler;
+                    // Obtener el handler del atributo data-handler si existe
+                    const handler = this.dataset.handler || this.getAttribute('asp-page-handler');
 
-                    const successMessage = this.dataset.successMessage || 'Action completed successfully.';
-                    const errorMessage = this.dataset.errorMessage || 'An error occurred. Please try again.';
+                    const successMessage = this.dataset.successMessage || 'Acción completada exitosamente.';
+                    const errorMessage = this.dataset.errorMessage || 'Ocurrió un error. Por favor, inténtelo de nuevo.';
 
                     try {
-                        let url = `@Url.Page("/Admin/Dashboard")?handler=${handler}`;
-
-                        const routeParams = {};
-                        if (this.action.includes('?')) {
-                            const queryString = this.action.split('?')[1];
-                            const params = new URLSearchParams(queryString);
-                            for (let [key, value] of params.entries()) {
-                                if (key !== 'handler') {
-                                    routeParams[key] = value;
-                                }
-                            }
+                        let url = `@Url.Page("/Admin/Dashboard")`;
+                        if (handler) {
+                            url += `?handler=${handler}`;
                         }
-                        for (let key in routeParams) {
-                            if (routeParams.hasOwnProperty(key)) {
-                                formData.append(key, routeParams[key]);
+                        
+                        // Añadir los parámetros de ruta si existen en la URL de acción del formulario
+                        const actionUrl = new URL(this.action);
+                        for (let [key, value] of actionUrl.searchParams.entries()) {
+                            // Solo añadir si no es el handler, ya que ya lo manejamos
+                            if (key !== 'handler') {
+                                formData.append(key, value);
                             }
                         }
 
-                        const requestVerificationToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                        if (requestVerificationToken) {
-                            formData.append('__RequestVerificationToken', requestVerificationToken);
+                        // Añadir el token de verificación si está presente en el documento
+                        const requestVerificationTokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                        if (requestVerificationTokenInput) {
+                            formData.append('__RequestVerificationToken', requestVerificationTokenInput.value);
                         }
 
                         const response = await fetch(url, {
@@ -453,11 +450,13 @@
 
                         if (response.ok) {
                             const resultText = await response.text();
-                            let result = { success: true }; // Default to success if no JSON response
+                            let result = { success: true };
                             try {
-                                result = JSON.parse(resultText);
+                                if (resultText) { // Solo intentar parsear si hay contenido
+                                    result = JSON.parse(resultText);
+                                }
                             } catch (e) {
-                                // If response is not JSON, assume success for basic operations
+                                // No es JSON, asumimos éxito si la respuesta es OK
                                 result.success = true;
                             }
 
@@ -465,7 +464,7 @@
                                 showAlert(successMessage, 'success');
                                 const modal = bootstrap.Modal.getInstance(this.closest('.modal'));
                                 if (modal) modal.hide();
-                                window.location.reload(); // Reload page to reflect changes
+                                window.location.reload(); // Recargar para reflejar los cambios
                             } else {
                                 showAlert(`Error: ${result.message || errorMessage}`, 'danger');
                             }
@@ -474,8 +473,10 @@
                             const errorText = await response.text();
                             let errorDetail = errorMessage;
                             try {
-                                const errorJson = JSON.parse(errorText);
-                                errorDetail = errorJson.detail || errorJson.message || errorMessage;
+                                if (errorText) {
+                                    const errorJson = JSON.parse(errorText);
+                                    errorDetail = errorJson.detail || errorJson.message || errorMessage;
+                                }
                             } catch (e) {
                                 errorDetail = errorText || errorMessage;
                             }
@@ -484,7 +485,7 @@
 
                     } catch (error) {
                         console.error('AJAX form submission error:', error);
-                        showAlert('An unexpected error occurred.', 'danger');
+                        showAlert('Ocurrió un error inesperado.', 'danger');
                     }
                 });
             });
@@ -723,14 +724,17 @@
             });
 
             // --- Controlar la apertura del modal al recargar la página (ej. después de errores de validación) ---
-            const shouldOpenSanctionModal = "@((ViewData["OpenCreateSanctionModal"] as bool? ?? false).ToString().ToLowerInvariant())"; // Corrección aquí
-            if (shouldOpenSanctionModal === 'true') {
-                const sanctionModalElement = document.getElementById('createSanctionModal');
-                if (sanctionModalElement) {
-                    const sanctionModal = new bootstrap.Modal(sanctionModalElement);
-                    sanctionModal.show();
-                }
-            }
+            // LÍNEA CORREGIDA
+const shouldOpenSanctionModal = '@Model.ShouldOpenCreateSanctionModal.ToString().ToLower()';
+
+// El resto del código que abre el modal no necesita cambios:
+if (shouldOpenSanctionModal === 'true') {
+    const sanctionModalElement = document.getElementById('createSanctionModal');
+    if (sanctionModalElement) {
+        const sanctionModal = new bootstrap.Modal(sanctionModalElement);
+        sanctionModal.show();
+    }
+}
 
             // --- Resetear modal de sanción al ocultarse ---
             const createSanctionModalElement = document.getElementById('createSanctionModal');
@@ -749,13 +753,7 @@
 
             // --- Pre-seleccionar usuario si el modal se abre debido a una pre-selección del servidor (ej. desde "Resolve & Sanction" o error de validación) ---
             // Esto asegura que el usuario seleccionado se muestre correctamente después de una recarga de página.
-            @if (Model.SelectedSanctionUser != null)
-            {
-                <text>
-                    const preSelectedSanctionUser = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SelectedSanctionUser));
-                    selectSanctionUser(preSelectedSanctionUser);
-                </text>
-            }
+            
         });
     </script>
 }

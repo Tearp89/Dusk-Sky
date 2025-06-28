@@ -182,9 +182,10 @@ public class SearcherModel : PageModel
             string gameImage = "/Images/noImage.png";
 
             var profile = await _userManagerService.GetProfileAsync(r.UserId);
+            var username = await _authService.SearchUserByIdAsync(r.UserId);
             if (profile != null)
             {
-                userName = profile.Username ?? "Unknown";
+                userName = username.Username ?? "Unknown";
                 avatarUrl = profile.AvatarUrl ?? "/Images/noImage.png";
             }
 
@@ -247,9 +248,10 @@ private async Task LoadListsAsync(string query)
         };
 
         var profile = await _userManagerService.GetProfileAsync(list.UserId);
+        var username = await _authService.SearchUserByIdAsync(list.UserId);
         if (profile != null)
         {
-            dto.UserName = profile.Username ?? "Unknown";
+            dto.UserName = username.Username ?? "Unknown";
             dto.AvatarUrl = profile.AvatarUrl ?? "/Images/noImage.png";
         }
 

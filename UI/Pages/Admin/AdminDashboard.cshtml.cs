@@ -27,7 +27,7 @@ public class AdminDashboardModel : PageModel
 
 
     public AddGameViewModel AddGameResult { get; set; } = new();
-    public AddGameViewModel addGameInput { get; set; } = new();
+    public AddGameViewModel AddGameInput { get; set; } = new();
     [BindProperty]
     public SanctionViewModel CreateSanctionInput { get; set; } = new();
 
@@ -35,9 +35,15 @@ public class AdminDashboardModel : PageModel
     public string StatusMessage { get; set; } = string.Empty;
     [TempData]
     public string? SelectedSanctionUserJson { get; set; }
+    [TempData] // <-- AÑADE ESTA PROPIEDAD
+    public bool ShouldOpenCreateSanctionModal { get; set; }
+    [TempData] // <-- ¡ESTA ES LA PROPIEDAD QUE FALTA!
+    public string? CreateSanctionInputJson { get; set; }
 
     // New: Property to hold the deserialized selected user for the view
+
     public UserRoleViewModel? SelectedSanctionUser { get; set; }
+
 
 
 
@@ -72,14 +78,15 @@ public class AdminDashboardModel : PageModel
             AddGameResult = new AddGameViewModel(); // Asegúrate de que siempre esté inicializado
         }
 
+        if (!string.IsNullOrEmpty(CreateSanctionInputJson))
+        {
+            CreateSanctionInput = JsonSerializer.Deserialize<SanctionViewModel>(CreateSanctionInputJson) ?? new();
+        }
+
+        // 2. Recupera la "tarjeta de presentación" para mostrarla
         if (!string.IsNullOrEmpty(SelectedSanctionUserJson))
         {
             SelectedSanctionUser = JsonSerializer.Deserialize<UserRoleViewModel>(SelectedSanctionUserJson);
-            // If a user is pre-selected, pre-fill the UserId in the sanction form
-            if (SelectedSanctionUser != null)
-            {
-                CreateSanctionInput.UserId = SelectedSanctionUser.UserId;
-            }
         }
 
         await LoadReportsAsync();
@@ -260,11 +267,9 @@ public class AdminDashboardModel : PageModel
             return new JsonResult(new { success = false, message = "Error interno al buscar usuarios." }) { StatusCode = 500 };
         }
     }
-
     [Authorize(Roles = "admin,moderator")]
     public async Task<IActionResult> OnPostPrepareSanctionAsync(string reportId, string reportedUserId)
     {
-        // 1. Mark the report as resolved
         var report = await _reportService.GetByIdAsync(reportId);
         if (report != null)
         {
@@ -273,33 +278,36 @@ public class AdminDashboardModel : PageModel
             StatusMessage = $"Reporte {reportId.Substring(0, 8)}... marcado como resuelto. Proceda con la sanción.";
         }
 
-        // 2. Pre-fill CreateSanctionInput and set SelectedSanctionUser
-        CreateSanctionInput = new SanctionViewModel
+        // 1. Prepara el "expediente del caso" (el objeto para el formulario)
+        var sanctionInput = new SanctionViewModel
         {
             ReportId = reportId,
             UserId = reportedUserId.Trim(),
-            StartDate = DateTime.UtcNow // Pre-fill with current date
+            StartDate = DateTime.UtcNow
         };
 
+        // 2. Serializa el expediente y guárdalo en su TempData
+        CreateSanctionInputJson = JsonSerializer.Serialize(sanctionInput);
+
+        // 3. Prepara la "tarjeta de presentación" (el objeto para mostrar)
         var user = await _authService.SearchUserByIdAsync(reportedUserId);
         if (user != null)
         {
             var profile = await _userManagerService.GetProfileAsync(user.Id);
-            SelectedSanctionUser = new UserRoleViewModel
+            var selectedUserForDisplay = new UserRoleViewModel
             {
                 UserId = user.Id,
                 Username = user.Username,
                 Role = user.Role,
                 AvatarUrl = profile?.AvatarUrl ?? "/images/default_avatar.png"
             };
-            // Store the selected user in TempData for persistence across redirect
-            SelectedSanctionUserJson = JsonSerializer.Serialize(SelectedSanctionUser);
+            // 4. Serializa la tarjeta y guárdala en su TempData
+            SelectedSanctionUserJson = JsonSerializer.Serialize(selectedUserForDisplay);
         }
 
-        // 3. Set a flag for JavaScript to open the modal
-        ViewData["OpenCreateSanctionModal"] = true;
+        // 5. Activa la bandera para abrir el modal
+        ShouldOpenCreateSanctionModal = true;
 
-        // 4. Redirect to the same page. OnGetAsync will rehydrate the data.
         return RedirectToPage();
     }
 
@@ -309,7 +317,7 @@ public class AdminDashboardModel : PageModel
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> OnPostAddGameAsync([FromForm] AddGameViewModel addGameInput)
     {
-        if (!ModelState.IsValid)
+        /*if (!ModelState.IsValid)
         {
             // Conservar los datos del formulario para rellenar el modal
             AddGameResult = addGameInput;
@@ -319,7 +327,7 @@ public class AdminDashboardModel : PageModel
             TempData["AddGameResult"] = JsonSerializer.Serialize(AddGameResult);
             TempData["StatusMessage"] = "Error: Por favor, corrija los errores del formulario.";
             return Page();
-        }
+        }*/
 
         var regex = new Regex(@"https?:\/\/(?:store|steamcommunity)\.steampowered\.com\/(?:app|sub|bundle)\/(\d+)(?:[/?#].*)?$", RegexOptions.IgnoreCase);
         var match = regex.Match(addGameInput.SteamLink);
@@ -363,25 +371,25 @@ public class AdminDashboardModel : PageModel
 
 
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> OnPostPromoteUserAsync([FromForm] PromoteUserInput input)
+    public async Task<IActionResult> OnPostPromoteUserAsync([FromForm] PromoteUserInput promoteInput)
     {
-        if (!ModelState.IsValid)
+        /*if (!ModelState.IsValid)
         {
             StatusMessage = "Error: ID de usuario a promover es requerido.";
             await LoadReportsAsync();
             await LoadSanctionsAsync();
             if (User.IsInRole("admin")) { await LoadAllUsersAsync(); }
             return Page();
-        }
+        } */
 
-        var userToPromote = await _authService.SearchUserByIdAsync(input.UserId);
+        var userToPromote = await _authService.SearchUserByIdAsync(promoteInput.UserId);
         if (userToPromote == null)
         {
-            StatusMessage = $"Error: Usuario {input.UserId} no encontrado.";
+            StatusMessage = $"Error: Usuario {promoteInput.UserId} no encontrado.";
             return Page();
         }
 
-        var success = await _authService.PromoteUserAsync(input.UserId);
+        var success = await _authService.PromoteUserAsync(promoteInput.UserId);
 
         if (success)
         {
@@ -401,8 +409,9 @@ public class AdminDashboardModel : PageModel
 
 
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> OnPostDemoteUserAsync([FromForm] DemoteUserInput input)
+    public async Task<IActionResult> OnPostDemoteUserAsync([FromForm] DemoteUserInput demoteInput)
     {
+        /*
         if (!ModelState.IsValid)
         {
             StatusMessage = "Error: ID de usuario a degradar es requerido.";
@@ -410,16 +419,16 @@ public class AdminDashboardModel : PageModel
             await LoadSanctionsAsync();
             if (User.IsInRole("admin")) { await LoadAllUsersAsync(); }
             return Page();
-        }
+        }*/
 
-        var userToDemote = await _authService.SearchUserByIdAsync(input.UserId);
+        var userToDemote = await _authService.SearchUserByIdAsync(demoteInput.UserId);
         if (userToDemote == null)
         {
-            StatusMessage = $"Error: Usuario {input.UserId} no encontrado.";
+            StatusMessage = $"Error: Usuario {demoteInput.UserId} no encontrado.";
             return Page();
         }
 
-        var success = await _authService.DemoteUserAsync(input.UserId);
+        var success = await _authService.DemoteUserAsync(demoteInput.UserId);
 
         if (success)
         {
@@ -486,18 +495,18 @@ public class AdminDashboardModel : PageModel
     {
         // If validation fails, we need to re-open the modal and show errors.
         // Also, rehydrate the SelectedSanctionUser from TempData.
-        if (!ModelState.IsValid)
-        {
-            if (!string.IsNullOrEmpty(SelectedSanctionUserJson))
-            {
-                SelectedSanctionUser = JsonSerializer.Deserialize<UserRoleViewModel>(SelectedSanctionUserJson);
-            }
-            ViewData["OpenCreateSanctionModal"] = true; // Flag to reopen modal
-            await LoadReportsAsync();
-            await LoadSanctionsAsync();
-            if (User.IsInRole("admin")) await LoadAllUsersAsync();
-            return Page();
-        }
+        /* if (!ModelState.IsValid)
+         {
+             if (!string.IsNullOrEmpty(SelectedSanctionUserJson))
+             {
+                 SelectedSanctionUser = JsonSerializer.Deserialize<UserRoleViewModel>(SelectedSanctionUserJson);
+             }
+             ViewData["OpenCreateSanctionModal"] = true; // Flag to reopen modal
+             await LoadReportsAsync();
+             await LoadSanctionsAsync();
+             if (User.IsInRole("admin")) await LoadAllUsersAsync();
+             return Page();
+         }*/
 
         // Your existing sanction conflict check logic
         var sanctions = await _sanctionService.GetAllAsync();
@@ -559,6 +568,9 @@ public class AdminDashboardModel : PageModel
 
         return RedirectToPage();
     }
+
+    // Añade este método en cualquier lugar dentro de la clase AdminDashboardModel
+
 
 
     [Authorize(Roles = "admin,moderator")]
