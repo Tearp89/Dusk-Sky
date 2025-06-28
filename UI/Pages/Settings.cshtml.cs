@@ -33,7 +33,7 @@ public class SettingsModel : PageModel
     public SettingsModel(
         IAuthService authService,
         IUserManagerService userManagerService
-        /* REMOVER: , SignInManager<ApplicationUser> signInManager */ ) 
+        /* REMOVER: , SignInManager<ApplicationUser> signInManager */ )
     {
         _authService = authService;
         _userManagerService = userManagerService;
@@ -49,7 +49,7 @@ public class SettingsModel : PageModel
     // --- Manejar el cambio de contraseña (POST) ---
     public async Task<IActionResult> OnPostChangePasswordAsync()
     {
-       
+
 
         string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
@@ -67,7 +67,7 @@ public class SettingsModel : PageModel
             // Para actualizar los claims después de un cambio de contraseña,
             // la forma más sencilla es volver a iniciar sesión al usuario.
             // Esto implica obtener el token/claims de nuevo tras el cambio de contraseña exitoso.
-            
+
             // Opción 1 (Más fácil): Simplemente desloguear y pedir que se loguee de nuevo.
             await HttpContext.SignOutAsync("Cookies"); // Especifica el esquema de autenticación
 
@@ -88,13 +88,25 @@ public class SettingsModel : PageModel
     }
 
     // --- Manejar la eliminación de cuenta (POST) ---
+    // En tu archivo SettingsModel.cs
+
     public async Task<IActionResult> OnPostDeleteAccountAsync()
     {
-        if (!ModelState.IsValid) // Solo si DeleteAccountInput tiene validaciones
+        // --- VALIDACIÓN MANUAL ---
+        // En lugar de usar [Compare] o [Range], revisamos el valor directamente.
+        if (DeleteAccountInput.ConfirmDeletion != true)
         {
-            StatusMessage = "Error: Please confirm account deletion.";
-            return Page();
+            // Si la casilla no llega al servidor como 'true', forzamos un error.
+            ModelState.AddModelError("DeleteAccountInput.ConfirmDeletion", "You must confirm to delete your account.");
+
+            // Este mensaje es opcional, ya que el error se mostrará junto al checkbox.
+            StatusMessage = "Error: Confirmation is required to delete the account.";
+
+            return Page(); // Detenemos la ejecución y mostramos el error en la página.
         }
+
+        // --- Si llegamos aquí, la validación manual fue exitosa ---
+        // El resto de tu código para borrar la cuenta se ejecuta con normalidad.
 
         string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
@@ -103,6 +115,7 @@ public class SettingsModel : PageModel
             return RedirectToPage();
         }
 
+        // ... (El resto de tu lógica de borrado es correcta y no cambia)
         var deleteProfileSuccess = await _userManagerService.DeleteProfileAsync(userId);
         if (!deleteProfileSuccess)
         {
@@ -117,10 +130,9 @@ public class SettingsModel : PageModel
             return Page();
         }
 
-        // Desloguear al usuario después de eliminar la cuenta
-        await HttpContext.SignOutAsync("Cookies"); // Especifica el esquema de autenticación "Cookies"
+        await HttpContext.SignOutAsync("Cookies");
 
         StatusMessage = "Your account has been successfully deleted.";
-        return RedirectToPage("/Index"); // Redirigir a la página de inicio o a una página de confirmación
+        return RedirectToPage("/StartPage");
     }
 }

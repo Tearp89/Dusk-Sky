@@ -3,7 +3,7 @@
 @model AdminDashboardModel
 @{
     ViewData["Title"] = "Admin/Moderator Dashboard";
-    ViewData["ShowBackground"] = false; // Asumo que esta es una propiedad que manejas para el fondo
+    ViewData["ShowBackground"] = false; 
 }
 
 <div class="container py-4">
@@ -75,7 +75,6 @@
 
                     <form method="post" asp-page-handler="PromoteUser" class="d-none mt-3" id="promoteUserForm">
                         @Html.AntiForgeryToken()
-                        @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en PromoteUserInput *@
                         <input type="hidden" name="input.UserId" id="selectedPromoteUserId" /> 
                         <p class="mb-2">
                             Promote: <strong id="promoteSelectedUsername"></strong>
@@ -96,7 +95,6 @@
 
                     <form method="post" asp-page-handler="DemoteUser" class="d-none mt-3" id="demoteUserForm">
                         @Html.AntiForgeryToken()
-                        @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en DemoteUserInput *@
                         <input type="hidden" name="input.UserId" id="selectedDemoteUserId" />
                         <p class="mb-2">
                             Demote: <strong id="demoteSelectedUsername"></strong>
@@ -125,16 +123,12 @@
                 <form method="post" asp-page-handler="AddGame">
                     @Html.AntiForgeryToken()
                     <div class="input-group mb-3">
-                        @* NOTA: Aquí asp-for ya no puede referenciar a Model.AddGameInput porque ya no existe como propiedad.
-                           Pero Razor Pages es inteligente. Para el 'asp-for' puedes seguir usando 'AddGameInput.SteamLink'
-                           porque sabe que es un ViewModel que se espera como parámetro en el handler.
-                           Para el 'name', es crucial que sea 'addGameInput.SteamLink' para que el model binder lo encuentre. *@
+                       
                         <input asp-for="addGameInput.SteamLink" name="addGameInput.SteamLink" type="text" class="form-control" placeholder="https://store.steampowered.com/app/XXXXX/Game_Name/" required />
                         <button type="submit" class="btn btn-primary">Import Game</button>
                     </div>
                     <span asp-validation-for="addGameInput.SteamLink" class="text-danger"></span>
 
-                    @* Mostrar resultado de la importación (si existe). Esto sí usa Model.AddGameResult, que es una propiedad del PageModel. *@
                     @if (!string.IsNullOrEmpty(Model.AddGameResult.ImportStatusMessage))
                     {
                         <div class="alert @(Model.AddGameResult.ImportStatusMessage.StartsWith("Success") ? "alert-success" : "alert-danger") mt-2">
@@ -145,7 +139,6 @@
                             }
                         </div>
                     }
-                     @* Mostrar errores específicos del modal si hay (ej. después de un error de validación) *@
                     @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey("addGameInput.SteamLink"))
                     {
                         <div class="alert alert-danger mt-2">
@@ -164,7 +157,6 @@
     </div>
 </div>
 
-@* Modal: View All Users (Admin Only) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewAllUsersModal" tabindex="-1" aria-labelledby="viewAllUsersModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -195,7 +187,6 @@
     </div>
 </div>
 
-@* Modal: View Reports (Admin & Moderator) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewReportsModal" tabindex="-1" aria-labelledby="viewReportsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
@@ -237,10 +228,8 @@
                                         <form method="post" asp-page-handler="DeleteReport" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             
-                                            @* --- AÑADE ESTA LÍNEA CRUCIAL --- *@
                                             <input type="hidden" name="reportId" value="@report.ReportId" />
 
-                                            @* --- RECOMENDADO: Añadir confirmación para evitar borrados accidentales --- *@
                                             <button type="submit" class="btn btn-sm btn-danger" 
                                                     onclick="return confirm('¿Estás seguro de que quieres eliminar este reporte? Esta acción no se puede deshacer.');">
                                                 Eliminar
@@ -336,7 +325,6 @@
 </div>
 
 
-@* Modal: View Sanctions (Admin & Moderator) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewSanctionsModal" tabindex="-1" aria-labelledby="viewSanctionsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -385,7 +373,6 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Your existing generic AJAX form handler (keep it as is)
             document.querySelectorAll('form.ajax-form').forEach(form => {
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
@@ -463,7 +450,6 @@
             });
 
 
-            // --- NEW: LOGIC FOR CREATE SANCTION MODAL: USER SEARCH (AJAX) ---
             const sanctionUserSearchInput = document.getElementById('sanctionUserSearchInput');
             const searchSanctionUserBtn = document.getElementById('searchSanctionUserBtn');
             const sanctionUserSearchResults = document.getElementById('sanctionUserSearchResults');
@@ -474,7 +460,6 @@
 
             let searchTimeout = null;
 
-            // Function to perform user search via AJAX
             async function performUserSearch(query) {
                 if (query.length < 2) {
                     sanctionUserSearchResults.innerHTML = '';
@@ -482,7 +467,6 @@
                 }
 
                 try {
-                    // Call the OnGetSearchUsersForSanctionAsync handler
                     const url = `@Url.Page("/Admin/Dashboard")?handler=SearchUsersForSanction&query=${encodeURIComponent(query)}`;
                     const response = await fetch(url);
                     if (!response.ok) {
@@ -496,19 +480,18 @@
                 }
             }
 
-            // Displays search results in the designated container
             function displayUserSearchResults(users) {
-                sanctionUserSearchResults.innerHTML = ''; // Clear previous results
+                sanctionUserSearchResults.innerHTML = ''; 
                 if (users && users.length > 0) {
                     users.forEach(user => {
                         const listItem = document.createElement('button');
-                        listItem.type = 'button'; // Important: use button type to prevent accidental form submission
+                        listItem.type = 'button'; 
                         listItem.classList.add('list-group-item', 'list-group-item-action', 'd-flex', 'align-items-center');
                         listItem.innerHTML = `
                             <img src="${user.avatarUrl || '/images/default_avatar.png'}" class="rounded-circle me-2" width="24" height="24" style="object-fit: cover;">
                             <strong>${user.username}</strong> (<span class="badge bg-secondary">${user.role}</span>)
                         `;
-                        // When a result is clicked, select the user
+                        
                         listItem.addEventListener('click', () => selectSanctionUser(user));
                         sanctionUserSearchResults.appendChild(listItem);
                     });
@@ -517,49 +500,40 @@
                 }
             }
 
-            // Selects a user for sanction, populating the hidden input
             function selectSanctionUser(user) {
-                createSanctionUserIdInput.value = user.userId; // Set the ID in the hidden input
+                createSanctionUserIdInput.value = user.userId; 
 
-                // Display selected user's information
                 sanctionSelectedUsernameDisplay.textContent = user.username;
                 sanctionSelectedUserRoleDisplay.textContent = user.role;
                 selectedSanctionUserDisplay.classList.remove('d-none');
 
-                // Clear search input and results for better UX
                 sanctionUserSearchInput.value = '';
                 sanctionUserSearchResults.innerHTML = '';
 
-                // Optional: focus the next field in the sanction form
                 document.getElementById('CreateSanctionInput_Type').focus();
             }
 
-            // Clears the selected user
             window.clearSanctionUserSelection = function() {
-                createSanctionUserIdInput.value = ''; // Clear the ID in the hidden input
+                createSanctionUserIdInput.value = ''; 
                 sanctionSelectedUsernameDisplay.textContent = '';
                 sanctionSelectedUserRoleDisplay.textContent = '';
                 selectedSanctionUserDisplay.classList.add('d-none');
-                // Clear validation errors for UserId if any
                 const userIdValidationSpan = document.querySelector('span[data-valmsg-for="CreateSanctionInput.UserId"]');
                 if (userIdValidationSpan) userIdValidationSpan.textContent = '';
             };
 
-            // Event listener for real-time search (on input)
             sanctionUserSearchInput.addEventListener('input', function () {
-                clearTimeout(searchTimeout); // Clear previous timeout
+                clearTimeout(searchTimeout); 
                 const query = this.value;
                 searchTimeout = setTimeout(() => {
                     performUserSearch(query);
-                }, 300); // 300ms delay to avoid excessive requests
+                }, 300); 
             });
 
-            // Event listener for explicit search button click
             searchSanctionUserBtn.addEventListener('click', function () {
                 performUserSearch(sanctionUserSearchInput.value);
             });
 
-            // --- Control modal opening on page reload (e.g., after validation errors) ---
             const shouldOpenSanctionModal = @(ViewData["OpenCreateSanctionModal"] as bool? ?? false).ToString().toLowerCase();
             if (shouldOpenSanctionModal === 'true') {
                 const sanctionModalElement = document.getElementById('createSanctionModal');
@@ -569,14 +543,12 @@
                 }
             }
 
-            // --- Reset sanction modal on hide ---
             const createSanctionModalElement = document.getElementById('createSanctionModal');
             if (createSanctionModalElement) {
                 createSanctionModalElement.addEventListener('hidden.bs.modal', function () {
-                    this.querySelector('form').reset(); // Reset all form fields
-                    clearSanctionUserSelection(); // Clear user selection
+                    this.querySelector('form').reset(); 
+                    clearSanctionUserSelection();
 
-                    // Clear search results and validation messages
                     sanctionUserSearchResults.innerHTML = '';
                     const validationSummary = this.querySelector('[asp-validation-summary="All"]');
                     if (validationSummary) validationSummary.innerHTML = '';
@@ -584,8 +556,6 @@
                 });
             }
 
-            // --- Pre-select user if modal is opened due to a server-side pre-selection (e.g., from "Resolve & Sanction" or validation error) ---
-            // This ensures the selected user is shown correctly after a page reload.
             @if (Model.SelectedSanctionUser != null)
             {
                 <text>
@@ -595,7 +565,6 @@
             }
         });
 
-        // Your existing showAlert function (keep it as is)
         function showAlert(message, type) {
             const alertContainer = document.querySelector('.container .alert');
             if (!alertContainer) return;

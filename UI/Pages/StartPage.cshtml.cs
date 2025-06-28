@@ -60,6 +60,7 @@ public class StartPageModel : PageModel
 
     public async Task<IActionResult> OnPostLoginAsync()
     {
+        
         var result = await _authService.LoginAsync(LoginData);
 
         if (result != null && !string.IsNullOrWhiteSpace(result.AccessToken))
@@ -126,8 +127,8 @@ public class StartPageModel : PageModel
                 principal,
                 new AuthenticationProperties
                 {
-                    IsPersistent = LoginData.RememberMe,
-                    ExpiresUtc = LoginData.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null
+                    IsPersistent = true,
+                    ExpiresUtc =  DateTime.UtcNow.AddDays(30) 
                 });
 
             Response.Cookies.Append("DuskSkyToken", token, new CookieOptions
@@ -135,7 +136,7 @@ public class StartPageModel : PageModel
                 HttpOnly = true,
                 Secure = false,
                 SameSite = SameSiteMode.Strict,
-                Expires = LoginData.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null
+                Expires =  DateTime.UtcNow.AddDays(30) 
             });
 
             return RedirectToPage("/Homepage/Index");
@@ -202,8 +203,8 @@ public class StartPageModel : PageModel
                     principal,
                     new AuthenticationProperties
                     {
-                        IsPersistent = RegisterData.RememberMe,
-                        ExpiresUtc = RegisterData.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null
+                        IsPersistent = true,
+                        ExpiresUtc =  DateTime.UtcNow.AddDays(30) 
                     });
 
                 Response.Cookies.Append("DuskSkyToken", token, new CookieOptions
@@ -211,7 +212,7 @@ public class StartPageModel : PageModel
                     HttpOnly = true,
                     Secure = false,
                     SameSite = SameSiteMode.Strict,
-                    Expires = RegisterData.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null
+                    Expires =  DateTime.UtcNow.AddDays(30)
                 });
 
                 return RedirectToPage("/Homepage/Index");
@@ -228,6 +229,7 @@ public class StartPageModel : PageModel
 
     public async Task<IActionResult> OnGetAsync([FromQuery] string? logout)
     {
+        
         if (logout == "true")
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

@@ -52,7 +52,7 @@
 
         <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content shadow glassy-modal">
+                <div class="modal-content">
                     <div class="modal-header bg-danger text-white">
                         <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Account Deletion</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -70,7 +70,7 @@
                             </div>
                             <div class="text-end">
                                 <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-danger">Delete My Account</button>
+                                <button type="submit" class="btn btn-danger" id="finalDeleteBtn" disabled>Delete My Account</button>
                             </div>
                         </form>
                     </div>
@@ -83,5 +83,21 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const confirmCheck = document.getElementById('confirmDeletionCheck');
+            const deleteBtn = document.getElementById('finalDeleteBtn');
+
+            if (confirmCheck && deleteBtn) {
+                confirmCheck.addEventListener('change', function () {
+                    // Habilita el botón de borrado SOLO SI el checkbox está marcado.
+                    deleteBtn.disabled = !this.checked;
+                });
+            }
+        });
+    </script>
+
 }

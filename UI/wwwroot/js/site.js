@@ -258,4 +258,13 @@ function togglePlayedBefore() {
     playedBeforeContainer.style.display = watchedOn.checked ? "block" : "none";
 }
 
-    
+// --- SOLUCIÓN JAVASCRIPT DEFINITIVA para el Modal Atrapado ---
+document.addEventListener('DOMContentLoaded', function () {
+  const deleteModalElement = document.getElementById('confirmDeleteModal');
+
+  if (deleteModalElement) {
+    // Esta línea es la clave: Mueve el modal para que sea un hijo directo del <body>.
+    // Esto lo saca de cualquier "caja" o "contexto de apilamiento" problemático.
+    document.body.appendChild(deleteModalElement);
+  }
+});

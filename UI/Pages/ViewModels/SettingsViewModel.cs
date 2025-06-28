@@ -20,11 +20,9 @@ public class ChangePasswordViewModel
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
+// No necesitamos 'using' para validaciones aquí
 public class DeleteAccountViewModel
 {
-    
-
-    [Display(Name = "I understand that deleting my account is permanent and cannot be undone.")]
-    [Range(typeof(bool), "true", "true", ErrorMessage = "You must confirm to delete your account.")]
+    // Simplemente la propiedad, sin atributos de validación.
     public bool ConfirmDeletion { get; set; }
 }

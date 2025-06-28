@@ -8,13 +8,13 @@
 }
 @if (!string.IsNullOrEmpty(Model.SuccessMessage))
 {
-    <div id="reviewSuccessMessage" class="alert alert-success mt-3 text-center">
+    <div id="reviewSuccessMessage" class="alert alert-success mt-3 py-5 text-center">
         @Model.SuccessMessage
     </div>
 }
 else
 {
-    <div id="reviewSuccessMessage" class="alert alert-success d-none mt-3 text-center">
+    <div id="reviewSuccessMessage" class="alert alert-success d-none mt-3 py-5 text-center">
         Tu reseña fue guardada exitosamente.
     </div>
 }
@@ -68,6 +68,30 @@ else
                         @Model.GamePreview.Title
                         <small class="text-muted">@Model.Review.CreatedAt.ToString("yyyy")</small>
                     </h2>
+                    @* ▼▼▼ AÑADE ESTE BLOQUE DE CÓDIGO AQUÍ ▼▼▼ *@
+<div class="mb-3 h4"> @* Usamos h4 para que las estrellas sean grandes *@
+    @{
+        // Lógica para mostrar las estrellas de rating
+        double rating = Model.Review.Rating;
+        for (int i = 1; i <= 5; i++)
+        {
+            if (rating >= i)
+            {
+                <i class="bi bi-star-fill text-warning"></i> @* Estrella llena *@
+            }
+            else if (rating >= i - 0.5)
+            {
+                <i class="bi bi-star-half text-warning"></i> @* Media estrella *@
+            }
+            else
+            {
+                <i class="bi bi-star text-warning"></i> @* Estrella vacía *@
+            }
+        }
+    }
+    <span class="ms-2 text-muted" style="font-size: 1rem; vertical-align: middle;">(@rating.ToString("0.0") / 5)</span>
+</div>
+@* ▲▲▲ FIN DEL BLOQUE A AÑADIR ▲▲▲ *@
                     <p class="text-muted mb-2">Watched @Model.Review.CreatedAt.ToString("dd MMM yyyy")</p>
                     <p class="lead" style="white-space: pre-wrap;">@Model.Review.Content</p>
 

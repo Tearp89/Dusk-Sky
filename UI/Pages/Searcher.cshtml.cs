@@ -217,71 +217,85 @@ public class SearcherModel : PageModel
     }
 
 
-    private async Task LoadListsAsync(string query)
+    // Dentro de tu clase SearcherModel
+
+private async Task LoadListsAsync(string query)
+{
+    // 1. Obtenemos todas las listas como antes.
+    var allRecentLists = await _listService.GetRecentListsAsync();
+
+    // 👇 MEJORA AQUÍ: Filtramos para quedarnos solo con las listas públicas.
+    // Asumo que tu objeto 'list' tiene una propiedad booleana llamada 'IsPublic'.
+    // Si se llama diferente (ej: Visibility == "Public"), solo ajusta esta línea.
+    var publicLists = allRecentLists.Where(list => list.IsPublic);
+
+    var matchedGames = await _gameService.SearchGamePreviewsByNameAsync(query);
+    var matchedGameIds = matchedGames.Select(g => g.Id).ToHashSet();
+
+    // 👇 CAMBIO AQUÍ: Ahora trabajamos sobre 'publicLists' en lugar de 'allRecentLists'.
+    var listTasks = publicLists.Select(async list =>
     {
-        var recentLists = await _listService.GetRecentListsAsync();
-        var matchedGames = await _gameService.SearchGamePreviewsByNameAsync(query);
-        var matchedGameIds = matchedGames.Select(g => g.Id).ToHashSet();
-
-        var listTasks = recentLists.Select(async list =>
+        var dto = new SearchListWithImagesDto
         {
-            var dto = new SearchListWithImagesDto
-            {
-                Id = list.Id,
-                Name = list.Name,
-                Description = list.Description,
-                UserId = list.UserId,
-                GameHeaders = new()
-            };
+            Id = list.Id,
+            Name = list.Name,
+            Description = list.Description,
+            UserId = list.UserId,
+            // Asignamos la propiedad IsPublic al DTO para usarla si es necesario
+            IsPublic = list.IsPublic, 
+            GameHeaders = new()
+        };
 
-            var profile = await _userManagerService.GetProfileAsync(list.UserId);
-            if (profile != null)
-            {
-                dto.UserName = profile.Username ?? "Unknown";
-                dto.AvatarUrl = profile.AvatarUrl ?? "/Images/noImage.png";
-            }
+        var profile = await _userManagerService.GetProfileAsync(list.UserId);
+        if (profile != null)
+        {
+            dto.UserName = profile.Username ?? "Unknown";
+            dto.AvatarUrl = profile.AvatarUrl ?? "/Images/noImage.png";
+        }
 
-            var gameItems = await _listItemService.GetItemsByListIdAsync(list.Id);
+        var gameItems = await _listItemService.GetItemsByListIdAsync(list.Id);
 
-            var matchedInList = gameItems
-                .Where(i => matchedGameIds.Contains(i.GameId))
-                .Select(i => matchedGames.FirstOrDefault(g => g.Id == i.GameId)?.HeaderUrl ?? "")
-                .Where(url => !string.IsNullOrEmpty(url))
-                .Take(6)
-                .ToList();
-
-            if (matchedInList.Any())
-            {
-                dto.GameHeaders = matchedInList;
-            }
-            else
-            {
-                dto.GameHeaders = gameItems
-                    .Select(i => i.GameId)
-                    .Distinct()
-                    .Take(6)
-                    .Select(async id =>
-                    {
-                        var game = await _gameService.GetGamePreviewByIdAsync(id);
-                        return game?.HeaderUrl ?? "";
-                    })
-                    .Select(t => t.Result)
-                    .Where(url => !string.IsNullOrEmpty(url))
-                    .ToList();
-            }
-
-            bool nameMatch = (!string.IsNullOrEmpty(dto.Name) && dto.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
-            bool descMatch = (!string.IsNullOrEmpty(dto.Description) && dto.Description.Contains(query, StringComparison.OrdinalIgnoreCase));
-            bool gameMatch = gameItems.Any(i => matchedGameIds.Contains(i.GameId));
-
-            return (matches: nameMatch || descMatch || gameMatch, dto);
-        });
-
-        Lists = (await Task.WhenAll(listTasks))
-            .Where(t => t.matches)
-            .Select(t => t.dto)
+        var matchedInList = gameItems
+            .Where(i => matchedGameIds.Contains(i.GameId))
+            .Select(i => matchedGames.FirstOrDefault(g => g.Id == i.GameId)?.HeaderUrl ?? "")
+            .Where(url => !string.IsNullOrEmpty(url))
+            .Take(6)
             .ToList();
-    }
+
+        if (matchedInList.Any())
+        {
+            dto.GameHeaders = matchedInList;
+        }
+        else
+        {
+            // Este bloque parece tener un error de concurrencia con .Result. 
+            // Una forma más segura de manejarlo:
+            var headerTasks = gameItems
+                .Select(i => i.GameId)
+                .Distinct()
+                .Take(6)
+                .Select(async id =>
+                {
+                    var game = await _gameService.GetGamePreviewByIdAsync(id);
+                    return game?.HeaderUrl ?? "";
+                });
+            
+            var headers = await Task.WhenAll(headerTasks);
+            dto.GameHeaders = headers.Where(url => !string.IsNullOrEmpty(url)).ToList();
+        }
+
+        bool nameMatch = (!string.IsNullOrEmpty(dto.Name) && dto.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+        bool descMatch = (!string.IsNullOrEmpty(dto.Description) && dto.Description.Contains(query, StringComparison.OrdinalIgnoreCase));
+        bool gameMatch = gameItems.Any(i => matchedGameIds.Contains(i.GameId));
+
+        return (matches: nameMatch || descMatch || gameMatch, dto);
+    });
+
+    Lists = (await Task.WhenAll(listTasks))
+        .Where(t => t.matches)
+        .Select(t => t.dto)
+        .ToList();
+}
 
 
     public async Task<IActionResult> OnPostSendFriendRequestAsync(string receiverId)

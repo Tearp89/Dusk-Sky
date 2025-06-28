@@ -20,7 +20,6 @@ public class AdminDashboardModel : PageModel
     private readonly IModerationSanctionService _sanctionService;
     private readonly IUserManagerService _userManagerService;
 
-    // Propiedades del Modelo para la vista
     public List<UserRoleViewModel> AllUsers { get; set; } = new();
     public List<ReportDisplayViewModel> RecentReports { get; set; } = new();
     public List<SanctionViewModel> ActiveSanctions { get; set; } = new();
@@ -36,7 +35,6 @@ public class AdminDashboardModel : PageModel
     [TempData]
     public string? SelectedSanctionUserJson { get; set; }
 
-    // New: Property to hold the deserialized selected user for the view
     public UserRoleViewModel? SelectedSanctionUser { get; set; }
 
 
@@ -62,20 +60,19 @@ public class AdminDashboardModel : PageModel
             StatusMessage = TempData["StatusMessage"] as string ?? string.Empty;
         }
 
-        // Recuperar el resultado de la importación de TempData si existe
         if (TempData.ContainsKey("AddGameResult"))
         {
             AddGameResult = System.Text.Json.JsonSerializer.Deserialize<AddGameViewModel>(TempData["AddGameResult"]!.ToString()!) ?? new();
         }
         else
         {
-            AddGameResult = new AddGameViewModel(); // Asegúrate de que siempre esté inicializado
+            AddGameResult = new AddGameViewModel(); 
         }
 
         if (!string.IsNullOrEmpty(SelectedSanctionUserJson))
         {
             SelectedSanctionUser = JsonSerializer.Deserialize<UserRoleViewModel>(SelectedSanctionUserJson);
-            // If a user is pre-selected, pre-fill the UserId in the sanction form
+            
             if (SelectedSanctionUser != null)
             {
                 CreateSanctionInput.UserId = SelectedSanctionUser.UserId;
@@ -91,7 +88,6 @@ public class AdminDashboardModel : PageModel
         return Page();
     }
 
-    // --- Métodos de carga de datos ---
 
     [Authorize(Roles = "admin,moderator")]
     public async Task<JsonResult> OnGetSearchUsersForSanctionAsync(string query)
@@ -134,7 +130,7 @@ public class AdminDashboardModel : PageModel
 
     private async Task LoadAllUsersAsync()
     {
-        var allAuthUsers = await _authService.SearchUsersAsync("a"); // HACK para GetAllUsers
+        var allAuthUsers = await _authService.SearchUsersAsync("a"); 
 
         if (allAuthUsers != null)
         {
@@ -159,28 +155,19 @@ public class AdminDashboardModel : PageModel
 
     private async Task LoadReportsAsync()
     {
-        var reports = await _reportService.GetAllAsync(); // Asumo que _reportService.GetAllAsync() devuelve ReportDTO
+        var reports = await _reportService.GetAllAsync(); 
         if (reports != null)
         {
             var displayTasks = reports.Select(async r =>
             {
-                // Obtener el nombre de usuario del usuario reportado
                 var reportedUserAccount = await _authService.SearchUserByIdAsync(r.ReportedUserId);
                 var reportedUsername = reportedUserAccount?.Username ?? "Unknown User";
-
-                // (Opcional) Obtener el nombre de usuario del reportero si ReportDTO tiene ReporterId
-                // Tu SanctionDTO no lo tiene, así que esto es una suposición para ReportDTO.
-                // Si tu ReportDTO tiene ReporterId, descomenta y usa:
-                // var reporterUserAccount = await _authService.SearchUserByIdAsync(r.ReporterId);
-                // var reporterUsername = reporterUserAccount?.Username ?? "Unknown User";
 
                 return new ReportDisplayViewModel
                 {
                     ReportId = r.Id,
                     ReportedUserId = r.ReportedUserId,
                     ReportedUsername = reportedUsername,
-                    // ReporterId = r.ReporterId, // Descomentar si ReportDTO tiene
-                    // ReporterUsername = reporterUsername, // Descomentar si ReportDTO tiene
                     ContentType = r.ContentType,
                     Reason = r.Reason,
                     Status = r.Status,
@@ -197,14 +184,13 @@ public class AdminDashboardModel : PageModel
 
     private async Task LoadSanctionsAsync()
     {
-        var sanctions = await _sanctionService.GetAllAsync(); // Obtener todas las sanciones
+        var sanctions = await _sanctionService.GetAllAsync(); 
         if (sanctions != null)
         {
             var displayTasks = sanctions.Select(async s =>
             {
                 var sanctionedUser = await _authService.SearchUserByIdAsync(s.UserId);
 
-                // Usar el método de extensión IsActive
                 bool isActive = s.IsActive();
 
                 return new SanctionViewModel
@@ -273,12 +259,11 @@ public class AdminDashboardModel : PageModel
             StatusMessage = $"Reporte {reportId.Substring(0, 8)}... marcado como resuelto. Proceda con la sanción.";
         }
 
-        // 2. Pre-fill CreateSanctionInput and set SelectedSanctionUser
         CreateSanctionInput = new SanctionViewModel
         {
             ReportId = reportId,
             UserId = reportedUserId.Trim(),
-            StartDate = DateTime.UtcNow // Pre-fill with current date
+            StartDate = DateTime.UtcNow 
         };
 
         var user = await _authService.SearchUserByIdAsync(reportedUserId);
@@ -292,26 +277,21 @@ public class AdminDashboardModel : PageModel
                 Role = user.Role,
                 AvatarUrl = profile?.AvatarUrl ?? "/images/default_avatar.png"
             };
-            // Store the selected user in TempData for persistence across redirect
             SelectedSanctionUserJson = JsonSerializer.Serialize(SelectedSanctionUser);
         }
 
-        // 3. Set a flag for JavaScript to open the modal
         ViewData["OpenCreateSanctionModal"] = true;
 
-        // 4. Redirect to the same page. OnGetAsync will rehydrate the data.
         return RedirectToPage();
     }
 
 
-    // --- Métodos OnPost (Acciones de Admin/Moderador) ---
 
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> OnPostAddGameAsync([FromForm] AddGameViewModel addGameInput)
     {
         if (!ModelState.IsValid)
         {
-            // Conservar los datos del formulario para rellenar el modal
             AddGameResult = addGameInput;
             await LoadReportsAsync();
             await LoadSanctionsAsync();
@@ -327,11 +307,10 @@ public class AdminDashboardModel : PageModel
         int steamAppId;
         if (match.Success && int.TryParse(match.Groups[1].Value, out steamAppId))
         {
-            // ID extraído con éxito, proceder con la importación
         }
         else
         {
-            AddGameResult = addGameInput; // Conservar los datos
+            AddGameResult = addGameInput; 
             AddGameResult.ImportStatusMessage = "Error: No se pudo encontrar un ID de aplicación de Steam válido en el enlace proporcionado. Asegúrese de que sea un enlace directo a una página de aplicación de Steam.";
             StatusMessage = AddGameResult.ImportStatusMessage;
             TempData["AddGameResult"] = JsonSerializer.Serialize(AddGameResult);
@@ -405,7 +384,7 @@ public class AdminDashboardModel : PageModel
     {
         if (!ModelState.IsValid)
         {
-            StatusMessage = "Error: ID de usuario a degradar es requerido.";
+            StatusMessage = "Error: The id of the user to demote is needed";
             await LoadReportsAsync();
             await LoadSanctionsAsync();
             if (User.IsInRole("admin")) { await LoadAllUsersAsync(); }
@@ -415,7 +394,7 @@ public class AdminDashboardModel : PageModel
         var userToDemote = await _authService.SearchUserByIdAsync(input.UserId);
         if (userToDemote == null)
         {
-            StatusMessage = $"Error: Usuario {input.UserId} no encontrado.";
+            StatusMessage = $"Error: User {input.UserId} not found.";
             return Page();
         }
 
@@ -423,11 +402,11 @@ public class AdminDashboardModel : PageModel
 
         if (success)
         {
-            StatusMessage = $"Usuario {userToDemote.Username} degradado de Moderador.";
+            StatusMessage = $"User {userToDemote.Username} downgraded to player.";
         }
         else
         {
-            StatusMessage = $"Error: Falló la degradación del usuario {userToDemote.Username}.";
+            StatusMessage = $"Error: There was a problem demoting de user {userToDemote.Username}.";
         }
 
         await LoadReportsAsync();
@@ -443,7 +422,7 @@ public class AdminDashboardModel : PageModel
         var report = await _reportService.GetByIdAsync(reportId);
         if (report == null)
         {
-            return new JsonResult(new { success = false, message = "Reporte no encontrado." });
+            return new JsonResult(new { success = false, message = "Report not found" });
         }
         report.Status = newStatus;
         var success = await _reportService.UpdateAsync(reportId, report);

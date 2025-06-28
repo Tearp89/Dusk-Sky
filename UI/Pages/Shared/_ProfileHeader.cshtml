@@ -83,6 +83,32 @@
     </div>
 </div>
 
+@* ▼▼▼ AÑADE ESTE BLOQUE AQUÍ ▼▼▼ *@
+@if (TempData["SuccessMessage"] != null || TempData["StatusMessage"] != null)
+{
+    string message;
+    string alertClass;
+
+    if (TempData["SuccessMessage"] != null)
+    {
+        message = TempData["SuccessMessage"].ToString();
+        alertClass = "alert-success";
+    }
+    else
+    {
+        message = TempData["StatusMessage"].ToString();
+        // Asumimos que StatusMessage puede ser de éxito o error
+        alertClass = message.StartsWith("Error") ? "alert-danger" : "alert-success";
+    }
+
+    <div class="container mt-n4" style="position: relative; z-index: 10;">
+        <div class="alert @alertClass alert-dismissible fade show text-center shadow-lg" role="alert">
+            @message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
+
 
 <div class="modal fade" id="reportUserModal" tabindex="-1" aria-labelledby="reportUserModalLabel" aria-hidden="true">
     <div class="modal-dialog">
