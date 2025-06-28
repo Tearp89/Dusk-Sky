@@ -58,36 +58,22 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Rating</label>
-                        <div class="half-star-rating">
-                            @for (int i = 10; i >= 1; i--)
-                            {
-                                var value = (i * 0.5).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                                var id = $"star-{value.Replace(".", "_")}";
-                                var isLeft = i % 2 == 1;
-                                var clipId = isLeft ? $"left-{i}" : $"right-{i}";
-
-                                <input type="radio" name="Review.Rating" id="@id" value="@value" />
-                                <label for="@id">
-                                    <svg viewBox="0 0 24 24" class="star-svg">
-                                        <defs>
-                                            <clipPath id="left-@i">
-                                                <rect x="0" y="0" width="12" height="24" />
-                                            </clipPath>
-                                            <clipPath id="right-@i">
-                                                <rect x="12" y="0" width="12" height="24" />
-                                            </clipPath>
-                                        </defs>
-                                        <path d="M12 17.27L18.18 21 16.54 13.97
-                                                 22 9.24 14.81 8.63 12 2
-                                                 9.19 8.63 2 9.24 7.46 13.97
-                                                 5.82 21z" class="star-base" clip-path="url(#@clipId)" />
-                                    </svg>
-                                </label>
-                            }
-                        </div>
-                        <span asp-validation-for="Review.Rating" class="text-danger"></span>
-                    </div>
+    <label class="form-label">Rating</label>
+    <div class="full-star-rating">
+        @for (int i = 1; i <= 5; i++)
+        {
+            var value = i.ToString();
+            var id = $"star-{value}";
+            <input type="radio" name="Review.Rating" id="@id" value="@value" />
+            <label for="@id">
+                <svg viewBox="0 0 24 24" class="star-svg">
+                    <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z" class="star-base" />
+                </svg>
+            </label>
+        }
+    </div>
+    <span asp-validation-for="Review.Rating" class="text-danger"></span>
+</div>
 
                     <div class="mb-3 watched-box glassy p-3 rounded-4 shadow-sm">
                         <div class="form-check form-switch mb-2">

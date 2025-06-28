@@ -253,10 +253,10 @@ public class StartPageModel : PageModel
         }
 
         if (User.Identity!.IsAuthenticated)
-            {
-                // Si el usuario está autenticado, redirígelo a la página de inicio (Index.cshtml)
-                return RedirectToPage("/Homepage/Index");
-            }
+        {
+            // Si el usuario está autenticado, redirígelo a la página de inicio (Index.cshtml)
+            return RedirectToPage("/Homepage/Index");
+        }
 
         var previews = await _gameService.GetGamePreviewsAsync();
         foreach (var preview in previews)
@@ -325,48 +325,56 @@ public class StartPageModel : PageModel
 
         var lists = await _gameListService.GetRecentListsAsync();
 
-        foreach (var list in lists)
+        if (lists != null)
         {
-            var userTask = _userService.GetProfileAsync(list.UserId);
-            if (string.IsNullOrWhiteSpace(list.Id))
-                continue;
-            var itemsTask = _gameListItemService.GetItemsByListIdAsync(list.Id);
-            var userWithName = await _authService.SearchUserByIdAsync(list.UserId);
+            // === CAMBIO CLAVE: FILTRAR POR LISTAS PÚBLICAS ===
+            var publicLists = lists.Where(list => list.IsPublic).ToList();
 
-            await Task.WhenAll(userTask, itemsTask);
-
-            var user = userTask.Result;
-            var items = itemsTask.Result;
-            var userWithNameList = await _authService.SearchUserByIdAsync(list.UserId);
-
-            var headersUrl = new List<string>();
-
-            // ✅ Agregamos varias imágenes (máximo 4 para no saturar visualmente)
-            foreach (var item in items.Take(4))
+            foreach (var list in publicLists) // Ahora iteramos sobre las listas filtradas
             {
-                var game = await _gameService.GetGamePreviewByIdAsync(item.GameId);
-                if (!string.IsNullOrEmpty(game?.HeaderUrl))
-                    headersUrl.Add(game.HeaderUrl);
-                else
+                var userTask = _userService.GetProfileAsync(list.UserId);
+                if (string.IsNullOrWhiteSpace(list.Id))
+                    continue;
+                var itemsTask = _gameListItemService.GetItemsByListIdAsync(list.Id);
+                // Asegúrate de que userWithName y userWithNameList se refieren al mismo usuario si es el mismo ID
+                var userWithNameTask = _authService.SearchUserByIdAsync(list.UserId);
+
+                await Task.WhenAll(userTask, itemsTask, userWithNameTask); // Esperar userWithNameTask también
+
+                var user = userTask.Result;
+                var items = itemsTask.Result;
+                var userWithName = userWithNameTask.Result; // Usar el resultado de la tarea
+
+
+                var headersUrl = new List<string>();
+
+                // ... (tu lógica existente para agregar imágenes de portada a headersUrl) ...
+                foreach (var item in items.Take(4))
+                {
+                    var game = await _gameService.GetGamePreviewByIdAsync(item.GameId);
+                    if (!string.IsNullOrEmpty(game?.HeaderUrl))
+                        headersUrl.Add(game.HeaderUrl);
+                    else
+                        headersUrl.Add("/Images/noImage.png");
+                }
+
+                // En caso de que no haya imágenes (lista vacía), agregamos una por defecto
+                if (headersUrl.Count == 0)
                     headersUrl.Add("/Images/noImage.png");
+
+                RecentLists.Add(new GameListWithUserDto
+                {
+                    Id = list.Id,
+                    Name = list.Name,
+                    Description = list.Description,
+                    IsPublic = list.IsPublic,
+                    UserId = list.UserId,
+                    Date = list.CreatedAt,
+                    UserName = userWithName?.Username ?? "Usuario desconocido", // Usar userWithName
+                    AvatarUrl = user?.AvatarUrl ?? "/Images/noImage.png",
+                    GameHeaders = headersUrl
+                });
             }
-
-            // En caso de que no haya imágenes (lista vacía), agregamos una por defecto
-            if (headersUrl.Count == 0)
-                headersUrl.Add("/Images/noImage.png");
-
-            RecentLists.Add(new GameListWithUserDto
-            {
-                Id = list.Id,
-                Name = list.Name,
-                Description = list.Description,
-                IsPublic = list.IsPublic,
-                UserId = list.UserId,
-                Date = list.CreatedAt,
-                UserName = userWithNameList?.Username ?? "Usuario desconocido",
-                AvatarUrl = user?.AvatarUrl ?? "/Images/noImage.png",
-                GameHeaders = headersUrl
-            });
         }
 
 

@@ -6,19 +6,28 @@
     ViewData["ShowBackground"] = true;
     ViewData["UseBlurEffect"] = false;
     ViewData["BackgroundImage"] = Url.Content("~/Images/startpage.png");
-    int index = 0; // Para el identificador único del collage
+    int index = 0; 
 }
 
 <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
 <script src="~/js/site.js"></script>
 
 <div class="index-text">
-    <h4>Welcome back, Swizzy13. Here’s what we’ve been watching…</h4>
+    <h4>@ViewData["WelcomeMessage"]</h4> 
     <h6>This homepage will become customized as you follow active members on Letterboxd.</h6>
 </div>
 
 <div class="section-container">
-    <h6>New on Dusk Sky</h6>
+    <h6>
+        @if (Model.HasFriends)
+        {
+            <span>New from your friends</span>
+        }
+        else
+        {
+            <span>New on Dusk Sky</span>
+        }
+    </h6>
     <hr>
 </div>
 
@@ -32,7 +41,7 @@
     }
 
     @{
-        var reviewsToDisplay = Model.RecentReviewCards?.Take(6).ToList() ?? new List<ReviewFullDto>();
+        var reviewsToDisplay = Model.ReviewCards?.Take(6).ToList() ?? new List<ReviewFullDto>();
         for (int i = 0; i < 6; i++)
         {
             if (i < reviewsToDisplay.Count)
