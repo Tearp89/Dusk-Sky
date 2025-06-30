@@ -1,86 +1,109 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Agrega servicios ANTES de Build
+// Servicios
 builder.Services.AddRazorPages();
-builder.Services.AddHttpClient(); // Esto no es necesario si ya tienes la siguiente línea
+
 builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
-    client.BaseAddress = new Uri("http://authservice.local/auth/");
-
+    // Corrected: auth_service listens on 8000 internally
+    client.BaseAddress = new Uri("http://auth_service:8000/auth/");
 });
 
 builder.Services.AddHttpClient<IGameService, GameService>(client =>
 {
-    client.BaseAddress = new Uri("http://games.local/api/game/"); 
+    // Corrected: game_service_app (which maps to game_service service name) listens on 80 internally
+    client.BaseAddress = new Uri("http://game_service:80/api/game/"); // Or just "http://game_service/api/game/"
+    client.Timeout = TimeSpan.FromSeconds(15);
 });
 
 builder.Services.AddHttpClient<ICommentService, CommentService>(client =>
 {
-    client.BaseAddress = new Uri("http://commentservice.local/comments"); 
+    // Corrected: commentservice listens on 80 internally
+    client.BaseAddress = new Uri("http://commentservice:80/comments"); // Or just "http://commentservice/comments"
 });
 
 builder.Services.AddHttpClient<IFriendshipService, FriendshipService>(client =>
 {
-    client.BaseAddress = new Uri("http://friendship.local");
-
+    // Corrected: friendshipservice (which maps to friendship_service service name) listens on 8006 internally
+    client.BaseAddress = new Uri("http://friendship_service:8006/");
 });
+
 builder.Services.AddHttpClient<IGameListService, GameListService>(client =>
 {
-    client.BaseAddress = new Uri("http://gamelistservice.local/"); // Ajusta según tu puerto real
+    // Corrected: gamelistservice listens on 80 internally
+    client.BaseAddress = new Uri("http://gamelistservice:80/"); // Or just "http://gamelistservice/"
 });
 
 builder.Services.AddHttpClient<IGameListItemService, GameListItemService>(client =>
 {
-    client.BaseAddress = new Uri("http://gamelistservice.local/lists");
+    // Corrected: gamelistservice listens on 80 internally
+    client.BaseAddress = new Uri("http://gamelistservice:80/lists"); // Or just "http://gamelistservice/lists"
 });
 
 builder.Services.AddHttpClient<IModerationReportService, ModerationReportService>(client =>
 {
-    client.BaseAddress = new Uri("http://moderationservice.local/moderation/");
+    // Corrected: moderationservice listens on 80 internally
+    client.BaseAddress = new Uri("http://moderationservice:80/moderation/"); // Or just "http://moderationservice/moderation/"
 });
 
 builder.Services.AddHttpClient<IModerationSanctionService, ModerationSanctionService>(client =>
 {
-     client.BaseAddress = new Uri("http://moderationservice.local/moderation/");
+    // Corrected: moderationservice listens on 80 internally
+    client.BaseAddress = new Uri("http://moderationservice:80/moderation/"); // Or just "http://moderationservice/moderation/"
 });
 
 builder.Services.AddHttpClient<IReviewService, ReviewService>(client =>
 {
-    client.BaseAddress = new Uri("http://review.local/");
+    // **********************************************
+    // CRITICAL FIX: reviewservice listens on 8000 internally
+    client.BaseAddress = new Uri("http://reviewservice:8000/");
+    // **********************************************
 });
-
-
 
 builder.Services.AddHttpClient<IUserManagerService, UserManagerService>(client =>
 {
-    client.BaseAddress = new Uri("http://usermanager.local/"); 
+    // **********************************************
+    // CRITICAL FIX: user_manager_service (service name) listens on 8000 internally
+    client.BaseAddress = new Uri("http://user_manager_service:8000/");
+    // **********************************************
 });
 
 builder.Services.AddHttpClient<IGameTrackingService, GameTrackingService>(client =>
 {
-    client.BaseAddress = new Uri("http://track.local/track/"); 
+    // Corrected: user_game_tracking_service listens on 8000 internally
+    client.BaseAddress = new Uri("http://user_game_tracking_service:8005/");
 });
-
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.MinimumSameSitePolicy = SameSiteMode.Strict;
 });
-builder.Services.AddScoped<UserSessionManager>(); 
+
+builder.Services.AddScoped<UserSessionManager>();
+
 builder.Services.AddAuthentication("Cookies")
     .AddCookie("Cookies", options =>
     {
-        options.LoginPath = "/StartPage"; // o donde esté tu login
-        options.AccessDeniedPath = "/AccessDenied"; // opcional
-        options.ExpireTimeSpan = TimeSpan.FromDays(30); // Define que la cookie durará 30 días si es persistente
-        options.SlidingExpiration = true; 
+        options.LoginPath = "/StartPage";
+        options.AccessDeniedPath = "/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+        // options.Cookie.SecurePolicy = CookieSecurePolicy.None;
     });
 
 builder.Services.AddAuthorization();
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole(); // o AddDebug si lo prefieres
+builder.Logging.AddConsole();
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -90,14 +113,13 @@ builder.Services.AddSession(options =>
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
-    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
+builder.WebHost.UseUrls("http://+:80");
 
+var app = builder.Build();
 
-var app = builder.Build(); // ✅ Ahora sí construyes la app
-
-// Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -108,21 +130,19 @@ else
     app.UseDeveloperExceptionPage();
 }
 
-var cultureInfo = new System.Globalization.CultureInfo("en-US");
+var cultureInfo = new CultureInfo("en-US");
 cultureInfo.NumberFormat.NumberDecimalSeparator = ".";
-
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
+// app.UseHttpsRedirection(); // Comentado para Docker sin SSL
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseRouting();
 app.UseSession();
+app.UseRouting();
 app.UseCookiePolicy();
-app.UseAuthentication(); // 👈 Obligatorio
+app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapRazorPages();
 app.MapFallbackToPage("/StartPage");
