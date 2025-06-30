@@ -75,8 +75,8 @@ public class StartPageModel : PageModel
     {
         _logger.LogInformation("Attempting login for user: {Username}", LoginData.Username);
 
-        // Initial model validation (e.g., if required fields are empty)
         
+
 
         AuthResponseDto? result = null;
         try
@@ -505,6 +505,11 @@ public class StartPageModel : PageModel
                 Games = previews.Take(24).ToList();
                 _logger.LogInformation("Loaded {Count} game previews.", Games.Count);
             }
+        }
+        catch (TaskCanceledException ex)
+        {
+            _logger.LogError(ex, "Timeout while trying to load game previews. Check if GameService is up and responding.");
+            Games = new List<GamePreviewDTO>();
         }
         catch (Exception ex)
         {
