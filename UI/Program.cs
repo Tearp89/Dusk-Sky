@@ -8,79 +8,78 @@ using System.Text.Json.Serialization;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
+var apiGatewayUrl = builder.Configuration.GetValue<string>("API_GATEWAY_URL") ?? "http://nginx_gateway/";
 
 // Servicios
 builder.Services.AddRazorPages();
 
 builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
-    // Corrected: auth_service listens on 8000 internally
-    client.BaseAddress = new Uri("http://auth_service:8000/auth/");
+    // Frontend -> Nginx -> Backend. Nginx espera /auth/
+    client.BaseAddress = new Uri(apiGatewayUrl + "auth/");
 });
 
 builder.Services.AddHttpClient<IGameService, GameService>(client =>
 {
-    // Corrected: game_service_app (which maps to game_service service name) listens on 80 internally
-    client.BaseAddress = new Uri("http://game_service:80/api/game/"); // Or just "http://game_service/api/game/"
+    // Frontend -> Nginx -> Backend. Nginx espera /api/game/
+    client.BaseAddress = new Uri(apiGatewayUrl + "api/game/");
     client.Timeout = TimeSpan.FromSeconds(15);
 });
 
 builder.Services.AddHttpClient<ICommentService, CommentService>(client =>
 {
-    // Corrected: commentservice listens on 80 internally
-    client.BaseAddress = new Uri("http://commentservice:80/comments"); // Or just "http://commentservice/comments"
+    // Frontend -> Nginx -> Backend. Nginx espera /comments/
+    client.BaseAddress = new Uri(apiGatewayUrl + "comments/"); // Asegura la barra final
 });
 
 builder.Services.AddHttpClient<IFriendshipService, FriendshipService>(client =>
 {
-    // Corrected: friendshipservice (which maps to friendship_service service name) listens on 8006 internally
-    client.BaseAddress = new Uri("http://friendship_service:8006/");
+    // Frontend -> Nginx -> Backend. Nginx espera /friendship/
+    client.BaseAddress = new Uri(apiGatewayUrl + "friendship/");
 });
 
 builder.Services.AddHttpClient<IGameListService, GameListService>(client =>
 {
-    // Corrected: gamelistservice listens on 80 internally
-    client.BaseAddress = new Uri("http://gamelistservice:80/"); // Or just "http://gamelistservice/"
+    // Frontend -> Nginx -> Backend. Nginx espera /lists/
+    client.BaseAddress = new Uri(apiGatewayUrl + "lists/");
 });
 
 builder.Services.AddHttpClient<IGameListItemService, GameListItemService>(client =>
 {
-    // Corrected: gamelistservice listens on 80 internally
-    client.BaseAddress = new Uri("http://gamelistservice:80/lists"); // Or just "http://gamelistservice/lists"
+    // Frontend -> Nginx -> Backend. Nginx espera /lists/ (para items específicos de listas)
+    // Tu Nginx tiene location ^~ /lists/, y este servicio hace llamadas como GetItemsByListIdAsync(list.Id)
+    // Si tus rutas en el backend son /lists/{id}/items, entonces el BaseAddress es /lists/
+    client.BaseAddress = new Uri(apiGatewayUrl + "lists/");
 });
 
 builder.Services.AddHttpClient<IModerationReportService, ModerationReportService>(client =>
 {
-    // Corrected: moderationservice listens on 80 internally
-    client.BaseAddress = new Uri("http://moderationservice:80/moderation/"); // Or just "http://moderationservice/moderation/"
+    // Frontend -> Nginx -> Backend. Nginx espera /moderation/
+    client.BaseAddress = new Uri(apiGatewayUrl + "moderation/");
 });
 
 builder.Services.AddHttpClient<IModerationSanctionService, ModerationSanctionService>(client =>
 {
-    // Corrected: moderationservice listens on 80 internally
-    client.BaseAddress = new Uri("http://moderationservice:80/moderation/"); // Or just "http://moderationservice/moderation/"
+    // Frontend -> Nginx -> Backend. Nginx espera /moderation/
+    client.BaseAddress = new Uri(apiGatewayUrl + "moderation/");
 });
 
 builder.Services.AddHttpClient<IReviewService, ReviewService>(client =>
 {
-    // **********************************************
-    // CRITICAL FIX: reviewservice listens on 8000 internally
-    client.BaseAddress = new Uri("http://reviewservice:8000/");
-    // **********************************************
+    // Frontend -> Nginx -> Backend. Nginx espera /reviews/
+    client.BaseAddress = new Uri(apiGatewayUrl + "reviews/");
 });
 
 builder.Services.AddHttpClient<IUserManagerService, UserManagerService>(client =>
 {
-    // **********************************************
-    // CRITICAL FIX: user_manager_service (service name) listens on 8000 internally
-    client.BaseAddress = new Uri("http://user_manager_service:8000/");
-    // **********************************************
+    // Frontend -> Nginx -> Backend. Nginx espera /api/users/ (basado en la última corrección de colisión de rutas)
+    client.BaseAddress = new Uri(apiGatewayUrl + "profiles/");
 });
 
 builder.Services.AddHttpClient<IGameTrackingService, GameTrackingService>(client =>
 {
-    // Corrected: user_game_tracking_service listens on 8000 internally
-    client.BaseAddress = new Uri("http://user_game_tracking_service:8005/");
+    // Frontend -> Nginx -> Backend. Nginx espera /api/track/ (basado en la última corrección de colisión de rutas)
+    client.BaseAddress = new Uri(apiGatewayUrl + "track/");
 });
 
 builder.Services.Configure<CookiePolicyOptions>(options =>

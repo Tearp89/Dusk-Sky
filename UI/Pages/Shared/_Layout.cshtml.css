@@ -46,7 +46,7 @@ button.accept-policy {
 
 /* Estilo general compartido */
 .custom-navbar-layout {
-  position: absolute;
+  position: absolute; 
   width: 100%;
   top: 0;
   z-index: 1000;
@@ -82,6 +82,21 @@ button.accept-policy {
   color: #1e1e1e;
 }
 
+.custom-navbar {
+    background: rgba(255, 255, 255, 0.7); /* Blanco con mayor opacidad para fondo claro */
+    backdrop-filter: blur(10px); /* Aumento del blur */
+    -webkit-backdrop-filter: blur(10px);
+    position: absolute;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    font-weight: 600; /* Un peso intermedio en lugar de 'bolder' para enlaces de navegación */
+    color: #333; /* Texto oscuro */
+    overflow-x: clip;
+    overflow-y: visible;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12); /* Separador sutil y oscuro */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Sombra suave y ligeramente más pronunciada */
+}
 
 
 

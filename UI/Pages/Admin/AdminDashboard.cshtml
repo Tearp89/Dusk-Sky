@@ -3,11 +3,11 @@
 @model AdminDashboardModel
 @{
     ViewData["Title"] = "Admin/Moderator Dashboard";
-    ViewData["ShowBackground"] = false; // Asumo que esta es una propiedad que manejas para el fondo
+    ViewData["ShowBackground"] = false; 
 }
 
 <div class="container py-4">
-    <h2 class="mb-4 text-center fw-bold py-5">Admin/Moderator Dashboard</h2>
+    <h2 class="mb-4 text-center fw-bold py-5">Admin/Moderador Dashboard</h2>
 
     @if (!string.IsNullOrEmpty(Model.StatusMessage))
     {
@@ -22,17 +22,17 @@
     @if (User.IsInRole("admin"))
     {
         <div class="card p-4 shadow-sm rounded-4 bg-light mb-5">
-            <h4 class="mb-4">Admin Only Actions</h4>
+            <h4 class="mb-4">Opciones específicas de admnistrador</h4>
 
             <div class="d-flex flex-wrap gap-3">
                 <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#manageRolesModal">
-                    <i class="bi bi-person-gear"></i> Manage User Roles
+                    <i class="bi bi-person-gear"></i> Administrar roles de usuario
                 </button>
                 <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#addGameModal">
-                    <i class="bi bi-plus-circle"></i> Add New Game
+                    <i class="bi bi-plus-circle"></i> Agregar juego
                 </button>
                 <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#viewAllUsersModal">
-                    <i class="bi bi-people"></i> View All Users
+                    <i class="bi bi-people"></i> Ver usuarios
                 </button>
             </div>
         </div>
@@ -40,17 +40,17 @@
 
     @* --- SECCIONES PARA ADMINS Y MODERADORES --- *@
     <div class="card p-4 shadow-sm rounded-4 bg-light mb-5">
-        <h4 class="mb-4">Reports and Sanctions Management</h4>
+        <h4 class="mb-4">Gestión de reportes y sanciones</h4>
 
         <div class="d-flex flex-wrap gap-3">
             <button type="button" class="btn btn-warning btn-lg" data-bs-toggle="modal" data-bs-target="#viewReportsModal">
-                <i class="bi bi-flag"></i> View Reports (@Model.RecentReports.Count)
+                <i class="bi bi-flag"></i> Ver reportes (@Model.RecentReports.Count)
             </button>
             <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#createSanctionModal">
-                <i class="bi bi-shield-fill-x"></i> Create Sanction
+                <i class="bi bi-shield-fill-x"></i> Crear sanciones
             </button>
             <button type="button" class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#viewSanctionsModal">
-                <i class="bi bi-journal-check"></i> View Sanctions (@Model.ActiveSanctions.Count)
+                <i class="bi bi-journal-check"></i> Ver sanciones(@Model.ActiveSanctions.Count)
             </button>
         </div>
     </div>
@@ -63,47 +63,45 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="manageRolesModalLabel">Manage User Roles</h5>
+                <h5 class="modal-title" id="manageRolesModalLabel">Administrar roles de usuario</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 @* PROMOTE USER SECTION *@
-                <h6 class="mb-3">Promote User to Moderator</h6>
+                <h6 class="mb-3">Ascender usuario a moderador</h6>
                 <div class="mb-4">
                     <input type="text" id="promoteUserSearchInput" class="form-control mb-2" placeholder="Search username to promote..." />
                     <div id="promoteUserSearchResults" class="list-group user-search-results"></div>
 
                     <form method="post" asp-page-handler="PromoteUser" class="d-none mt-3" id="promoteUserForm">
                         @Html.AntiForgeryToken()
-                        @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en PromoteUserInput *@
                         <input type="hidden" name="promoteInput.UserId" id="selectedPromoteUserId" /> 
                         <p class="mb-2">
-                            Promote: <strong id="promoteSelectedUsername"></strong>
-                            (Current Role:
+                            Ascender: <strong id="promoteSelectedUsername"></strong>
+                            (Rol actual:
                             <span id="promoteCurrentUserRole" class="badge"></span>)
                         </p>
-                        <button type="submit" class="btn btn-success w-100">Confirm Promote</button>
+                        <button type="submit" class="btn btn-success w-100">Confirmar Ascenso</button>
                     </form>
                 </div>
 
                 <hr />
 
                 @* DEMOTE USER SECTION *@
-                <h6 class="mb-3">Demote Moderator to User</h6>
+                <h6 class="mb-3">Quitar rol de moderador</h6>
                 <div class="mb-4">
                     <input type="text" id="demoteUserSearchInput" class="form-control mb-2" placeholder="Search username to demote..." />
                     <div id="demoteUserSearchResults" class="list-group user-search-results"></div>
 
                     <form method="post" asp-page-handler="DemoteUser" class="d-none mt-3" id="demoteUserForm">
                         @Html.AntiForgeryToken()
-                        @* Importante: el "name" debe ser 'input.UserId' para que el model binding lo encuentre en DemoteUserInput *@
                         <input type="hidden" name="demoteInput.UserId" id="selectedDemoteUserId" />
                         <p class="mb-2">
-                            Demote: <strong id="demoteSelectedUsername"></strong>
-                            (Current Role:
+                            Revertir: <strong id="demoteSelectedUsername"></strong>
+                            (Rol actual:
                             <span id="demoteCurrentUserRole" class="badge"></span>)
                         </p>
-                        <button type="submit" class="btn btn-warning w-100">Confirm Demote</button>
+                        <button type="submit" class="btn btn-warning w-100">Confirmar cambio de rol</button>
                     </form>
                 </div>
 
@@ -117,24 +115,20 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="addGameModalLabel">Add New Game</h5>
+                <h5 class="modal-title" id="addGameModalLabel">Agregar nuevo juego</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted small">Enter a valid Steam store URL for the game.</p>
+                <p class="text-muted small">Ingresa una URL válida de la tienda de Steam para el juego.</p>
                 <form method="post" asp-page-handler="AddGame">
                     @Html.AntiForgeryToken()
                     <div class="input-group mb-3">
-                        @* NOTA: Aquí asp-for ya no puede referenciar a Model.AddGameInput porque ya no existe como propiedad.
-                           Pero Razor Pages es inteligente. Para el 'asp-for' puedes seguir usando 'AddGameInput.SteamLink'
-                           porque sabe que es un ViewModel que se espera como parámetro en el handler.
-                           Para el 'name', es crucial que sea 'addGameInput.SteamLink' para que el model binder lo encuentre. *@
+                        
                         <input asp-for="AddGameInput.SteamLink"  type="text" class="form-control" placeholder="https://store.steampowered.com/app/XXXXX/Game_Name/" required />
-                        <button type="submit" class="btn btn-primary">Import Game</button>
+                        <button type="submit" class="btn btn-primary">Importar juego</button>
                     </div>
                     <span asp-validation-for="AddGameInput.SteamLink" class="text-danger"></span>
 
-                    @* Mostrar resultado de la importación (si existe). Esto sí usa Model.AddGameResult, que es una propiedad del PageModel. *@
                     @if (!string.IsNullOrEmpty(Model.AddGameResult.ImportStatusMessage))
                     {
                         <div class="alert @(Model.AddGameResult.ImportStatusMessage.StartsWith("Success") ? "alert-success" : "alert-danger") mt-2">
@@ -145,7 +139,6 @@
                             }
                         </div>
                     }
-                     @* Mostrar errores específicos del modal si hay (ej. después de un error de validación) *@
                     @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey("addGameInput.SteamLink"))
                     {
                         <div class="alert alert-danger mt-2">
@@ -169,7 +162,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-info text-white">
-                <h5 class="modal-title" id="viewAllUsersModalLabel">All Users</h5>
+                <h5 class="modal-title" id="viewAllUsersModalLabel">Usuarios</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -188,7 +181,7 @@
                 }
                 else
                 {
-                    <p class="text-muted">No users found or functionality not implemented yet.</p>
+                    <p class="text-muted">No se encontraron usuarios o la funcionalidad aún no está implementada.</p>
                 }
             </div>
         </div>
@@ -200,7 +193,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-warning text-white">
-                <h5 class="modal-title" id="viewReportsModalLabel">Recent Reports</h5>
+                <h5 class="modal-title" id="viewReportsModalLabel">Reportes recientes</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -212,15 +205,14 @@
                             <li class="list-group-item mb-2 flex-wrap @(report.Status == "pending" ? "border-warning border-2" : "")">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <strong>Report #@report.ReportId.Substring(0, 8)...</strong><br />
+                                        <strong>Reporte #@report.ReportId.Substring(0, 8)...</strong><br />
                                         <small class="text-muted">
-                                            Reported: <a href="/Users/Profile/Index?userId=@report.ReportedUserId">@report.ReportedUsername</a>
-                                            (Type: @report.ContentType)
+                                            Reportado: <a href="/Users/Profile/Index?userId=@report.ReportedUserId">@report.ReportedUsername</a>
+                                            (Tipo: @report.ContentType)
                                         </small><br />
-                                        <small class="text-muted">By: <a href="/Users/Profile/Index?userId=@report.ReporterId">@report.ReporterUsername</a></small><br /> 
-                                        <p class="mb-1">Reason: @report.Reason</p>
-                                        <small class="text-muted">Status: <span class="badge @(report.Status == "pending" ? "bg-warning" : "bg-success")">@report.Status</span></small>
-                                        <small class="text-muted ms-2">Reported on: @report.ReportedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                                        <p class="mb-1">Razón: @report.Reason</p>
+                                        <small class="text-muted">Estado: <span class="badge @(report.Status == "pending" ? "bg-warning" : "bg-success")">@report.Status</span></small>
+                                        <small class="text-muted ms-2">Reportado el: @report.ReportedAt.ToString("yyyy-MM-dd HH:mm")</small>
                                     </div>
                                     <div class="text-end">
                                         @if (report.Status == "pending")
@@ -230,17 +222,15 @@
                                                 <input type="hidden" name="reportId" value="@report.ReportId" />
                                                 <input type="hidden" name="reportedUserId" value="@report.ReportedUserId" />
                                                 <button type="submit" class="btn btn-sm btn-success me-1">
-                                                    Resolve & Sanction
+                                                    Resolver y sancionar
                                                 </button>
                                             </form>
                                         }
                                         <form method="post" asp-page-handler="DeleteReport" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             
-                                            @* --- AÑADE ESTA LÍNEA CRUCIAL --- *@
                                             <input type="hidden" name="reportId" value="@report.ReportId" />
 
-                                            @* --- RECOMENDADO: Añadir confirmación para evitar borrados accidentales --- *@
                                             <button type="submit" class="btn btn-sm btn-danger" 
                                                     onclick="return confirm('¿Estás seguro de que quieres eliminar este reporte? Esta acción no se puede deshacer.');">
                                                 Eliminar
@@ -254,7 +244,7 @@
                 }
                 else
                 {
-                    <p class="text-muted">No recent reports.</p>
+                    <p class="text-muted">No hay reportes recientes</p>
                 }
             </div>
         </div>
@@ -336,12 +326,11 @@
 </div>
 
 
-@* Modal: View Sanctions (Admin & Moderator) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewSanctionsModal" tabindex="-1" aria-labelledby="viewSanctionsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-secondary text-white">
-                <h5 class="modal-title" id="viewSanctionsModalLabel">Active Sanctions</h5>
+                <h5 class="modal-title" id="viewSanctionsModalLabel">Sanciones activas</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -352,20 +341,20 @@
                         {
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 flex-wrap">
                                 <div>
-                                    <strong>@sanction.Type for User: <a href="/Users/Profile/Index?userId=@sanction.UserId" class="text-decoration-none">@sanction.UserId</a></strong>
+                                    <strong>@sanction.Type Para el usuario: <a href="/Users/Profile/Index?userId=@sanction.UserId" class="text-decoration-none">@sanction.UserId</a></strong>
                                     (@sanction.Reason)<br />
                                     <small class="text-muted">
-                                        From: @sanction.StartDate.ToString("yyyy-MM-dd")
+                                        A partir de: @sanction.StartDate.ToString("yyyy-MM-dd")
                                         @if (sanction.EndDate.HasValue) { <span>to @sanction.EndDate.Value.ToString("yyyy-MM-dd")</span> }
                                     </small>
                                 </div>
                                 @if (sanction.IsActive)
                                 {
-                                    <span class="badge bg-danger">ACTIVE</span>
+                                    <span class="badge bg-danger">ACTIVA</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">INACTIVE</span>
+                                    <span class="badge bg-secondary">INACTIVA</span>
                                 }
                             </li>
                         }
@@ -373,7 +362,7 @@
                 }
                 else
                 {
-                    <p class="text-muted">No active sanctions.</p>
+                    <p class="text-muted">No hay sanciones.</p>
                 }
             </div>
         </div>
@@ -385,9 +374,7 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // =========================================================================
-            // Lógica General: Mostrar Alertas
-            // =========================================================================
+           
             function showAlert(message, type) {
                 const alertContainer = document.querySelector('.container .alert');
                 if (!alertContainer) return;
@@ -408,15 +395,12 @@
                 }, 5000);
             }
 
-            // =========================================================================
-            // Lógica General: Manejador de Formularios AJAX
-            // =========================================================================
+            
             document.querySelectorAll('form.ajax-form').forEach(form => {
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
 
                     const formData = new FormData(this);
-                    // Obtener el handler del atributo data-handler si existe
                     const handler = this.dataset.handler || this.getAttribute('asp-page-handler');
 
                     const successMessage = this.dataset.successMessage || 'Acción completada exitosamente.';
@@ -428,16 +412,13 @@
                             url += `?handler=${handler}`;
                         }
                         
-                        // Añadir los parámetros de ruta si existen en la URL de acción del formulario
                         const actionUrl = new URL(this.action);
                         for (let [key, value] of actionUrl.searchParams.entries()) {
-                            // Solo añadir si no es el handler, ya que ya lo manejamos
                             if (key !== 'handler') {
                                 formData.append(key, value);
                             }
                         }
 
-                        // Añadir el token de verificación si está presente en el documento
                         const requestVerificationTokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
                         if (requestVerificationTokenInput) {
                             formData.append('__RequestVerificationToken', requestVerificationTokenInput.value);
@@ -452,11 +433,11 @@
                             const resultText = await response.text();
                             let result = { success: true };
                             try {
-                                if (resultText) { // Solo intentar parsear si hay contenido
+                                if (resultText) { 
                                     result = JSON.parse(resultText);
                                 }
                             } catch (e) {
-                                // No es JSON, asumimos éxito si la respuesta es OK
+                                
                                 result.success = true;
                             }
 
@@ -464,7 +445,7 @@
                                 showAlert(successMessage, 'success');
                                 const modal = bootstrap.Modal.getInstance(this.closest('.modal'));
                                 if (modal) modal.hide();
-                                window.location.reload(); // Recargar para reflejar los cambios
+                                window.location.reload(); 
                             } else {
                                 showAlert(`Error: ${result.message || errorMessage}`, 'danger');
                             }
@@ -491,11 +472,7 @@
             });
 
 
-            // =========================================================================
-            // Lógica Específica: Modal "Manage User Roles" (Promoción/Degradación)
-            // =========================================================================
-
-            // Función genérica para configurar la búsqueda de usuarios para roles
+            
             function setupRoleUserSearch(type, searchInputId, resultsContainerId, selectedUserIdInputId, selectedUsernameDisplayId, currentUserRoleDisplayId, userFormId) {
                 const searchInput = document.getElementById(searchInputId);
                 const searchResults = document.getElementById(resultsContainerId);
@@ -509,7 +486,7 @@
                 async function performRoleUserSearch(query) {
                     if (query.length < 2) {
                         searchResults.innerHTML = '';
-                        userForm.classList.add('d-none'); // Esconder el formulario si la búsqueda se borra
+                        userForm.classList.add('d-none'); 
                         return;
                     }
 
@@ -527,21 +504,18 @@
                     }
                 }
 
-                // Muestra los resultados de la búsqueda en el contenedor designado
                 function displayRoleUserSearchResults(users, searchResultsContainer, selectedUserIdInputElem, selectedUsernameDisplayElem, currentUserRoleDisplayElem, userFormElem, actionType) {
-                    searchResultsContainer.innerHTML = ''; // Limpiar resultados previos
+                    searchResultsContainer.innerHTML = ''; 
                     let hasEligibleUsers = false;
 
                     if (users && users.length > 0) {
                         users.forEach(user => {
                             let isEligible = false;
                             if (actionType === 'promote') {
-                                // Para promoción, el usuario no debe ser ya 'admin' o 'moderator'
                                 if (user.role.toLowerCase() !== 'admin' && user.role.toLowerCase() !== 'moderator') {
                                     isEligible = true;
                                 }
                             } else if (actionType === 'demote') {
-                                // Para degradación, el usuario debe ser 'moderator'
                                 if (user.role.toLowerCase() === 'moderator') {
                                     isEligible = true;
                                 }
@@ -556,7 +530,6 @@
                                     <img src="${user.avatarUrl || '/images/default_avatar.png'}" class="rounded-circle me-2" width="24" height="24" style="object-fit: cover;">
                                     <strong>${user.username}</strong> (<span class="badge bg-secondary">${user.role}</span>)
                                 `;
-                                // Al hacer clic en un resultado, seleccionar el usuario
                                 listItem.addEventListener('click', () => selectRoleUser(user, selectedUserIdInputElem, selectedUsernameDisplayElem, currentUserRoleDisplayElem, userFormElem, searchResultsContainer));
                                 searchResultsContainer.appendChild(listItem);
                             }
@@ -570,42 +543,34 @@
                     }
                 }
 
-                // Selecciona un usuario para el rol, llenando el input oculto
                 function selectRoleUser(user, selectedUserIdInputElem, selectedUsernameDisplayElem, currentUserRoleDisplayElem, userFormElem, searchResultsContainerElem) {
-                    selectedUserIdInputElem.value = user.userId; // Establecer el ID en el input oculto
+                    selectedUserIdInputElem.value = user.userId; 
 
-                    // Mostrar la información del usuario seleccionado
                     selectedUsernameDisplayElem.textContent = user.username;
                     currentUserRoleDisplayElem.textContent = user.role;
-                    // Actualizar la clase del badge para el rol si es necesario
                     currentUserRoleDisplayElem.className = 'badge ' + (user.role.toLowerCase() === 'admin' ? 'bg-danger' : user.role.toLowerCase() === 'moderator' ? 'bg-info' : 'bg-secondary');
 
-                    userFormElem.classList.remove('d-none'); // Mostrar el formulario de acción
+                    userFormElem.classList.remove('d-none'); 
 
-                    // Limpiar input de búsqueda y resultados para una mejor UX
                     searchInput.value = '';
                     searchResultsContainerElem.innerHTML = '';
                 }
 
-                // Listener de evento para búsqueda en tiempo real (al escribir en el input)
                 searchInput.addEventListener('input', function () {
-                    clearTimeout(searchTimeout); // Limpiar timeout anterior
+                    clearTimeout(searchTimeout); 
                     const query = this.value;
                     searchTimeout = setTimeout(() => {
                         performRoleUserSearch(query);
-                    }, 300); // Retraso de 300ms para evitar peticiones excesivas
+                    }, 300); 
                 });
             }
 
-            // --- LLAMADAS PARA ACTIVAR LA BÚSQUEDA DE ROLES EN AMBAS SECCIONES ---
             setupRoleUserSearch('promote', 'promoteUserSearchInput', 'promoteUserSearchResults', 'selectedPromoteUserId', 'promoteSelectedUsername', 'promoteCurrentUserRole', 'promoteUserForm');
             setupRoleUserSearch('demote', 'demoteUserSearchInput', 'demoteUserSearchResults', 'selectedDemoteUserId', 'demoteSelectedUsername', 'demoteCurrentUserRole', 'demoteUserForm');
 
-            // --- Resetear modal de gestión de roles al ocultarse ---
             const manageRolesModalElement = document.getElementById('manageRolesModal');
             if (manageRolesModalElement) {
                 manageRolesModalElement.addEventListener('hidden.bs.modal', function () {
-                    // Resetear la sección de promoción
                     document.getElementById('promoteUserSearchInput').value = '';
                     document.getElementById('promoteUserSearchResults').innerHTML = '';
                     document.getElementById('promoteUserForm').classList.add('d-none');
@@ -613,7 +578,6 @@
                     document.getElementById('promoteSelectedUsername').textContent = '';
                     document.getElementById('promoteCurrentUserRole').textContent = '';
 
-                    // Resetear la sección de degradación
                     document.getElementById('demoteUserSearchInput').value = '';
                     document.getElementById('demoteUserSearchResults').innerHTML = '';
                     document.getElementById('demoteUserForm').classList.add('d-none');
@@ -624,9 +588,6 @@
             }
 
 
-            // =========================================================================
-            // Lógica Específica: Modal "Create Sanction" (Crear Sanción)
-            // =========================================================================
 
             const sanctionUserSearchInput = document.getElementById('sanctionUserSearchInput');
             const searchSanctionUserBtn = document.getElementById('searchSanctionUserBtn');
@@ -634,11 +595,10 @@
             const selectedSanctionUserDisplay = document.getElementById('selectedSanctionUserDisplay');
             const sanctionSelectedUsernameDisplay = document.getElementById('sanctionSelectedUsernameDisplay');
             const sanctionSelectedUserRoleDisplay = document.getElementById('sanctionSelectedUserRoleDisplay');
-            const createSanctionUserIdInput = document.getElementById('createSanctionUserId'); // Hidden input for UserId
+            const createSanctionUserIdInput = document.getElementById('createSanctionUserId'); 
 
-            let sanctionSearchTimeout = null; // Renombrado para evitar conflicto con el timeout de roles
+            let sanctionSearchTimeout = null; 
 
-            // Función para realizar la búsqueda de usuarios vía AJAX para sanciones
             async function performSanctionUserSearch(query) {
                 if (query.length < 2) {
                     sanctionUserSearchResults.innerHTML = '';
@@ -646,7 +606,6 @@
                 }
 
                 try {
-                    // Llama al manejador OnGetSearchUsersForSanctionAsync
                     const url = `@Url.Page("/Admin/Dashboard")?handler=SearchUsersForSanction&query=${encodeURIComponent(query)}`;
                     const response = await fetch(url);
                     if (!response.ok) {
@@ -660,19 +619,17 @@
                 }
             }
 
-            // Muestra los resultados de la búsqueda en el contenedor designado
             function displaySanctionUserSearchResults(users) {
-                sanctionUserSearchResults.innerHTML = ''; // Limpiar resultados previos
+                sanctionUserSearchResults.innerHTML = ''; 
                 if (users && users.length > 0) {
                     users.forEach(user => {
                         const listItem = document.createElement('button');
-                        listItem.type = 'button'; // Importante: usar tipo botón para evitar envíos accidentales del formulario
+                        listItem.type = 'button'; 
                         listItem.classList.add('list-group-item', 'list-group-item-action', 'd-flex', 'align-items-center');
                         listItem.innerHTML = `
                             <img src="${user.avatarUrl || '/images/default_avatar.png'}" class="rounded-circle me-2" width="24" height="24" style="object-fit: cover;">
                             <strong>${user.username}</strong> (<span class="badge bg-secondary">${user.role}</span>)
                         `;
-                        // Al hacer clic en un resultado, seleccionar el usuario
                         listItem.addEventListener('click', () => selectSanctionUser(user));
                         sanctionUserSearchResults.appendChild(listItem);
                     });
@@ -681,53 +638,43 @@
                 }
             }
 
-            // Selecciona un usuario para sanción, llenando el input oculto
             function selectSanctionUser(user) {
-                createSanctionUserIdInput.value = user.userId; // Establecer el ID en el input oculto
+                createSanctionUserIdInput.value = user.userId; 
 
-                // Mostrar la información del usuario seleccionado
                 sanctionSelectedUsernameDisplay.textContent = user.username;
                 sanctionSelectedUserRoleDisplay.textContent = user.role;
                 selectedSanctionUserDisplay.classList.remove('d-none');
 
-                // Limpiar input de búsqueda y resultados para una mejor UX
                 sanctionUserSearchInput.value = '';
                 sanctionUserSearchResults.innerHTML = '';
 
-                // Opcional: enfocar el siguiente campo en el formulario de sanción
                 document.getElementById('CreateSanctionInput_Type').focus();
             }
 
-            // Limpia el usuario seleccionado para sanción
             window.clearSanctionUserSelection = function () {
-                createSanctionUserIdInput.value = ''; // Limpiar el ID en el input oculto
+                createSanctionUserIdInput.value = ''; 
                 sanctionSelectedUsernameDisplay.textContent = '';
                 sanctionSelectedUserRoleDisplay.textContent = '';
                 selectedSanctionUserDisplay.classList.add('d-none');
-                // Limpiar errores de validación para UserId si existen
                 const userIdValidationSpan = document.querySelector('span[data-valmsg-for="CreateSanctionInput.UserId"]');
                 if (userIdValidationSpan) userIdValidationSpan.textContent = '';
             };
 
-            // Listener de evento para búsqueda en tiempo real (al escribir en el input)
             sanctionUserSearchInput.addEventListener('input', function () {
-                clearTimeout(sanctionSearchTimeout); // Limpiar timeout anterior
+                clearTimeout(sanctionSearchTimeout); 
                 const query = this.value;
                 sanctionSearchTimeout = setTimeout(() => {
                     performSanctionUserSearch(query);
-                }, 300); // Retraso de 300ms para evitar peticiones excesivas
+                }, 300); 
             });
 
-            // Listener de evento para el clic explícito en el botón de búsqueda
             searchSanctionUserBtn.addEventListener('click', function () {
                 performSanctionUserSearch(sanctionUserSearchInput.value);
             });
 
-            // --- Controlar la apertura del modal al recargar la página (ej. después de errores de validación) ---
-            // LÍNEA CORREGIDA
+            
 const shouldOpenSanctionModal = '@Model.ShouldOpenCreateSanctionModal.ToString().ToLower()';
 
-// El resto del código que abre el modal no necesita cambios:
 if (shouldOpenSanctionModal === 'true') {
     const sanctionModalElement = document.getElementById('createSanctionModal');
     if (sanctionModalElement) {
@@ -736,14 +683,12 @@ if (shouldOpenSanctionModal === 'true') {
     }
 }
 
-            // --- Resetear modal de sanción al ocultarse ---
             const createSanctionModalElement = document.getElementById('createSanctionModal');
             if (createSanctionModalElement) {
                 createSanctionModalElement.addEventListener('hidden.bs.modal', function () {
-                    this.querySelector('form').reset(); // Resetear todos los campos del formulario
-                    clearSanctionUserSelection(); // Limpiar la selección de usuario
+                    this.querySelector('form').reset(); 
+                    clearSanctionUserSelection(); 
 
-                    // Limpiar resultados de búsqueda y mensajes de validación
                     sanctionUserSearchResults.innerHTML = '';
                     const validationSummary = this.querySelector('[asp-validation-summary="All"]');
                     if (validationSummary) validationSummary.innerHTML = '';
@@ -751,9 +696,6 @@ if (shouldOpenSanctionModal === 'true') {
                 });
             }
 
-            // --- Pre-seleccionar usuario si el modal se abre debido a una pre-selección del servidor (ej. desde "Resolve & Sanction" o error de validación) ---
-            // Esto asegura que el usuario seleccionado se muestre correctamente después de una recarga de página.
-            
         });
     </script>
 }

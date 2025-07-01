@@ -1,0 +1,36 @@
+# C:\Users\marla\Dusk-Sky\dusk-sky-client\docker-compose.yml
+# Define el stack del Cliente Frontend
+
+version: '3.8'
+
+services:
+  frontend: # <-- Nombre del servicio del frontend en este Compose
+    build:
+      context: ./ # Asume que el Dockerfile.Development está en la raíz de este directorio
+      dockerfile: Dockerfile # <-- Usa el Dockerfile de desarrollo
+    container_name: dusk_frontend_container # El nombre que ya usas para logs y docker rm
+    ports:
+      - "8080:80" # Mapea el puerto 8080 del HOST al puerto 80 del CONTENEDOR
+                  # Accede a la UI directamente via http://localhost:8080/
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development # Ambiente de la app frontend (activa logs y DevExceptionPage)
+      # La URL que tu frontend usará para hablar con Nginx.
+      # 'nginx_gateway' será resoluble en la red compartida.
+      - API_GATEWAY_URL=http://nginx_gateway/
+    volumes:
+      - frontend_dataprotection_keys:/root/.aspnet/DataProtection-Keys # Volumen persistente para Data Protection
+      - .:/app # <--- Monta el código fuente local para dotnet watch (Ajusta la ruta si 'UI' no está en el mismo nivel)
+                   # Si tu estructura es dusk-sky-client/Dockerfile.Development y dusk-sky-client/UI/UI.csproj,
+                   # entonces sería - ./UI:/app
+    networks:
+      - dusk-sky-microservices_dusk_sky_shared_network # <-- ¡Frontend usa la red compartida!
+
+# --- Definición de la Red Compartida (¡como externa!) ---
+# Aquí le dices a Docker Compose que esta red ya existe y es externa
+networks:
+  dusk-sky-microservices_dusk_sky_shared_network:
+    external: true
+
+# --- Definición de Volúmenes con Nombre (específicos de este stack) ---
+volumes:
+  frontend_dataprotection_keys: # Este volumen solo pertenece a este stack del frontend

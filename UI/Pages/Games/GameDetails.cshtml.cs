@@ -37,7 +37,8 @@ public class GameDetailsModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public Guid gameId { get; set; }
-    public GameDetailsDTO? Game { get; set; }
+    public GameDetailsDTO? Game { get; set; } 
+    public GamePreviewDTO? GamePreview { get; set; }
     public List<ReviewFullDto> Reviews { get; set; } = new();
     public GameTrackingDto? Tracking { get; set; }
     public List<GameListDTO> UserLists { get; set; } = new();
@@ -61,6 +62,8 @@ public class GameDetailsModel : PageModel
             _logger.LogInformation("OnGetAsync: Cargando detalles del juego '{GameId}' para el usuario '{UserId}'.", gameId, userId ?? "Anónimo"); // ✅ Registro de información
 
             Game = await _gameService.GetGameByIdAsync(gameId);
+            GamePreview = await _gameService.GetGamePreviewByIdAsync(gameId);
+
             if (Game == null)
             {
                 _logger.LogWarning("OnGetAsync: Juego con ID {GameId} no encontrado.", gameId); // ✅ Registro de advertencia

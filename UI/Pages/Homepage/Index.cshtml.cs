@@ -27,6 +27,8 @@ public class IndexModel : PageModel
     public bool HasFriends { get; set; }
     private string? currentUserId; // Guardar el ID del usuario para usarlo en los helpers
     public string UserId { get; private set; }
+    private readonly SemaphoreSlim _throttle = new(10); // Máximo 10 tareas al mismo tiempo
+
 
     // MANTENEMOS: Constructor con validaciones de nulos
     public IndexModel(ILogger<IndexModel> logger, IGameService gameService, IGameListItemService gameListItemService, IGameListService gameListService, IReviewService reviewService, IUserManagerService userManagerService, IAuthService authService, IFriendshipService friendshipService)

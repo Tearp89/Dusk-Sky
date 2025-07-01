@@ -10,6 +10,15 @@
     int index = 0;
     
 }
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="container mt-4">
+        <div class="alert alert-danger text-center shadow-sm">
+            @Model.ErrorMessage
+        </div>
+    </div>
+}
+
 
 
 
@@ -340,4 +349,7 @@
 
 
     </div>
-    
+    @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

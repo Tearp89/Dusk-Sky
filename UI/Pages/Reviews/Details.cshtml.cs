@@ -19,6 +19,7 @@ public class ReviewDetailsModel : PageModel
     private readonly IGameListService _gameListService;
     private readonly IModerationReportService _moderationReportService;
     private readonly ILogger<ReviewDetailsModel> _logger; // ✅ Declaración del logger
+    public bool IsOwner { get; set; }
 
     public ReviewDetailsModel(
         IReviewService reviewService,
@@ -527,6 +528,7 @@ public class ReviewDetailsModel : PageModel
 
     public async Task<IActionResult> OnPostDeleteReviewAsync(string ReviewId)
     {
+        UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         // ✅ Validar ReviewId al inicio
         if (string.IsNullOrWhiteSpace(ReviewId))
         {
@@ -535,10 +537,13 @@ public class ReviewDetailsModel : PageModel
             return BadRequest();
         }
 
+        bool IsOwner = Review.UserId == UserId;
+            
+
         try
         {
             // ✅ Validar roles antes de cualquier operación costosa
-            if (!User.IsInRole("admin") && !User.IsInRole("moderator"))
+            if (!User.IsInRole("admin") && !User.IsInRole("moderator") && !IsOwner)
             {
                 _logger.LogWarning("OnPostDeleteReviewAsync: Usuario '{UserId}' sin permisos intentó eliminar la reseña '{ReviewId}'.", User.FindFirstValue(ClaimTypes.NameIdentifier), ReviewId);
                 TempData["ErrorMessage"] = "No tienes permisos para eliminar esta reseña.";

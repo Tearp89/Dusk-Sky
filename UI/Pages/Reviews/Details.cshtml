@@ -51,7 +51,7 @@ else
                                 </li>
                             }
 
-                            @if (User.IsInRole("admin") || User.IsInRole("moderator"))
+                            @if (User.IsInRole("admin") || User.IsInRole("moderator") || Model.Review.UserId == Model.UserId)
                             {
                                 <li>
                                     <form method="post" asp-page-handler="DeleteReview"

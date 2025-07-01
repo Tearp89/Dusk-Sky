@@ -1,7 +1,7 @@
 @page "{gameId:guid}"
 @model GameDetailsModel
 @{
-    ViewData["Title"] = Model.Game.Title;
+    ViewData["Title"] = Model.GamePreview.Title;
     ViewData["ShowBackground"] = true; 
     ViewData["UseBlurEffect"] = true;
     ViewData["BackgroundImage"] = Url.Content(Model.Game.RandomScreenshot);
@@ -12,7 +12,7 @@
     <img src="@Model.Game.HeaderUrl" class="rounded shadow" alt="Poster"
          style="height: 220px; width: auto; object-fit: cover;" />
     <div>
-        <h1 class="text-white fw-bold">@Model.Game.Title</h1>
+        <h1 class="text-white fw-bold">@Model.GamePreview.Title</h1>
         <p class="text-light mb-1">@Model.Game.ReleaseDate — <em>@Model.Game.Developer</em></p>
 
         <div class="d-flex flex-wrap gap-2 mt-2">
@@ -156,7 +156,7 @@
         <div class="modal-content bg-light text-black">
             <div class="modal-header border-0">
                 <h5 class="modal-title fw-bold" id="listModalTitle" data-game-id="@Model.Game.Id">
-                    Add ‘@Model.Game.Title’ to a list
+                    Add ‘@Model.GamePreview.Title’ to a list
                 </h5>
                 <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"
                     aria-label="Close"></button>

@@ -79,8 +79,8 @@ appsettings.Local.json
 mongodb/
 
 # Directorios específicos de Docker
-docker-compose.override.yml
-docker-compose.yml
+#docker-compose.override.yml
+#docker-compose.yml
 
 # Logs
 *.log
