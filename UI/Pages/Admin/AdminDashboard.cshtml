@@ -9,19 +9,14 @@
 <div class="container py-4">
     <h2 class="mb-4 text-center fw-bold py-5">Admin/Moderador Dashboard</h2>
 
-    @if (TempData["StatusMessage"] != null)
-{
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
-        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    @TempData["StatusMessage"]
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-            </div>
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        var alertClass = Model.StatusMessage.StartsWith("Error") ? "alert-danger" : "alert-success";
+        <div class="alert @alertClass alert-dismissible fade show" role="alert">
+            @Model.StatusMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    </div>
-}
+    }
 
     @* --- SECCIÓN SÓLO PARA ADMINS --- *@
     @if (User.IsInRole("admin"))
