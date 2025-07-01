@@ -6,11 +6,11 @@ public class ReviewDTO
     public Guid GameId { get; set; }
     public string UserId { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Please write a review.")]
-    [StringLength(1000, MinimumLength = 5, ErrorMessage = "The review must be at least 5 characters.")]
+    [Required(ErrorMessage = "Por favor escribe una review.")]
+    [StringLength(1000, MinimumLength = 5, ErrorMessage = "La review debe de tener al menos 5 caracteres.")]
     public string Content { get; set; } = string.Empty;
 
-    [Range(0.5, 5, ErrorMessage = "Please select a rating between 0.5 and 5.")]
+    [Range(0.5, 5, ErrorMessage = "Por favor elige una calificación entre 1 y 5")]
     public double Rating { get; set; }
 
     public int Likes { get; set; }

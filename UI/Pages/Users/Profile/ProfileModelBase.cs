@@ -41,6 +41,7 @@ public abstract class ProfileModelBase : PageModel
         var listsTask = listService.GetUserListsAsync(userId);
         var friendsOfProfileUserTask = friendshipService.GetFriendsAsync(userId); 
         await Task.WhenAll(reviewsTask, listsTask, friendsOfProfileUserTask);
+        
         var activeFriends = friendsOfProfileUserTask.Result
                                                 .Where(f => f.Status == "active") // <-- ¡Cambiamos a 'active' aquí!
                                                 .ToList();

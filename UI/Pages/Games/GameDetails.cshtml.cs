@@ -391,6 +391,7 @@ public class GameDetailsModel : PageModel
             };
             await _reviewService.CreateReviewAsync(review);
             _logger.LogInformation("OnPostLogReviewWithTrackingAsync: Reseña creada para el juego '{GameId}' por el usuario '{UserId}'.", GameId, userId); // ✅ Registro de información
+            
 
             var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, GameId.ToString()) ?? new GameTrackingDto
             {
@@ -414,8 +415,10 @@ public class GameDetailsModel : PageModel
                 await _gameTrackingService.UpdateAsync(tracking.Id, tracking);
                 _logger.LogInformation("OnPostLogReviewWithTrackingAsync: Tracking existente actualizado para el juego '{GameId}' por el usuario '{UserId}'.", GameId, userId); // ✅ Registro de información
             }
-
-            return new JsonResult(new { success = true, message = "Reseña y seguimiento guardados exitosamente." }); // ✅ Mensaje de éxito
+            TempData["SuccessMessage"] = "Review registrada exitosamente";
+            
+            return new JsonResult(new { success = true, message = "Reseña y seguimiento guardados exitosamente." }); 
+            
         }
         catch (HttpRequestException ex) // ✅ Catch específico para problemas de red
         {
