@@ -7,14 +7,13 @@ public class SelectGamesModel : PageModel
 {
     private readonly IGameService _gameService;
     private readonly IGameListItemService _itemService;
-    private readonly ILogger<SelectGamesModel> _logger; // ✅ Declaración del logger
+    private readonly ILogger<SelectGamesModel> _logger; 
 
-    public SelectGamesModel(IGameService gameService, IGameListItemService itemService, ILogger<SelectGamesModel> logger) // ✅ Inyección de ILogger
+    public SelectGamesModel(IGameService gameService, IGameListItemService itemService, ILogger<SelectGamesModel> logger) 
     {
-        // ✅ Validaciones de nulos para los servicios y el logger inyectados en el constructor
         _gameService = gameService ?? throw new ArgumentNullException(nameof(gameService), "IGameService no puede ser nulo.");
         _itemService = itemService ?? throw new ArgumentNullException(nameof(itemService), "IGameListItemService no puede ser nulo.");
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); // ✅ Validar el logger
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo.");
     }
 
     [BindProperty(SupportsGet = true)]
@@ -34,10 +33,9 @@ public class SelectGamesModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        // ✅ Validar que ListId no sea nulo o vacío antes de usarlo para la sesión
         if (string.IsNullOrEmpty(ListId))
         {
-            _logger.LogWarning("OnGetAsync: ID de lista no proporcionado. Redirigiendo a la página de inicio."); // ✅ Registro de advertencia
+            _logger.LogWarning("OnGetAsync: ID de lista no proporcionado. Redirigiendo a la página de inicio."); 
             TempData["ErrorMessage"] = "ID de lista no proporcionado. No se pueden gestionar los juegos.";
             return RedirectToPage("/Homepage/Index");
         }
@@ -46,7 +44,6 @@ public class SelectGamesModel : PageModel
         {
             var selected = GetSelectedGamesFromSession();
 
-            // ✅ Validar que GameId.HasValue antes de intentar agregar
             if (GameId.HasValue && !selected.Any(s => s.GameId == GameId.Value))
             {
                 selected.Add(new SelectedGameSessionItem
@@ -55,28 +52,28 @@ public class SelectGamesModel : PageModel
                     Notes = string.Empty
                 });
                 SaveSelectedGamesToSession(selected);
-                _logger.LogInformation("OnGetAsync: Juego '{GameId}' añadido desde la URL a la sesión para la lista '{ListId}'.", GameId.Value, ListId); // ✅ Registro de información
+                _logger.LogInformation("OnGetAsync: Juego '{GameId}' añadido desde la URL a la sesión para la lista '{ListId}'.", GameId.Value, ListId); 
             }
 
             await LoadSelectedGamesAsync();
-            _logger.LogInformation("OnGetAsync: Página cargada exitosamente para la lista '{ListId}'.", ListId); // ✅ Registro de información
+            _logger.LogInformation("OnGetAsync: Página cargada exitosamente para la lista '{ListId}'.", ListId); 
             return Page();
         }
-        catch (JsonException ex) // ✅ Catch específico para errores de JSON (deserialización de sesión)
+        catch (JsonException ex) 
         {
-            _logger.LogError(ex, "OnGetAsync: Error de JSON al cargar juegos de la sesión para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnGetAsync: Error de JSON al cargar juegos de la sesión para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); 
             TempData["ErrorMessage"] = $"Error de sesión: {ex.Message}. Intenta de nuevo.";
             return Page();
         }
         catch (InvalidOperationException ex) // ✅ Catch específico para operaciones inválidas
         {
-            _logger.LogError(ex, "OnGetAsync: InvalidOperationException al cargar la página para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnGetAsync: InvalidOperationException al cargar la página para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); 
             TempData["ErrorMessage"] = $"Error de operación al cargar la página: {ex.Message}";
             return Page();
         }
         catch (Exception ex) // ✅ Catch general
         {
-            _logger.LogError(ex, "OnGetAsync: Ocurrió un error inesperado al cargar la página para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnGetAsync: Ocurrió un error inesperado al cargar la página para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); 
             TempData["ErrorMessage"] = $"Ocurrió un error al cargar la página: {ex.Message}";
             return Page();
         }
@@ -84,10 +81,9 @@ public class SelectGamesModel : PageModel
 
     public async Task<IActionResult> OnPostSearchAsync()
     {
-        // ✅ Validar que ListId no sea nulo o vacío antes de usarlo
         if (string.IsNullOrEmpty(ListId))
         {
-            _logger.LogWarning("OnPostSearchAsync: ID de lista no proporcionado para la búsqueda. Redirigiendo a la página de inicio."); // ✅ Registro de advertencia
+            _logger.LogWarning("OnPostSearchAsync: ID de lista no proporcionado para la búsqueda. Redirigiendo a la página de inicio."); 
             TempData["ErrorMessage"] = "ID de lista no proporcionado para la búsqueda.";
             return Page();
         }
@@ -97,26 +93,26 @@ public class SelectGamesModel : PageModel
             if (!string.IsNullOrWhiteSpace(SearchQuery))
             {
                 SearchResults = await _gameService.SearchGamePreviewsByNameAsync(SearchQuery);
-                SearchResults ??= new List<GamePreviewDTO>(); // Asegurar que no sea nulo
-                _logger.LogInformation("OnPostSearchAsync: Búsqueda de juegos realizada con el término '{SearchQuery}' para la lista '{ListId}'. Se encontraron {Count} resultados.", SearchQuery, ListId, SearchResults.Count); // ✅ Registro de información
+                SearchResults ??= new List<GamePreviewDTO>(); 
+                _logger.LogInformation("OnPostSearchAsync: Búsqueda de juegos realizada con el término '{SearchQuery}' para la lista '{ListId}'. Se encontraron {Count} resultados.", SearchQuery, ListId, SearchResults.Count); 
             }
             else
             {
-                _logger.LogInformation("OnPostSearchAsync: Término de búsqueda vacío para la lista '{ListId}'. No se realizó búsqueda de juegos.", ListId); // ✅ Registro de información
+                _logger.LogInformation("OnPostSearchAsync: Término de búsqueda vacío para la lista '{ListId}'. No se realizó búsqueda de juegos.", ListId); 
             }
 
             await LoadSelectedGamesAsync();
             return Page();
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red con el servicio de juegos
+        catch (HttpRequestException ex) 
         {
-            _logger.LogError(ex, "OnPostSearchAsync: HttpRequestException al buscar juegos para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnPostSearchAsync: HttpRequestException al buscar juegos para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); 
             TempData["ErrorMessage"] = $"Problema de conexión al buscar juegos: {ex.Message}";
             return Page();
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
-            _logger.LogError(ex, "OnPostSearchAsync: Ocurrió un error inesperado al realizar la búsqueda para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnPostSearchAsync: Ocurrió un error inesperado al realizar la búsqueda para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); 
             TempData["ErrorMessage"] = $"Ocurrió un error al realizar la búsqueda: {ex.Message}";
             return Page();
         }
@@ -124,29 +120,28 @@ public class SelectGamesModel : PageModel
 
     public async Task<IActionResult> OnPostAddGameAsync(string listId, Guid gameId, string notes)
     {
-        // ✅ Validar parámetros de entrada
         if (string.IsNullOrEmpty(listId))
         {
-            _logger.LogWarning("OnPostAddGameAsync: ID de lista no válido proporcionado."); // ✅ Registro de advertencia
+            _logger.LogWarning("OnPostAddGameAsync: ID de lista no válido proporcionado."); 
             TempData["ErrorMessage"] = "ID de lista no válido para añadir juego.";
             return BadRequest();
         }
         if (gameId == Guid.Empty)
         {
-            _logger.LogWarning("OnPostAddGameAsync: ID de juego no válido (Guid.Empty) proporcionado para la lista '{ListId}'.", listId); // ✅ Registro de advertencia
+            _logger.LogWarning("OnPostAddGameAsync: ID de juego no válido (Guid.Empty) proporcionado para la lista '{ListId}'.", listId); 
             TempData["ErrorMessage"] = "ID de juego no válido.";
             return BadRequest();
         }
 
         try
         {
-            ListId = listId; // ✅ Actualizar la propiedad ListId del modelo si viene del formulario
+            ListId = listId; 
 
             var selected = GetSelectedGamesFromSession();
 
             if (selected.Any(g => g.GameId == gameId))
             {
-                _logger.LogInformation("OnPostAddGameAsync: Juego '{GameId}' ya existe en la selección de la lista '{ListId}'.", gameId, listId); // ✅ Registro de información
+                _logger.LogInformation("OnPostAddGameAsync: Juego '{GameId}' ya existe en la selección de la lista '{ListId}'.", gameId, listId); 
                 TempData["ErrorMessage"] = "Este juego ya está en la lista seleccionada.";
                 return RedirectToPage(new { listId });
             }
@@ -154,24 +149,24 @@ public class SelectGamesModel : PageModel
             selected.Add(new SelectedGameSessionItem
             {
                 GameId = gameId,
-                Notes = notes ?? string.Empty // ✅ Asegurar que Notes no sea nulo
+                Notes = notes ?? string.Empty 
             });
 
             SaveSelectedGamesToSession(selected);
-            _logger.LogInformation("OnPostAddGameAsync: Juego '{GameId}' añadido temporalmente a la sesión para la lista '{ListId}'.", gameId, listId); // ✅ Registro de información
+            _logger.LogInformation("OnPostAddGameAsync: Juego '{GameId}' añadido temporalmente a la sesión para la lista '{ListId}'.", gameId, listId); 
 
             TempData["SuccessMessage"] = "Juego agregado temporalmente a la lista.";
             return RedirectToPage(new { listId });
         }
-        catch (JsonException ex) // ✅ Catch específico para errores de JSON (serialización/deserialización de sesión)
+        catch (JsonException ex) 
         {
-            _logger.LogError(ex, "OnPostAddGameAsync: Error de JSON al manipular la sesión para la lista '{ListId}'. Mensaje: {Message}", listId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnPostAddGameAsync: Error de JSON al manipular la sesión para la lista '{ListId}'. Mensaje: {Message}", listId, ex.Message); 
             TempData["ErrorMessage"] = $"Error de sesión al añadir juego: {ex.Message}.";
             return RedirectToPage(new { listId });
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
-            _logger.LogError(ex, "OnPostAddGameAsync: Ocurrió un error inesperado al añadir el juego '{GameId}' a la lista '{ListId}'. Mensaje: {Message}", gameId, listId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnPostAddGameAsync: Ocurrió un error inesperado al añadir el juego '{GameId}' a la lista '{ListId}'. Mensaje: {Message}", gameId, listId, ex.Message); 
             TempData["ErrorMessage"] = $"Ocurrió un error al añadir el juego: {ex.Message}";
             return RedirectToPage(new { listId });
         }
@@ -179,42 +174,40 @@ public class SelectGamesModel : PageModel
 
     public IActionResult OnPostRemoveGameAsync(string listId, Guid gameId)
     {
-        // ✅ Validar parámetros de entrada
         if (string.IsNullOrEmpty(listId))
         {
-            _logger.LogWarning("OnPostRemoveGameAsync: ID de lista no válido proporcionado."); // ✅ Registro de advertencia
+            _logger.LogWarning("OnPostRemoveGameAsync: ID de lista no válido proporcionado."); 
             TempData["ErrorMessage"] = "ID de lista no válido para eliminar juego.";
             return BadRequest();
         }
         if (gameId == Guid.Empty)
         {
-            _logger.LogWarning("OnPostRemoveGameAsync: ID de juego no válido (Guid.Empty) proporcionado para la lista '{ListId}'.", listId); // ✅ Registro de advertencia
+            _logger.LogWarning("OnPostRemoveGameAsync: ID de juego no válido (Guid.Empty) proporcionado para la lista '{ListId}'.", listId); 
             TempData["ErrorMessage"] = "ID de juego no válido para eliminar.";
             return BadRequest();
         }
 
         try
         {
-            ListId = listId; // ✅ Actualizar la propiedad ListId del modelo si viene del formulario
+            ListId = listId; 
 
             var selected = GetSelectedGamesFromSession();
-            // ✅ Validar que 'selected' no sea nulo antes de operar
             selected?.RemoveAll(g => g.GameId == gameId);
             SaveSelectedGamesToSession(selected);
-            _logger.LogInformation("OnPostRemoveGameAsync: Juego '{GameId}' eliminado de la sesión para la lista '{ListId}'.", gameId, listId); // ✅ Registro de información
+            _logger.LogInformation("OnPostRemoveGameAsync: Juego '{GameId}' eliminado de la sesión para la lista '{ListId}'.", gameId, listId); 
 
             TempData["SuccessMessage"] = "Juego eliminado de la lista.";
             return RedirectToPage(new { listId });
         }
-        catch (JsonException ex) // ✅ Catch específico para errores de JSON
+        catch (JsonException ex) 
         {
-            _logger.LogError(ex, "OnPostRemoveGameAsync: Error de JSON al manipular la sesión para la lista '{ListId}'. Mensaje: {Message}", listId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnPostRemoveGameAsync: Error de JSON al manipular la sesión para la lista '{ListId}'. Mensaje: {Message}", listId, ex.Message); 
             TempData["ErrorMessage"] = $"Error de sesión al eliminar juego: {ex.Message}.";
             return RedirectToPage(new { listId });
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
-            _logger.LogError(ex, "OnPostRemoveGameAsync: Ocurrió un error inesperado al eliminar el juego '{GameId}' de la lista '{ListId}'. Mensaje: {Message}", gameId, listId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnPostRemoveGameAsync: Ocurrió un error inesperado al eliminar el juego '{GameId}' de la lista '{ListId}'. Mensaje: {Message}", gameId, listId, ex.Message); 
             TempData["ErrorMessage"] = $"Ocurrió un error al eliminar el juego: {ex.Message}";
             return RedirectToPage(new { listId });
         }
@@ -224,34 +217,32 @@ public class SelectGamesModel : PageModel
     {
         if (string.IsNullOrEmpty(listId))
         {
-            _logger.LogWarning("OnPostFinishAsync: ID de lista no válido para finalizar el proceso."); // ✅ Registro de advertencia
+            _logger.LogWarning("OnPostFinishAsync: ID de lista no válido para finalizar el proceso."); 
             TempData["ErrorMessage"] = "ID de lista no válido. No se puede finalizar el proceso.";
             return RedirectToPage("/Homepage/Index");
         }
 
-        ListId = listId; // ✅ Actualiza el valor en la propiedad ListId (usado en SessionKey)
+        ListId = listId; 
 
         try
         {
             var selected = GetSelectedGamesFromSession();
 
-            // ✅ Validar que 'selected' no sea nulo antes de iterar
             if (selected == null || !selected.Any())
             {
-                _logger.LogInformation("OnPostFinishAsync: No hay juegos seleccionados en la sesión para la lista '{ListId}'. Limpiando sesión.", listId); // ✅ Registro de información
+                _logger.LogInformation("OnPostFinishAsync: No hay juegos seleccionados en la sesión para la lista '{ListId}'. Limpiando sesión.", listId); 
                 TempData["ErrorMessage"] = "No hay juegos seleccionados para guardar en la lista.";
-                HttpContext.Session.Remove(SessionKey); // Limpiar sesión aunque no haya items
+                HttpContext.Session.Remove(SessionKey); 
                 return RedirectToPage("/Homepage/Index");
             }
 
             int order = 1;
             foreach (var item in selected)
             {
-                // ✅ Validar que item no sea nulo y que GameId no sea Guid.Empty
                 if (item == null || item.GameId == Guid.Empty)
                 {
-                    _logger.LogWarning("OnPostFinishAsync: Se encontró un item de sesión inválido (nulo o GameId vacío) para la lista '{ListId}'. Saltando.", listId); // ✅ Registro de advertencia
-                    continue; // Salta items inválidos
+                    _logger.LogWarning("OnPostFinishAsync: Se encontró un item de sesión inválido (nulo o GameId vacío) para la lista '{ListId}'. Saltando.", listId); 
+                    continue; 
                 }
 
                 bool exists = await _itemService.ExistsAsync(listId, item.GameId);
@@ -262,32 +253,32 @@ public class SelectGamesModel : PageModel
                         Id = Guid.NewGuid().ToString(),
                         ListId = listId,
                         GameId = item.GameId,
-                        Notes = item.Notes ?? string.Empty, // ✅ Asegurar que Notes no sea nulo
+                        Notes = item.Notes ?? string.Empty, 
                         Order = order++
                     };
                     await _itemService.AddItemAsync(dto);
-                    _logger.LogInformation("OnPostFinishAsync: Juego '{GameId}' añadido permanentemente a la lista '{ListId}'.", item.GameId, listId); // ✅ Registro de información
+                    _logger.LogInformation("OnPostFinishAsync: Juego '{GameId}' añadido permanentemente a la lista '{ListId}'.", item.GameId, listId); 
                 }
                 else
                 {
-                    _logger.LogInformation("OnPostFinishAsync: Juego '{GameId}' ya existe en la lista '{ListId}'. Saltando adición.", item.GameId, listId); // ✅ Registro de información
+                    _logger.LogInformation("OnPostFinishAsync: Juego '{GameId}' ya existe en la lista '{ListId}'. Saltando adición.", item.GameId, listId); 
                 }
             }
 
             HttpContext.Session.Remove(SessionKey);
-            _logger.LogInformation("OnPostFinishAsync: Lista '{ListId}' guardada con juegos exitosamente. Sesión limpiada.", listId); // ✅ Registro de información
+            _logger.LogInformation("OnPostFinishAsync: Lista '{ListId}' guardada con juegos exitosamente. Sesión limpiada.", listId); 
             TempData["SuccessMessage"] = "¡Lista guardada con juegos!";
             return RedirectToPage("/Homepage/Index");
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red con el servicio de ítems
+        catch (HttpRequestException ex) 
         {
-            _logger.LogError(ex, "OnPostFinishAsync: HttpRequestException al guardar juegos en la lista '{ListId}'. Mensaje: {Message}", listId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnPostFinishAsync: HttpRequestException al guardar juegos en la lista '{ListId}'. Mensaje: {Message}", listId, ex.Message); 
             TempData["ErrorMessage"] = $"Problema de conexión al guardar la lista: {ex.Message}";
             return RedirectToPage("/Homepage/Index");
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
-            _logger.LogError(ex, "OnPostFinishAsync: Ocurrió un error inesperado al guardar la lista '{ListId}'. Mensaje: {Message}", listId, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "OnPostFinishAsync: Ocurrió un error inesperado al guardar la lista '{ListId}'. Mensaje: {Message}", listId, ex.Message); 
             TempData["ErrorMessage"] = $"Ocurrió un error al guardar la lista: {ex.Message}";
             return RedirectToPage("/Homepage/Index");
         }
@@ -295,30 +286,27 @@ public class SelectGamesModel : PageModel
 
     private async Task LoadSelectedGamesAsync()
     {
-        // ✅ Validar que ListId no sea nulo o vacío antes de usarlo para la sesión
         if (string.IsNullOrEmpty(ListId))
         {
-            _logger.LogWarning("LoadSelectedGamesAsync: ID de lista nulo o vacío. No se cargarán juegos seleccionados."); // ✅ Registro de advertencia
+            _logger.LogWarning("LoadSelectedGamesAsync: ID de lista nulo o vacío. No se cargarán juegos seleccionados."); 
             return;
         }
 
         var selected = GetSelectedGamesFromSession();
         SelectedGames.Clear();
 
-        // ✅ Validar que 'selected' no sea nulo antes de iterar
         if (selected == null)
         {
-            _logger.LogWarning("LoadSelectedGamesAsync: La lista de juegos seleccionados de la sesión es nula para la lista '{ListId}'.", ListId); // ✅ Registro de advertencia
+            _logger.LogWarning("LoadSelectedGamesAsync: La lista de juegos seleccionados de la sesión es nula para la lista '{ListId}'.", ListId); 
             return;
         }
 
         foreach (var item in selected)
         {
-            // ✅ Validar que item no sea nulo y que GameId no sea Guid.Empty
             if (item == null || item.GameId == Guid.Empty)
             {
-                _logger.LogWarning("LoadSelectedGamesAsync: Se encontró un item de sesión inválido (nulo o GameId vacío) para la lista '{ListId}'. Saltando.", ListId); // ✅ Registro de advertencia
-                continue; // Salta items inválidos
+                _logger.LogWarning("LoadSelectedGamesAsync: Se encontró un item de sesión inválido (nulo o GameId vacío) para la lista '{ListId}'. Saltando.", ListId); 
+                continue; 
             }
 
             try
@@ -329,32 +317,31 @@ public class SelectGamesModel : PageModel
                     SelectedGames.Add(new SelectedGamePreview
                     {
                         Game = game,
-                        Notes = item.Notes ?? string.Empty // ✅ Asegurar que Notes no sea nulo
+                        Notes = item.Notes ?? string.Empty 
                     });
                 }
                 else
                 {
-                    _logger.LogWarning("LoadSelectedGamesAsync: No se encontró la vista previa del juego para GameId '{GameId}' en la lista '{ListId}'.", item.GameId, ListId); // ✅ Registro de advertencia
+                    _logger.LogWarning("LoadSelectedGamesAsync: No se encontró la vista previa del juego para GameId '{GameId}' en la lista '{ListId}'.", item.GameId, ListId); 
                 }
             }
-            catch (HttpRequestException ex) // ✅ Catch específico para problemas de red
+            catch (HttpRequestException ex) 
             {
-                _logger.LogError(ex, "LoadSelectedGamesAsync: HttpRequestException al obtener vista previa del juego '{GameId}' para la lista '{ListId}'. Mensaje: {Message}", item.GameId, ListId, ex.Message); // ✅ Registro de error
+                _logger.LogError(ex, "LoadSelectedGamesAsync: HttpRequestException al obtener vista previa del juego '{GameId}' para la lista '{ListId}'. Mensaje: {Message}", item.GameId, ListId, ex.Message); 
             }
-            catch (Exception ex) // ✅ Catch general
+            catch (Exception ex) 
             {
-                _logger.LogError(ex, "LoadSelectedGamesAsync: Error inesperado al obtener vista previa del juego '{GameId}' para la lista '{ListId}'. Mensaje: {Message}", item.GameId, ListId, ex.Message); // ✅ Registro de error
+                _logger.LogError(ex, "LoadSelectedGamesAsync: Error inesperado al obtener vista previa del juego '{GameId}' para la lista '{ListId}'. Mensaje: {Message}", item.GameId, ListId, ex.Message); 
             }
         }
-        _logger.LogInformation("LoadSelectedGamesAsync: Juegos seleccionados cargados para la lista '{ListId}'. Total: {Count}.", ListId, SelectedGames.Count); // ✅ Registro de información
+        _logger.LogInformation("LoadSelectedGamesAsync: Juegos seleccionados cargados para la lista '{ListId}'. Total: {Count}.", ListId, SelectedGames.Count); 
     }
 
     private List<SelectedGameSessionItem> GetSelectedGamesFromSession()
     {
-        // ✅ Validar que HttpContext.Session no sea nulo
         if (HttpContext?.Session == null)
         {
-            _logger.LogError("GetSelectedGamesFromSession: HttpContext.Session es nulo. Verifique la configuración de sesión."); // ✅ Registro de error
+            _logger.LogError("GetSelectedGamesFromSession: HttpContext.Session es nulo. Verifique la configuración de sesión."); 
             return new List<SelectedGameSessionItem>();
         }
 
@@ -362,59 +349,55 @@ public class SelectGamesModel : PageModel
         
         try
         {
-            // ✅ Usar el operador ?? para asegurar que el resultado de Deserialize no sea nulo
             var items = string.IsNullOrEmpty(json)
                 ? new List<SelectedGameSessionItem>()
                 : JsonSerializer.Deserialize<List<SelectedGameSessionItem>>(json);
             
-            items ??= new List<SelectedGameSessionItem>(); // ✅ Asegurar que la deserialización no retorne nulo
-            _logger.LogDebug("GetSelectedGamesFromSession: {Count} items cargados de la sesión para la clave '{SessionKey}'.", items.Count, SessionKey); // ✅ Registro de depuración
+            items ??= new List<SelectedGameSessionItem>(); 
+            _logger.LogDebug("GetSelectedGamesFromSession: {Count} items cargados de la sesión para la clave '{SessionKey}'.", items.Count, SessionKey); 
             return items;
         }
-        catch (JsonException ex) // ✅ Catch específico para errores de deserialización
+        catch (JsonException ex) 
         {
-            _logger.LogError(ex, "GetSelectedGamesFromSession: Error de deserialización JSON para la clave de sesión '{SessionKey}'. Mensaje: {Message}", SessionKey, ex.Message); // ✅ Registro de error
-            // Podrías limpiar la sesión si el JSON es corrupto
+            _logger.LogError(ex, "GetSelectedGamesFromSession: Error de deserialización JSON para la clave de sesión '{SessionKey}'. Mensaje: {Message}", SessionKey, ex.Message); 
             HttpContext.Session.Remove(SessionKey);
             return new List<SelectedGameSessionItem>();
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
-            _logger.LogError(ex, "GetSelectedGamesFromSession: Error inesperado al obtener items de la sesión para la clave '{SessionKey}'. Mensaje: {Message}", SessionKey, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "GetSelectedGamesFromSession: Error inesperado al obtener items de la sesión para la clave '{SessionKey}'. Mensaje: {Message}", SessionKey, ex.Message); 
             return new List<SelectedGameSessionItem>();
         }
     }
 
     private void SaveSelectedGamesToSession(List<SelectedGameSessionItem> items)
     {
-        // ✅ Validar que HttpContext.Session no sea nulo y que items no sea nulo
         if (HttpContext?.Session == null)
         {
-            _logger.LogError("SaveSelectedGamesToSession: HttpContext.Session es nulo. No se pudo guardar en sesión."); // ✅ Registro de error
+            _logger.LogError("SaveSelectedGamesToSession: HttpContext.Session es nulo. No se pudo guardar en sesión."); 
             return;
         }
         if (items == null)
         {
-            _logger.LogWarning("SaveSelectedGamesToSession: Se intentó guardar una lista de items nula en la sesión para la clave '{SessionKey}'.", SessionKey); // ✅ Registro de advertencia
+            _logger.LogWarning("SaveSelectedGamesToSession: Se intentó guardar una lista de items nula en la sesión para la clave '{SessionKey}'.", SessionKey); 
             return;
         }
 
         try
         {
             HttpContext.Session.SetString(SessionKey, JsonSerializer.Serialize(items));
-            _logger.LogDebug("SaveSelectedGamesToSession: {Count} items guardados en la sesión para la clave '{SessionKey}'.", items.Count, SessionKey); // ✅ Registro de depuración
+            _logger.LogDebug("SaveSelectedGamesToSession: {Count} items guardados en la sesión para la clave '{SessionKey}'.", items.Count, SessionKey); 
         }
-        catch (JsonException ex) // ✅ Catch específico para errores de serialización
+        catch (JsonException ex) 
         {
-            _logger.LogError(ex, "SaveSelectedGamesToSession: Error de serialización JSON al guardar en la sesión para la clave '{SessionKey}'. Mensaje: {Message}", SessionKey, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "SaveSelectedGamesToSession: Error de serialización JSON al guardar en la sesión para la clave '{SessionKey}'. Mensaje: {Message}", SessionKey, ex.Message); 
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
-            _logger.LogError(ex, "SaveSelectedGamesToSession: Error inesperado al guardar items en la sesión para la clave '{SessionKey}'. Mensaje: {Message}", SessionKey, ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "SaveSelectedGamesToSession: Error inesperado al guardar items en la sesión para la clave '{SessionKey}'. Mensaje: {Message}", SessionKey, ex.Message); 
         }
     }
 
-    // Clase interna para guardar en sesión
     private class SelectedGameSessionItem
     {
         public Guid GameId { get; set; }

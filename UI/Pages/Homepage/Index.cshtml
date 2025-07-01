@@ -2,7 +2,7 @@
 @using System.Text.Json
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Página de inicio";
     ViewData["ShowBackground"] = true;
     ViewData["UseBlurEffect"] = false;
     ViewData["BackgroundImage"] = Url.Content("~/Images/startpage.png");
@@ -12,33 +12,55 @@
 <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
 <script src="~/js/site.js"></script>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+}
+
 <div class="index-text">
-    <h4>@ViewData["WelcomeMessage"]</h4> 
-    <h6>This homepage will become customized as you follow active members on Letterboxd.</h6>
+    <h4 style="color: white;">@ViewData["WelcomeMessage"]</h4> 
+    <h6>Esta página de inicio se personalizará a medida que sigas a miembros activos en Letterboxd.</h6>
 </div>
 
 <div class="section-container">
     <h6>
         @if (Model.HasFriends)
         {
-            <span>New from your friends</span>
+            <span>Novedades de tus amigos</span>
         }
         else
         {
-            <span>New on Dusk Sky</span>
+            <span>Novedades en Dusk Sky</span>
         }
     </h6>
     <hr>
 </div>
 
 <div class="card-group custom-card-index">
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+    
 
     @{
         var reviewsToDisplay = Model.ReviewCards?.Take(6).ToList() ?? new List<ReviewFullDto>();
@@ -80,7 +102,7 @@
             else
             {
                 <div class="card card-glossy m-2" style="width: 12rem;">
-                    <img src="/Images/noImage.png" class="card-img-top poster" alt="Placeholder">
+                    <img src="/Images/noImage.png" class="card-img-top poster" alt="Marcador de posición">
                 </div>
             }
         }
@@ -89,7 +111,7 @@
 
 <div>
     <br>
-    <h6>Some games to get you started</h6>
+    <h6>Algunos juegos para empezar</h6>
     <hr>
     <div>
         <div class="card-group custom-card-reviewed">
@@ -102,7 +124,7 @@
                         var game = gamesToDisplay[i];
                         <div class="card clickable-card" data-href="@Url.Page("/Games/GameDetails", new { gameId = game.Id })">
                             <div class="card-body">
-                                <img src="@game.HeaderUrl" class="card-img-top" alt="Game Header">
+                                <img src="@game.HeaderUrl" class="card-img-top" alt="Encabezado del juego">
                             </div>
                         </div>
                     }
@@ -110,7 +132,7 @@
                     {
                         <div class="card">
                             <div class="card-body">
-                                <h6 class="card-title">Sin Comentarios</h6>
+                                <h6 class="card-title">Sin comentarios</h6>
                                 <p class="card-text">No hay comentarios recientes.</p>
                             </div>
                         </div>
@@ -123,7 +145,7 @@
 
 <div>
     <br>
-    <h6>Popular reviews This week</h6>
+    <h6>Reseñas populares esta semana</h6>
     <hr>
     <div class="row"> 
         <div class="col-md-6">
@@ -142,7 +164,7 @@
                             <div class="col-md-8 p-3 d-flex flex-column justify-content-between">
                                 <div>
                                     <h5 class="card-title mb-1">
-                                       @review.GameTitle
+                                        @review.GameTitle
                                         <span class="text-muted fs-6">(@review.CreatedAt.ToString("yyyy"))</span>
                                     </h5>
                                     <div class="d-flex align-items-center gap-2 mb-2">
@@ -165,7 +187,7 @@
                                                 class="btn btn-sm @(review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
                                                 onclick="event.stopPropagation(); toggleLike(this);">
                                             <i class="bi @(review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
-                                            <span class="like-text">@(review.UserLiked ? "Quitar like" : "Me gusta")</span>
+                                            <span class="like-text">@(review.UserLiked ? "Quitar me gusta" : "Me gusta")</span>
                                             <span class="like-count visually-hidden">@review.Likes</span>
                                         </button>
                                     </form>
@@ -216,7 +238,7 @@
                                                 class="btn btn-sm @(review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
                                                 onclick="event.stopPropagation(); toggleLike(this);">
                                             <i class="bi @(review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
-                                            <span class="like-text">@(review.UserLiked ? "Quitar like" : "Me gusta")</span>
+                                            <span class="like-text">@(review.UserLiked ? "Quitar me gusta" : "Me gusta")</span>
                                             <span class="like-count visually-hidden">@review.Likes</span>
                                         </button>
                                     </form>
@@ -231,7 +253,7 @@
 </div>
 
 <div>
-    <h6>Popular lists This week</h6>
+    <h6>Listas populares esta semana</h6>
     <hr>
 <div class="d-flex flex-row overflow-auto gap-3 pb-3">
         @foreach (var list in Model.RecentLists ?? new List<GameListWithUserDto>())
@@ -286,11 +308,10 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Script para hacer las tarjetas cliqueables
+            
             document.querySelectorAll('.clickable-card').forEach(card => {
-                card.style.cursor = 'pointer'; // Cambia el cursor a puntero
+                card.style.cursor = 'pointer'; 
                 card.addEventListener('click', function(event) {
-                    // Evita que el clic en botones o enlaces dentro de la tarjeta active la navegación de la tarjeta
                     if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A' || event.target.closest('form')) {
                         return;
                     }
@@ -301,7 +322,14 @@
                 });
             });
 
-            // Script para el collage de imágenes (originalmente en homePageCollage.js)
+            document.addEventListener('DOMContentLoaded', function () {
+            const toastElList = [].slice.call(document.querySelectorAll('.toast'))
+            const toastList = toastElList.map(function (toastEl) {
+                return new bootstrap.Toast(toastEl, { delay: 4000 }) 
+            })
+            toastList.forEach(toast => toast.show());
+        });
+
             document.querySelectorAll('.poster-collage').forEach(collageContainer => {
                 const gameHeadersJson = collageContainer.dataset.gameHeaders;
                 if (gameHeadersJson) {
@@ -312,11 +340,11 @@
                             img.src = headerUrl;
                             img.alt = "Imagen del juego";
                             img.classList.add('poster-collage-item');
-                            img.style.left = `${i * 40}px`; // Ajusta el espaciado si es necesario
+                            img.style.left = `${i * 40}px`; 
                             collageContainer.appendChild(img);
                         });
                     } catch (e) {
-                        console.error("Error parsing gameHeaders JSON:", e);
+                        console.error("Error al analizar el JSON de gameHeaders:", e);
                     }
                 }
             });

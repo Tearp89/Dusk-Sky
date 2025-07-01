@@ -10,15 +10,15 @@
 }
 
 <div class="container py-4">
-    <h3 class="mb-4">Playlist de @Model.ProfileHeader.Username (Backlog)</h3>
+    <h3 class="mb-4">Playlist de @Model.ProfileHeader.Username</h3>
 
     @if (Model.BacklogGames.Any())
     {
-        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3"> @* Puedes ajustar el número de columnas *@
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
             @foreach (var game in Model.BacklogGames)
             {
                 <div class="col">
-                    <div class="card h-100 playlist-game-card"> @* Nueva clase para la tarjeta de juego en playlist *@
+                    <div class="card h-100 playlist-game-card"> 
                         <a asp-page="/Games/Details" asp-route-gameId="@game.Id" class="text-decoration-none">
                             <img src="@game.HeaderUrl" class="card-img-top playlist-game-img" alt="Portada de @game.Title">
                             <div class="card-body p-2">
@@ -45,7 +45,6 @@
     }
 </div>
 
-@* Opcional: Estilos para las tarjetas de juegos en playlist (puedes añadir esto a site.css o UI.styles.css) *@
 <style>
     .playlist-game-card {
         border: none; 
@@ -60,7 +59,7 @@
     }
     .playlist-game-img {
         width: 100%;
-        height: 200px; /* Altura fija para la portada del juego */
+        height: 200px; 
         object-fit: cover; 
         object-position: center; 
     }

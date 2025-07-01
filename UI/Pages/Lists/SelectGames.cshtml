@@ -1,7 +1,6 @@
 @page "{listId}"
 @model SelectGamesModel
 
-<!-- Mensajes -->
 @if (TempData["SuccessMessage"] != null)
 {
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
@@ -26,19 +25,17 @@
 }
 
 <div class="container mt-5 p-4 text-dark rounded shadow main-container" style="max-width: 900px;">
-    <h2 class="mb-4 fw-semibold">Select Games for List</h2>
+    <h2 class="mb-4 fw-semibold">Seleccionar Juegos para la Lista</h2>
 
-    <!-- 🔍 Búsqueda -->
     <form method="post" asp-page-handler="Search" class="d-flex mb-4">
-        <input asp-for="SearchQuery" class="form-control bg-light text-dark me-2 input-glass rounded-pill" placeholder="Search game..." />
-        <button class="button-glass" type="submit">Search</button>
+        <input asp-for="SearchQuery" class="form-control bg-light text-dark me-2 input-glass rounded-pill" placeholder="Buscar juego..." />
+        <button class="button-glass" type="submit">Buscar</button>
     </form>
 
-    <!-- 🎯 Juegos seleccionados -->
     @if (Model.SelectedGames.Any())
     {
         <div class="mb-5">
-            <h5 class="mb-3">Selected Games:</h5>
+            <h5 class="mb-3">Juegos Seleccionados:</h5>
             <div class="d-flex flex-wrap gap-3">
                 @foreach (var game in Model.SelectedGames)
                 {
@@ -48,7 +45,7 @@
                             <input type="hidden" name="gameId" value="@game.Game.Id" />
                             <button type="submit" class="btn btn-sm btn-danger" style="padding: 2px 6px;">×</button>
                         </form>
-                        <img src="@game.Game.HeaderUrl" class="card-img-top" style="height: 140px; object-fit: cover;" />
+                        <img src="@game.Game.HeaderUrl" class="card-img-top" style="height: 140px; object-fit: cover;" alt="Imagen de @game.Game.Title" />
                         <div class="card-body p-2">
                             <small class="fw-bold">@game.Game.Title</small><br />
                             <small class="text-muted">@game.Notes</small>
@@ -59,33 +56,31 @@
         </div>
     }
 
-    <!-- 🎮 Resultados de búsqueda -->
     @if (Model.SearchResults?.Any() == true)
     {
-        <h5 class="mb-3">Results:</h5>
+        <h5 class="mb-3">Resultados:</h5>
         <div class="d-flex flex-wrap gap-3">
             @foreach (var game in Model.SearchResults)
             {
                 <form method="post" asp-page-handler="AddGame" class="card glass-card text-light p-2" style="width: 12rem;">
                     <input type="hidden" name="listId" value="@Model.ListId" />
                     <input type="hidden" name="gameId" value="@game.Id" />
-                    <img src="@game.HeaderUrl" class="card-img-top" style="height: 160px; object-fit: cover;" />
+                    <img src="@game.HeaderUrl" class="card-img-top" style="height: 160px; object-fit: cover;" alt="Imagen de @game.Title" />
                     <div class="card-body p-2">
                         <h6 class="card-title">@game.Title</h6>
-                        <textarea name="notes" placeholder="Add a note..." class="form-control form-control-sm mb-2" style="resize: none;"></textarea>
-                        <button type="submit" class="btn btn-sm btn-primary w-100">Add</button>
+                        <textarea name="notes" placeholder="Añadir una nota..." class="form-control form-control-sm mb-2" style="resize: none;"></textarea>
+                        <button type="submit" class="btn btn-sm btn-primary w-100">Añadir</button>
                     </div>
                 </form>
             }
         </div>
     }
 
-    <!-- ✅ Botón Finish -->
     <form method="post" asp-page-handler="Finish" class="mt-4">
         <input type="hidden" name="listId" value="@Model.ListId" />
-        <button type="submit" class="button-glass-blue">Finish & Save List</button>
+        <button type="submit" class="button-glass-blue">Finalizar y Guardar Lista</button>
     </form>
-</div>  
+</div>  
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

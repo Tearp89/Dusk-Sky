@@ -1,4 +1,31 @@
 @model ProfileModelBase
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+}
 
 <div class="profile-banner py-5" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('@Model.ProfileHeader.BannerUrl');">
     <div class="container text-white py-4">
@@ -16,42 +43,40 @@
                     <div class="profile-actions mt-3 mt-lg-0" style="min-height: 38px;">
                         @if (Model.IsOwnProfile)
                         {
-                            <a asp-page="/Users/Profile/EditProfile" asp-route-userId="@Model.ProfileHeader.UserId" class="btn btn-outline-light">Edit Profile</a>
+                            <a asp-page="/Users/Profile/EditProfile" asp-route-userId="@Model.ProfileHeader.UserId" class="btn btn-outline-light">Editar Perfil</a>
                         }
                         else if (User.Identity?.IsAuthenticated ?? false)
                         {
-                            @* --- LÓGICA DE AMISTAD FORZADA EXCLUSIVA --- *@
                             @if (Model.Friendship?.Status == "friends")
                             {
-                                <button class="btn btn-success" disabled>✔️ Friends</button>
+                                <button class="btn btn-success" disabled>✔️ Amigos</button>
                             }
                             else if (Model.Friendship?.Status == "pending_outgoing")
                             {
-                                <button class="btn btn-secondary" disabled>Request Sent</button>
+                                <button class="btn btn-secondary" disabled>Solicitud Enviada</button>
                             }
                             else if (Model.Friendship?.Status == "pending_incoming")
                             {
                                 <form method="post" asp-page-handler="AcceptRequest" asp-route-profileUserId="@Model.ProfileHeader.UserId" asp-route-requestId="@Model.Friendship.RequestId">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-primary me-2">Accept</button>
+                                    <button type="submit" class="btn btn-primary me-2">Aceptar</button>
                                 </form>
                                 <form method="post" asp-page-handler="RejectRequest" asp-route-profileUserId="@Model.ProfileHeader.UserId" asp-route-requestId="@Model.Friendship.RequestId">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-outline-danger">Reject</button>
+                                    <button type="submit" class="btn btn-outline-danger">Rechazar</button>
                                 </form>
                             }
                             else if (Model.Friendship?.Status == "not_friends")
                             {
                                 <form method="post" asp-page-handler="SendRequest" asp-route-profileUserId="@Model.ProfileHeader.UserId">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-primary">Add Friend</button>
+                                    <button type="submit" class="btn btn-primary">Añadir Amigo</button>
                                 </form>
                             }
-                            @* --- FIN LÓGICA DE AMISTAD FORZADA EXCLUSIVA --- *@
 
-                            <div class="dropdown ms-2"> @* ms-2 para un pequeño margen a la izquierda de los botones de amistad *@
+                            <div class="dropdown ms-2">
                                 <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-three-dots"></i> @* Icono de tres puntos (menú kebab) *@
+                                    <i class="bi bi-three-dots"></i> 
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                                     <li>
@@ -67,15 +92,15 @@
                 <div class="d-flex justify-content-center justify-content-lg-start gap-4 mt-3 pt-3 border-top border-light border-opacity-25">
                     <div class="text-center">
                         <span class="fs-4 fw-bold d-block">@Model.ProfileHeader.ReviewCount</span>
-                        <small class="text-uppercase opacity-75">Reviews</small>
+                        <small class="text-uppercase opacity-75">Reseñas</small>
                     </div>
                     <div class="text-center">
                         <span class="fs-4 fw-bold d-block">@Model.ProfileHeader.ListCount</span>
-                        <small class="text-uppercase opacity-75">Lists</small>
+                        <small class="text-uppercase opacity-75">Listas</small>
                     </div>
                     <div class="text-center">
                         <span class="fs-4 fw-bold d-block">@Model.ProfileHeader.FriendCount</span>
-                        <small class="text-uppercase opacity-75">Friends</small>
+                        <small class="text-uppercase opacity-75">Amigos</small>
                     </div>
                 </div>
             </div>
@@ -83,7 +108,6 @@
     </div>
 </div>
 
-@* ▼▼▼ AÑADE ESTE BLOQUE AQUÍ ▼▼▼ *@
 @if (TempData["SuccessMessage"] != null || TempData["StatusMessage"] != null)
 {
     string message;
@@ -97,14 +121,14 @@
     else
     {
         message = TempData["StatusMessage"].ToString();
-        // Asumimos que StatusMessage puede ser de éxito o error
+        
         alertClass = message.StartsWith("Error") ? "alert-danger" : "alert-success";
     }
 
     <div class="container mt-n4" style="position: relative; z-index: 10;">
         <div class="alert @alertClass alert-dismissible fade show text-center shadow-lg" role="alert">
             @message
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     </div>
 }
@@ -115,10 +139,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="reportUserModalLabel">Reportar a @Model.ProfileHeader.Username</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <form method="post" asp-page-handler="ReportUser" asp-route-profileUserId="@Model.ProfileHeader.UserId">
-                @Html.AntiForgeryToken() @* Es buena práctica incluir el token aquí también *@
+                @Html.AntiForgeryToken() 
                 <div class="modal-body">
                     <p>Por favor, explica por qué estás reportando a este usuario:</p>
                     <div class="mb-3">
@@ -134,3 +158,32 @@
         </div>
     </div>
 </div>
+
+<style>
+    .profile-banner {
+        background-size: cover;
+        background-position: center;
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border: 4px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .profile-actions {
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 10px; 
+        align-items: center; 
+        justify-content: center;
+    }
+
+
+    .profile-actions form {
+        display: flex;
+        gap: 10px; 
+    }
+</style>

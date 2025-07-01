@@ -6,16 +6,31 @@
     ViewData["Title"] = "ReviewDetails";
     ViewData["ShowBackground"] = false;
 }
-@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+@if (TempData["SuccessMessage"] != null)
 {
-    <div id="reviewSuccessMessage" class="alert alert-success mt-3 py-5 text-center">
-        @Model.SuccessMessage
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
     </div>
 }
-else
+
+@if (TempData["ErrorMessage"] != null)
 {
-    <div id="reviewSuccessMessage" class="alert alert-success d-none mt-3 py-5 text-center">
-        Tu reseña fue guardada exitosamente.
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
     </div>
 }
 @if (Model.Review == null || Model.GamePreview == null)
@@ -34,7 +49,7 @@ else
             <div class="d-flex gap-4 mb-4">
                 <img src="@Model.Review.GameImageUrl" class="rounded shadow" style="width: 160px;" alt="Game Cover">
                 <div class="flex-grow-1">
-                    <p class="text-muted mb-1">Review by <strong>@Model.Review.UserName</strong></p>
+                    <p class="text-muted mb-1">Review por <strong>@Model.Review.UserName</strong></p>
                     <div class="dropdown position-absolute end-0 me-2">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
                             id="reviewActionsMenu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -46,18 +61,19 @@ else
                                 <li>
                                     <button class="dropdown-item text-danger" data-bs-toggle="modal"
                                         data-bs-target="#reportModal">
-                                        Report review
+                                        Reportar reseña
                                     </button>
                                 </li>
                             }
 
-                            @if (User.IsInRole("admin") || User.IsInRole("moderator") || Model.Review.UserId == Model.UserId)
+                            @if (User.IsInRole("admin") || User.IsInRole("moderator") || Model.Review.UserId ==
+                                                        Model.UserId)
                             {
                                 <li>
                                     <form method="post" asp-page-handler="DeleteReview"
                                         onsubmit="return confirm('Are you sure you want to delete this review?');">
                                         <input type="hidden" name="ReviewId" value="@Model.Review.Id" />
-                                        <button type="submit" class="dropdown-item text-danger">Delete review</button>
+                                        <button type="submit" class="dropdown-item text-danger">Eliminar reseña</button>
                                     </form>
                                 </li>
                             }
@@ -68,31 +84,29 @@ else
                         @Model.GamePreview.Title
                         <small class="text-muted">@Model.Review.CreatedAt.ToString("yyyy")</small>
                     </h2>
-                    @* ▼▼▼ AÑADE ESTE BLOQUE DE CÓDIGO AQUÍ ▼▼▼ *@
-<div class="mb-3 h4"> @* Usamos h4 para que las estrellas sean grandes *@
-    @{
-        // Lógica para mostrar las estrellas de rating
-        double rating = Model.Review.Rating;
-        for (int i = 1; i <= 5; i++)
-        {
-            if (rating >= i)
-            {
-                <i class="bi bi-star-fill text-warning"></i> @* Estrella llena *@
-            }
-            else if (rating >= i - 0.5)
-            {
-                <i class="bi bi-star-half text-warning"></i> @* Media estrella *@
-            }
-            else
-            {
-                <i class="bi bi-star text-warning"></i> @* Estrella vacía *@
-            }
-        }
-    }
-    <span class="ms-2 text-muted" style="font-size: 1rem; vertical-align: middle;">(@rating.ToString("0.0") / 5)</span>
-</div>
-@* ▲▲▲ FIN DEL BLOQUE A AÑADIR ▲▲▲ *@
-                    <p class="text-muted mb-2">Watched @Model.Review.CreatedAt.ToString("dd MMM yyyy")</p>
+                    <div class="mb-3 h4"> 
+                        @{
+                            double rating = Model.Review.Rating;
+                            for (int i = 1; i <= 5; i++)
+                            {
+                                if (rating >= i)
+                                {
+                                    <i class="bi bi-star-fill text-warning"></i> 
+                                }
+                                else if (rating >= i - 0.5)
+                                {
+                                    <i class="bi bi-star-half text-warning"></i> 
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star text-warning"></i> 
+                                }
+                            }
+                        }
+                        <span class="ms-2 text-muted"
+                            style="font-size: 1rem; vertical-align: middle;">(@rating.ToString("0.0") / 5)</span>
+                    </div>
+                    <p class="text-muted mb-2">Jugado el @Model.Review.CreatedAt.ToString("dd MMM yyyy")</p>
                     <p class="lead" style="white-space: pre-wrap;">@Model.Review.Content</p>
 
                     <div class="d-flex gap-2 flex-wrap mt-3">
@@ -112,8 +126,7 @@ else
                                 </button>
                             </form>
                         }
-                        <button class="btn btn-outline-dark btn-sm">Add to list</button>
-                        <button class="btn btn-outline-dark btn-sm">Share</button>
+
                     </div>
                 </div>
             </div>
@@ -137,11 +150,11 @@ else
                 <div class="mt-4">
                     <form method="post" asp-page-handler="AgregarComentario" asp-route-reviewId="@Model.Review.Id">
                         <div class="mb-3">
-                            <label for="nuevoComentario" class="form-label">Leave a comment</label>
+                            <label for="nuevoComentario" class="form-label">Deja un comentario</label>
                             <textarea id="nuevoComentario" name="nuevoComentario" class="form-control" rows="3"
                                 placeholder="Write your thoughts here..."></textarea>
                         </div>
-                        <button type="submit" class="btn button-glass-blue">Post comment</button>
+                        <button type="submit" class="btn button-glass-blue">Publica un comentario</button>
                     </form>
                 </div>
             </div>
@@ -155,7 +168,7 @@ else
                         data-review-id="@Model.Review.Id" data-tracking-type="watch"
                         data-active="@Model.IsWatched.ToString().ToLower()" onclick="toggleTracking(this)">
                         <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i>
-                        <span>@(Model.IsWatched ? "Watched" : "Watch")</span>
+                        <span>@(Model.IsWatched ? "Jugado" : "Jugar")</span>
                     </button>
 
                     <button class="btn flex-fill d-flex align-items-center justify-content-center gap-0" id="btn-like"
@@ -174,24 +187,22 @@ else
                 </div>
 
                 <div class="d-flex flex-column gap-2">
-                    <button class="btn btn-outline-secondary w-100">Show your activity</button>
-                    <button class="btn btn-outline-secondary w-100">Show @Model.Review.UserName's activity</button>
+
                     <button type="button" class="btn btn-outline-secondary w-100 button-glass" data-bs-toggle="modal"
                         data-bs-target="#reviewModal">
-                        Review or log...
+                        Reseñar...
                     </button>
                     <button class="btn btn-outline-dark btn-sm button-glass" data-bs-toggle="modal"
                         data-bs-target="#listModal">
-                        Add this game to lists
+                        Añade este juego a listas
                     </button>
 
-                    <button class="btn btn-outline-secondary w-100 button-glass">Share this review</button>
                 </div>
             </div>
             <div class="d-flex gap-2 flex-wrap">
                 @if (Model.UserReviews != null && Model.UserReviews.Count > 0)
                 {
-                    <h5 class="mt-5 mb-3">Other games you reviewed</h5>
+                    <h5 class="mt-5 mb-3">Otros juegos que reseñaste</h5>
                     <div class="horizontal-scroll-container">
                         @foreach (var review in Model.UserReviews)
                         {
@@ -214,64 +225,91 @@ else
     <!-- Modal para Review -->
     <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content shadow glassy-modal">
+                <div class="modal-header bg-dark text-white button-glass-blue">
+                    <h5 class="modal-title" id="reviewModalLabel">Jugué...</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
                 <form id="logReviewForm" method="post" asp-page-handler="LogReviewWithTracking">
-                    <div class="modal-header bg-dark text-white">
-                        <h5 class="modal-title">I watched...</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="GameId" value="@Model.GamePreview.Id.ToString()" />
 
-                    <div class="modal-body d-flex gap-4">
-                        <img src="@Model.GamePreview.HeaderUrl" alt="Game cover" style="height: 220px;"
-                            class="rounded shadow" />
+                        <div class="d-flex flex-column flex-md-row gap-4 mb-4 align-items-start">
+                            <img src="@Model.GamePreview.HeaderUrl" alt="Game cover" class="rounded shadow"
+                                style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
 
-                        <div class="flex-grow-1">
-                            <h4 class="fw-bold">@Model.GamePreview.Title <span
-                                    class="text-muted">@Model.Review.CreatedAt.Year</span></h4>
+                            <div class="flex-grow-1">
+                                <h4 class="fw-bold">@Model.GamePreview.Title </h4>
 
-                            <div class="d-flex align-items-center mb-2 gap-3">
-                                <input class="form-check-input" type="checkbox" name="WatchedOnEnabled"
-                                    id="WatchedOnEnabled" checked />
-                                <label class="form-label mb-0" for="WatchedOnEnabled">Watched on</label>
-                                <input type="date" name="WatchedOn" class="form-control form-control-sm w-auto"
-                                    value="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                            </div>
+                                <div class="mb-3 d-flex align-items-center gap-2">
+                                    <input type="radio" name="Like" id="likedTrueModal" value="true" class="d-none" />
+                                    <input type="radio" name="Like" id="likedFalseModal" value="false" checked
+                                        class="d-none" />
 
-                            <div class="form-check mb-3" id="playedBeforeContainer">
-                                <input class="form-check-input" type="checkbox" name="PlayedBefore" id="PlayedBefore" />
-                                <label class="form-check-label" for="PlayedBefore">I've played this before</label>
-                            </div>
-
-                            <div class="mb-3">
-                                <textarea name="Content" class="form-control" placeholder="Add a review..."
-                                    rows="4"></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Tags</label>
-                                <input type="text" class="form-control" name="Tags" placeholder="e.g. steam, indie" />
-                            </div>
-
-                            <div class="d-flex align-items-center gap-3">
-                                <label class="form-label mb-0">Rating</label>
-                                <input type="number" step="0.5" min="0" max="5" name="Rating"
-                                    class="form-control w-auto" />
-                                <div class="form-check ms-auto">
-                                    <input class="form-check-input" type="checkbox" name="Like" id="Like" />
-                                    <label class="form-check-label" for="Like"><i class="bi bi-heart"></i></label>
+                                    <label for="likedTrueModal" class="heart-label-modal" style="cursor: pointer;">
+                                        <svg class="heart-icon-modal" viewBox="0 0 24 24">
+                                            <path id="heartPathModal" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                                                2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09
+                                                C13.09 3.81 14.76 3 16.5 3
+                                                19.58 3 22 5.42 22 8.5
+                                                c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                        </svg>
+                                    </label>
                                 </div>
                             </div>
-
-                            @if (Model.GamePreview != null)
-                            {
-                                <input type="hidden" name="GameId" value="@Model.GamePreview.Id.ToString()" />
-                            }
                         </div>
-                    </div>
 
+                        <div class="mb-3">
+                            <label for="Content" class="form-label">Reseña</label>
+                            <textarea name="Content" class="form-control" placeholder="Añade una reseña..."
+                                rows="4"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Calificación</label>
+                            <div class="full-star-rating-modal">
+                                @for (int i = 5; i >= 1; i--)
+                                {
+                                    var value = i.ToString();
+                                    var id = $"starModal-{value}";
+                                    <input type="radio" name="Rating" id="@id" value="@value" />
+                                    <label for="@id">
+                                        <svg viewBox="0 0 24 24" class="star-svg-modal">
+                                            <path
+                                                d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"
+                                                class="star-base-modal" />
+                                        </svg>
+                                    </label>
+                                }
+                            </div>
+                            <input type="hidden" name="Rating" id="RatingInputModal" value="0" />
+                        </div>
+
+                        <div class="mb-3 watched-box glassy p-3 rounded-4 shadow-sm">
+                            <div class="form-check form-switch mb-2">
+                                <input name="WatchedOnEnabled" class="form-check-input" type="checkbox"
+                                    id="watchedToggleModal" checked />
+                                <label class="form-check-label fw-semibold" for="watchedToggleModal">Jugado el</label>
+                            </div>
+                            <input type="date" name="WatchedOn" class="form-control mt-2 glassy-box-input"
+                                id="watchedDateModal" max="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                style="max-width: 220px;" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+
+
+                            <div class="form-check mt-3" id="playedBeforeContainerModal">
+                                <input name="PlayedBefore" class="form-check-input" type="checkbox"
+                                    id="PlayedBeforeModal" />
+                                <label class="form-check-label" for="PlayedBeforeModal">Jugué esto antes</label>
+                            </div>
+                        </div>
+
+
+
+                    </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">SAVE</button>
+                        <span id="reviewSuccessMessageModal" class="text-success me-auto d-none">¡Reseña enviada!</span>
+                        <button type="submit" class="btn btn-success button-glass-blue">Guardar</button>
                     </div>
                 </form>
             </div>
@@ -284,7 +322,7 @@ else
             <div class="modal-content bg-light text-black">
                 <div class="modal-header border-0">
                     <h5 class="modal-title fw-bold" id="listModalTitle" data-game-id="@Model.GamePreview.Id">
-                        Add ‘@Model.GamePreview.Title’ to a list
+                        Añadir ‘@Model.GamePreview.Title’ a una lista
                     </h5>
 
                     <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"
@@ -312,7 +350,7 @@ else
 
                     <div class="text-center">
                         <button onclick="location.href='/Lists/Creator?defaultName=&gameId=@Model.GamePreview?.Id'">
-                            Create New List
+                            Crear nueva lista
                         </button>
 
 
@@ -324,36 +362,37 @@ else
     </div>
 
     <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="post" asp-page-handler="ReportReview">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="reportModalLabel">Report review</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="ContentId" value="@Model.Review.Id" />
-                    <input type="hidden" name="ContentType" value="review" />
-                    <input type="hidden" name="CreatedAt" value="@DateTime.UtcNow.ToString("o")" />
-                    <div class="mb-3">
-                        <label for="reason" class="form-label">Reason</label>
-                        <textarea class="form-control" id="reason" name="Reason" rows="4"
-                            placeholder="Explain why you're reporting this review..."></textarea>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="ReportReview">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="reportModalLabel">Reportar review</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-danger">Submit Report</button>
-                </div>
-            </form>
+                    <div class="modal-body">
+                        <input type="hidden" name="ContentId" value="@Model.Review.Id" />
+                        <input type="hidden" name="ContentType" value="review" />
+                        <input type="hidden" name="CreatedAt" value="@DateTime.UtcNow.ToString("o")" />
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Razón</label>
+                            <textarea class="form-control" id="reason" name="Reason" rows="4"
+                                placeholder="Explain why you're reporting this review..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">Enviar reporte</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
 
 
     <!-- Mensaje de éxito para listas -->
     <div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
-        List created and game added successfully!
+        ¡Lista creada y juego añadido exitosamente!
     </div>
 
 
@@ -364,74 +403,303 @@ else
 </div>
 
 <script>
-    function togglePlayedBefore() {
-        const watchedOn = document.getElementById("WatchedOnEnabled");
-        const playedBeforeContainer = document.getElementById("playedBeforeContainer");
-
-        if (!watchedOn || !playedBeforeContainer) return;
-
-        playedBeforeContainer.style.display = watchedOn.checked ? "block" : "none";
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-        // --- Submit del modal Review ---
-        const form = document.getElementById('logReviewForm');
-        if (form) {
-            form.addEventListener('submit', async function (e) {
-                e.preventDefault();
 
-                const formData = new FormData(form);
+      
+        function getCsrfToken() {
+            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (tokenElement) {
+                return tokenElement.value;
+            }
+            const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+            if (metaToken) {
+                return metaToken.content;
+            }
+            return '';
+        }
+
+       
+        const starRatingContainerModal = document.querySelector(".full-star-rating-modal");
+        const ratingInputModal = document.getElementById("RatingInputModal");
+
+        if (starRatingContainerModal && ratingInputModal) {
+            const starsModal = starRatingContainerModal.querySelectorAll(".star-svg-modal");
+
+            starRatingContainerModal.addEventListener('click', function (e) {
+                const target = e.target.closest('label');
+                if (target) {
+                    const selectedValue = target.getAttribute('for').split('-')[1];
+                    ratingInputModal.value = selectedValue;
+                }
+            });
+
+            starRatingContainerModal.addEventListener('mouseover', function (e) {
+                const targetLabel = e.target.closest('label');
+                if (targetLabel) {
+                    const hoveredValue = parseInt(targetLabel.getAttribute('for').split('-')[1]);
+                    starsModal.forEach((star) => {
+                        const starValue = parseInt(star.closest('label').getAttribute('for').split('-')[1]);
+                        if (starValue <= hoveredValue) {
+                            star.style.fill = 'gold';
+                        } else {
+                            const correspondingRadio = document.getElementById(`starModal-${starValue}`);
+                            if (!correspondingRadio.checked) {
+                                star.style.fill = '#ddd';
+                            }
+                        }
+                    });
+                }
+            });
+
+            starRatingContainerModal.addEventListener('mouseout', function () {
+                starsModal.forEach(star => {
+                    const starValue = parseInt(star.closest('label').getAttribute('for').split('-')[1]);
+                    const correspondingRadio = document.getElementById(`starModal-${starValue}`);
+                    if (correspondingRadio.checked) {
+                        star.style.fill = 'gold';
+                    } else {
+                        star.style.fill = '#ddd';
+                    }
+                });
+            });
+
+            
+            function initializeStarRatingModal() {
+                const initialRating = parseInt(ratingInputModal.value || '0');
+                starsModal.forEach(star => {
+                    star.style.fill = '#ddd'; 
+                });
+                if (initialRating > 0) {
+                    for (let i = 1; i <= initialRating; i++) {
+                        const starLabel = document.querySelector(`.full-star-rating-modal label[for="starModal-${i}"]`);
+                        if (starLabel) {
+                            starLabel.querySelector('.star-svg-modal').style.fill = 'gold';
+                            const radioButton = document.getElementById(`starModal-${i}`);
+                            if (radioButton) {
+                                radioButton.checked = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        const heartIconModal = document.querySelector(".heart-icon-modal");
+        const likedTrueModal = document.getElementById("likedTrueModal");
+        const likedFalseModal = document.getElementById("likedFalseModal");
+        const heartLabelModal = document.querySelector('.heart-label-modal');
+
+        if (heartIconModal && likedTrueModal && likedFalseModal && heartLabelModal) {
+            heartLabelModal.addEventListener("click", function (event) {
+                event.preventDefault(); 
+                if (likedTrueModal.checked) {
+                    likedFalseModal.checked = true;
+                    heartIconModal.style.fill = "none"; 
+                } else {
+                    likedTrueModal.checked = true;
+                    heartIconModal.style.fill = "#dc3545"; 
+                }
+            });
+
+            function initializeHeartStateModal() {
+                if (likedTrueModal.checked) {
+                    heartIconModal.style.fill = "#dc3545";
+                } else {
+                    heartIconModal.style.fill = "none";
+                }
+            }
+        }
+
+
+        const watchedToggleModal = document.getElementById("watchedToggleModal");
+        const watchedDateModal = document.getElementById("watchedDateModal");
+        const playedBeforeContainerModal = document.getElementById("playedBeforeContainerModal");
+
+        function toggleWatchedFieldsModal() {
+            if (!watchedToggleModal || !watchedDateModal || !playedBeforeContainerModal) return;
+
+            const show = watchedToggleModal.checked;
+            watchedDateModal.style.display = show ? "block" : "none";
+            playedBeforeContainerModal.style.display = show ? "block" : "none";
+
+            if (!show) {
+                const playedBeforeCheckbox = document.getElementById("PlayedBeforeModal");
+                if (playedBeforeCheckbox) playedBeforeCheckbox.checked = false;
+            }
+        }
+
+        const reviewModalElement = document.getElementById('reviewModal');
+        if (reviewModalElement) {
+            reviewModalElement.addEventListener('show.bs.modal', () => {
+                if (ratingInputModal) ratingInputModal.value = '0';
+                if (initializeStarRatingModal) initializeStarRatingModal();
+                if (likedFalseModal) likedFalseModal.checked = true;
+                if (initializeHeartStateModal) initializeHeartStateModal();
+                if (watchedToggleModal) watchedToggleModal.checked = true;
+                toggleWatchedFieldsModal();
+            });
+        }
+
+        if (watchedToggleModal) {
+            watchedToggleModal.addEventListener("change", toggleWatchedFieldsModal);
+        }
+
+        const logReviewForm = document.getElementById('logReviewForm');
+        if (logReviewForm) {
+            logReviewForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const form = e.target;
+                const data = new FormData(form);
+
+                if (watchedToggleModal && !watchedToggleModal.checked) {
+                    data.delete('WatchedOn');
+                    data.delete('PlayedBefore');
+                }
+
                 const gameId = form.querySelector('input[name="GameId"]')?.value;
 
                 try {
                     const response = await fetch('?handler=LogReviewWithTracking', {
                         method: 'POST',
-                        body: formData
+                        body: data
                     });
 
                     const result = await response.json();
+                    const reviewSuccessMessageModal = document.getElementById('reviewSuccessMessageModal');
 
                     if (result.success) {
                         const modalElement = document.getElementById('reviewModal');
                         const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                         modalInstance.hide();
 
-                        const successMessage = document.getElementById('reviewSuccessMessage');
-                        if (successMessage) {
-                            successMessage.classList.remove('d-none');
-                            successMessage.classList.remove('alert-danger');
-                            successMessage.classList.add('alert-success');
-                            setTimeout(() => successMessage.classList.add('d-none'), 4000);
+                        if (reviewSuccessMessageModal) {
+                            reviewSuccessMessageModal.classList.remove('d-none', 'alert-danger');
+                            reviewSuccessMessageModal.classList.add('alert-success');
                         }
 
                         form.reset();
                         if (gameId) form.querySelector('input[name="GameId"]').value = gameId;
+
+                        if (ratingInputModal) ratingInputModal.value = '0';
+                        if (initializeStarRatingModal) initializeStarRatingModal();
+
+                        if (likedFalseModal) likedFalseModal.checked = true;
+                        if (initializeHeartStateModal) initializeHeartStateModal();
+
+                        if (watchedToggleModal) watchedToggleModal.checked = true;
+                        toggleWatchedFieldsModal();
+
+                        setTimeout(() => {
+                            if (reviewSuccessMessageModal) {
+                                reviewSuccessMessageModal.classList.add('d-none');
+                            }
+                        }, 4000);
                     } else {
-                        console.error("Error:", result.message || "Error desconocido.");
+                        console.error("Error al enviar reseña:", result.message || "Error desconocido.");
                     }
                 } catch (err) {
-                    console.error("Error en el envío:", err);
+                    console.error("Error en el envío de reseña:", err);
                 }
             });
         }
 
-        // --- Activar búsqueda en listas ---
-        const input = document.getElementById("searchListInput");
-        const container = document.getElementById("userListsContainer");
 
-        if (input && container) {
-            input.addEventListener("input", () => {
-                const query = input.value.toLowerCase();
-                const buttons = container.querySelectorAll("form");
+        
+        window.toggleTracking = async function(buttonElement) {
+            const reviewId = buttonElement.dataset.reviewId;
+            const trackingType = buttonElement.dataset.trackingType;
 
-                buttons.forEach(form => {
+            const requestBody = {
+                ReviewId: reviewId,
+                Type: trackingType
+            };
+
+            try {
+                const response = await fetch('/Reviews/Details?handler=ToggleTrackingAjax', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': getCsrfToken()
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error en la red o servidor');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    buttonElement.dataset.active = data.isActive.toString();
+                    const iconElement = buttonElement.querySelector('i');
+                    const textElement = buttonElement.querySelector('span');
+
+                    switch (data.type) {
+                        case "watch":
+                            if (data.isActive) {
+                                iconElement.classList.remove('bi-eye');
+                                iconElement.classList.add('bi-eye-fill');
+                                textElement.textContent = 'Jugado'; 
+                            } else {
+                                iconElement.classList.remove('bi-eye-fill');
+                                iconElement.classList.add('bi-eye');
+                                textElement.textContent = 'Jugar'; 
+                            }
+                            break;
+                        case "like":
+                            if (data.isActive) {
+                                iconElement.classList.remove('bi-heart');
+                                iconElement.classList.add('bi-heart-fill');
+                                textElement.textContent = 'Quitar like';
+                            } else {
+                                iconElement.classList.remove('bi-heart-fill');
+                                iconElement.classList.add('bi-heart');
+                                textElement.textContent = 'Me gusta';
+                            }
+                            break;
+                        case "watchlist":
+                            if (data.isActive) {
+                                iconElement.classList.remove('bi-bookmark-plus');
+                                iconElement.classList.add('bi-bookmark-check-fill');
+                                textElement.textContent = 'Guardado';
+                            } else {
+                                iconElement.classList.remove('bi-bookmark-check-fill');
+                                iconElement.classList.add('bi-bookmark-plus');
+                                textElement.textContent = 'Lista';
+                            }
+                            break;
+                    }
+                    console.log(`Tracking de tipo '${data.type}' actualizado a isActive: ${data.isActive}`);
+                } else {
+                    console.error('El servidor reportó un error:', data.message);
+                    alert('Error al actualizar el seguimiento: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Hubo un problema con la operación fetch en toggleTracking:', error);
+                alert('Hubo un error de conexión o del servidor: ' + error.message);
+            }
+        };
+
+
+        const searchListInput = document.getElementById("searchListInput");
+        const userListsContainer = document.getElementById("userListsContainer");
+
+        if (searchListInput && userListsContainer) {
+            searchListInput.addEventListener("input", () => {
+                const query = searchListInput.value.toLowerCase();
+                const forms = userListsContainer.querySelectorAll("form");
+
+                forms.forEach(form => {
                     const text = form.querySelector("button").innerText.toLowerCase();
                     form.style.display = text.includes(query) ? "inline-block" : "none";
                 });
             });
         }
 
-        // --- Submit de formularios de listas (AddGameToList) sin redirigir ---
+        
         document.querySelectorAll(".add-list-form").forEach(form => {
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
@@ -446,20 +714,20 @@ else
 
                     const result = await response.json();
 
-                    const modal = document.getElementById("listModal");
-                    const modalInstance = bootstrap.Modal.getInstance(modal);
-                    if (modalInstance) modalInstance.hide();
+                    const listModal = document.getElementById("listModal");
+                    const listModalInstance = bootstrap.Modal.getInstance(listModal);
+                    if (listModalInstance) listModalInstance.hide();
 
-                    const message = document.getElementById("listSuccessMessage");
-                    if (message) {
-                        message.textContent = result.success
+                    const listSuccessMessage = document.getElementById("listSuccessMessage");
+                    if (listSuccessMessage) {
+                        listSuccessMessage.textContent = result.success
                             ? "✅ Game added to list!"
                             : "❌ " + (result.message || "Error adding game to list.");
 
-                        message.classList.remove("d-none", "alert-success", "alert-danger");
-                        message.classList.add(result.success ? "alert-success" : "alert-danger");
+                        listSuccessMessage.classList.remove("d-none", "alert-success", "alert-danger");
+                        listSuccessMessage.classList.add(result.success ? "alert-success" : "alert-danger");
 
-                        setTimeout(() => message.classList.add('d-none'), 4000);
+                        setTimeout(() => listSuccessMessage.classList.add('d-none'), 4000);
                     }
                 } catch (err) {
                     console.error("Error en AddGameToList:", err);
@@ -467,29 +735,191 @@ else
             });
         });
 
-        // --- Mostrar/ocultar checkbox de PlayedBefore al abrir el modal ---
-        const reviewModal = document.getElementById("reviewModal");
-        if (reviewModal) {
-            reviewModal.addEventListener("shown.bs.modal", togglePlayedBefore);
-        }
+        
+        const screenshotModal = document.getElementById('screenshotModal');
+        const enlargedScreenshot = document.getElementById('enlargedScreenshot');
 
-        const watchedOnCheckbox = document.getElementById("WatchedOnEnabled");
-        if (watchedOnCheckbox) {
-            watchedOnCheckbox.addEventListener("change", togglePlayedBefore);
+        if (screenshotModal && enlargedScreenshot) {
+            screenshotModal.addEventListener('show.bs.modal', event => {
+                const triggerElement = event.relatedTarget;
+                const screenshotUrl = triggerElement.dataset.screenshotUrl; 
+
+                if (screenshotUrl) {
+                    enlargedScreenshot.src = screenshotUrl; 
+                }
+            });
+
+            screenshotModal.addEventListener('hidden.bs.modal', event => {
+                enlargedScreenshot.src = ""; 
+            });
         }
     });
+</script>
 
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('d-none'));
-        document.querySelector(`#${tabId}`).classList.remove('d-none');
-
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+<style>
+    .custom-modal-header {
+        background-color: #212529;
+        color: #ffffff;
+        border-bottom: 1px solid #343a40;
     }
 
-    /* function goToCreateListPage() {
-         const title = document.getElementById("searchListInput")?.value || "";
-         const gameId = document.getElementById("listModalTitle")?.dataset.gameId || "";
-         window.location.href = `/Lists/Creator?defaultName=${encodeURIComponent(title)}&gameId=${gameId}`;
-     }*/
-</script>
+    .custom-modal-title {
+        font-weight: bold;
+        color: #ffffff;
+    }
+
+    .custom-btn-close-white {
+        filter: invert(1);
+    }
+
+    .custom-modal-body-content {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .custom-game-cover {
+        height: 220px;
+        border-radius: 0.25rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .custom-form-section {
+        flex-grow: 1;
+    }
+
+    .custom-game-title {
+        font-weight: bold;
+        color: #343a40;
+        margin-bottom: 0.5rem;
+    }
+
+    .custom-game-year {
+        color: #6c757d;
+        font-weight: normal;
+    }
+
+    .custom-form-group-inline {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .custom-form-check-label {
+        margin-bottom: 0;
+    }
+
+    .custom-form-control-sm-auto {
+        width: auto;
+        min-width: 100px;
+    }
+
+    .custom-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .custom-rating-group {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .custom-rating-input {
+        width: 80px;
+        text-align: center;
+    }
+
+    .custom-like-checkbox .form-check-input {
+        margin-right: 0.5rem;
+    }
+
+    .custom-like-checkbox .form-check-label {
+        font-size: 1.5rem;
+        color: #dc3545;
+        cursor: pointer;
+    }
+
+    .custom-like-checkbox .form-check-input:checked+.form-check-label .bi-heart::before {
+        content: "\F415";
+    }
+
+    .custom-modal-footer {
+        border-top: 1px solid #e9ecef;
+        padding: 1rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .custom-btn-save {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: #ffffff;
+    }
+
+    .custom-btn-save:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    .glassy-modal {
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+   
+
+    .heart-icon-modal {
+        width: 28px;
+        height: 28px;
+        fill: none;
+        stroke: #dc3545;
+        stroke-width: 2;
+        transition: fill 0.3s ease;
+    }
+
+    .full-star-rating-modal {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+
+    .full-star-rating-modal input[type="radio"] {
+        display: none;
+    }
+
+    .full-star-rating-modal label {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #ddd;
+        transition: color 0.2s ease-in-out;
+    }
+
+    .full-star-rating-modal label .star-svg-modal {
+        width: 1.5em;
+        height: 1.5em;
+        fill: #ddd;
+        transition: fill 0.2s ease-in-out;
+    }
+
+    .full-star-rating-modal label:hover .star-svg-modal,
+    .full-star-rating-modal label:hover~label .star-svg-modal {
+        fill: gold;
+    }
+
+    .full-star-rating-modal input[type="radio"]:checked~label .star-svg-modal {
+        fill: gold;
+    }
+
+    .watched-box {
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .glassy-box-input {
+        background-color: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+</style>

@@ -24,10 +24,9 @@ public class ActivityModel : ProfileModelBase
     private readonly IUserManagerService _userManagerService;
     private readonly IFriendshipService _friendshipService;
     private readonly IModerationReportService _moderationService;
-    private readonly ILogger<ActivityModel> _logger; // ✅ Declaración del logger
+    private readonly ILogger<ActivityModel> _logger; 
 
 
-    // --- Propiedad para el feed de actividad ---
     public List<ActivityFeedItemViewModel> ActivityFeed { get; set; } = new();
 
     public ActivityModel(
@@ -39,9 +38,8 @@ public class ActivityModel : ProfileModelBase
         IUserManagerService userManagerService,
         IFriendshipService friendshipService,
         IModerationReportService moderationReportService,
-        ILogger<ActivityModel> logger) // ✅ Inyección de ILogger
+        ILogger<ActivityModel> logger)
     {
-        // ✅ Validaciones de nulos para todos los servicios y el logger
         _reviewService = reviewService ?? throw new ArgumentNullException(nameof(reviewService), "IReviewService no puede ser nulo.");
         _gameTrackingService = gameTrackingService ?? throw new ArgumentNullException(nameof(gameTrackingService), "IGameTrackingService no puede ser nulo.");
         _gameListService = gameListService ?? throw new ArgumentNullException(nameof(gameListService), "IGameListService no puede ser nulo.");
@@ -50,28 +48,24 @@ public class ActivityModel : ProfileModelBase
         _userManagerService = userManagerService ?? throw new ArgumentNullException(nameof(userManagerService), "IUserManagerService no puede ser nulo.");
         _friendshipService = friendshipService ?? throw new ArgumentNullException(nameof(friendshipService), "IFriendshipService no puede ser nulo.");
         _moderationService = moderationReportService ?? throw new ArgumentNullException(nameof(moderationReportService), "IModerationReportService no puede ser nulo.");
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); // ✅ Validar el logger
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); 
     }
 
     public async Task<IActionResult> OnGetAsync(string userId)
     {
         ActiveTab = "Activity";
 
-        // ✅ Validar que userId no sea nulo o vacío
         if (string.IsNullOrWhiteSpace(userId))
         {
-            _logger.LogWarning("OnGetAsync: userId es nulo o vacío."); // ✅ Registro de advertencia
+            _logger.LogWarning("OnGetAsync: userId es nulo o vacío."); 
             TempData["StatusMessage"] = "Error: ID de usuario no proporcionado.";
             return BadRequest();
         }
 
         try
         {
-            _logger.LogInformation("OnGetAsync: Iniciando carga de actividad para el usuario '{ProfileUserId}'.", userId); // ✅ Registro de información
+            _logger.LogInformation("OnGetAsync: Iniciando carga de actividad para el usuario '{ProfileUserId}'.", userId); 
 
-            // 1. Cargar los datos del encabezado del perfil (Avatar, Username, etc.)
-            // Asumiendo que LoadProfileHeaderData ya maneja sus propias excepciones o que las relanza.
-            // Si no lo hace, deberías agregar un try-catch aquí también.
             var userExists = await LoadProfileHeaderData(
                 userId,
                 _authService,
@@ -83,30 +77,26 @@ public class ActivityModel : ProfileModelBase
 
             if (!userExists)
             {
-                _logger.LogWarning("OnGetAsync: Usuario con ID '{ProfileUserId}' no encontrado al cargar la actividad.", userId); // ✅ Registro de advertencia
+                _logger.LogWarning("OnGetAsync: Usuario con ID '{ProfileUserId}' no encontrado al cargar la actividad.", userId); 
                 TempData["StatusMessage"] = "Error: El perfil de usuario no fue encontrado.";
                 return NotFound();
             }
 
-            // --- Tareas concurrentes para obtener todos los datos ---
             var reviewsTask = _reviewService.GetFriendsReviewsAsync(new List<string> { userId });
             var gameTrackingsTask = _gameTrackingService.GetTrackingsByUserAsync(userId);
             var gameListsTask = _gameListService.GetUserListsAsync(userId);
 
-            // ✅ Esperamos a que todas las tareas se completen. Task.WhenAll lanzará la primera excepción si alguna tarea falla.
             await Task.WhenAll(reviewsTask, gameTrackingsTask, gameListsTask);
 
-            // ✅ Recuperar resultados y manejar posibles nulos
             var reviews = reviewsTask.Result ?? new List<ReviewDTO>();
             var gameTrackings = gameTrackingsTask.Result ?? new List<GameTrackingDto>();
             var gameLists = gameListsTask.Result ?? new List<GameListDTO>();
 
-            // --- Mapeo de Reseñas a ActivityFeedItemViewModel ---
             foreach (var r in reviews)
             {
                 if (r == null || r.GameId == Guid.Empty || string.IsNullOrWhiteSpace(r.Id))
                 {
-                    _logger.LogWarning("OnGetAsync: Reseña inválida (nula, GameId vacío o Id nulo) encontrada para el usuario '{ProfileUserId}'. Saltando.", userId); // ✅ Registro de advertencia
+                    _logger.LogWarning("OnGetAsync: Reseña inválida (nula, GameId vacío o Id nulo) encontrada para el usuario '{ProfileUserId}'. Saltando.", userId); 
                     continue;
                 }
                 try
@@ -132,21 +122,20 @@ public class ActivityModel : ProfileModelBase
                     }
                     else
                     {
-                        _logger.LogWarning("OnGetAsync: GamePreview nulo para el juego '{GameId}' en la reseña '{ReviewId}'.", r.GameId, r.Id); // ✅ Registro de advertencia
+                        _logger.LogWarning("OnGetAsync: GamePreview nulo para el juego '{GameId}' en la reseña '{ReviewId}'.", r.GameId, r.Id); 
                     }
                 }
-                catch (HttpRequestException ex) // ✅ Catch específico para errores de red al obtener GamePreview
+                catch (HttpRequestException ex) 
                 {
                     _logger.LogError(ex, "OnGetAsync: HttpRequestException al obtener GamePreview para el juego '{GameId}' de la reseña '{ReviewId}'.", r.GameId, r.Id);
                 }
-                catch (Exception ex) // ✅ Catch general para errores en el mapeo de reseñas individuales
+                catch (Exception ex) 
                 {
                     _logger.LogError(ex, "OnGetAsync: Error inesperado al mapear reseña '{ReviewId}' para el usuario '{ProfileUserId}'.", r.Id, userId);
                 }
             }
             _logger.LogInformation("OnGetAsync: {Count} reseñas procesadas para el feed.", reviews.Count);
 
-            // --- Mapeo de Seguimientos de Juegos a ActivityFeedItemViewModel ---
             foreach (var gt in gameTrackings)
             {
                 if (gt == null || string.IsNullOrWhiteSpace(gt.GameId) || string.IsNullOrWhiteSpace(gt.Id.ToString()))
@@ -156,7 +145,6 @@ public class ActivityModel : ProfileModelBase
                 }
                 try
                 {
-                    // ✅ Intentar parsear GameId a Guid y manejar errores de parseo
                     if (!Guid.TryParse(gt.GameId, out Guid parsedGameId))
                     {
                         _logger.LogWarning("OnGetAsync: GameId '{GameId}' en el seguimiento '{TrackingId}' no es un GUID válido para el usuario '{ProfileUserId}'.", gt.GameId, gt.Id, userId);
@@ -169,7 +157,7 @@ public class ActivityModel : ProfileModelBase
                         ActivityFeed.Add(new GameLogActivityViewModel
                         {
                             Type = "GameLog",
-                            Timestamp = gt.LastUpdatedAt, // ASUMO QUE EXISTE ESTA PROPIEDAD
+                            Timestamp = gt.LastUpdatedAt, 
                             UserId = gt.UserId,
                             Username = ProfileHeader.Username,
                             UserAvatarUrl = ProfileHeader.AvatarUrl,
@@ -185,11 +173,11 @@ public class ActivityModel : ProfileModelBase
                         _logger.LogWarning("OnGetAsync: GamePreview nulo para el juego '{GameId}' en el seguimiento '{TrackingId}'.", parsedGameId, gt.Id);
                     }
                 }
-                catch (HttpRequestException ex) // ✅ Catch específico para errores de red al obtener GamePreview
+                catch (HttpRequestException ex) 
                 {
                     _logger.LogError(ex, "OnGetAsync: HttpRequestException al obtener GamePreview para el juego '{GameId}' del seguimiento '{TrackingId}'.", gt.GameId, gt.Id);
                 }
-                catch (Exception ex) // ✅ Catch general para errores en el mapeo de seguimientos individuales
+                catch (Exception ex) 
                 {
                     _logger.LogError(ex, "OnGetAsync: Error inesperado al mapear seguimiento '{TrackingId}' para el usuario '{ProfileUserId}'.", gt.Id, userId);
                 }
@@ -197,7 +185,6 @@ public class ActivityModel : ProfileModelBase
             _logger.LogInformation("OnGetAsync: {Count} seguimientos de juegos procesados para el feed.", gameTrackings.Count);
 
 
-            // --- Mapeo de Listas de Juegos a ActivityFeedItemViewModel ---
             foreach (var gl in gameLists)
             {
                 if (gl == null || string.IsNullOrWhiteSpace(gl.Id))
@@ -217,10 +204,9 @@ public class ActivityModel : ProfileModelBase
                         ListId = gl.Id,
                         ListName = gl.Name,
                         Description = gl.Description
-                         // O gl.GameIds.Count si tu GameListDTO guarda los IDs de los juegos directamente
                     });
                 }
-                catch (Exception ex) // ✅ Catch general para errores en el mapeo de listas individuales
+                catch (Exception ex) 
                 {
                     _logger.LogError(ex, "OnGetAsync: Error inesperado al mapear lista '{ListId}' para el usuario '{ProfileUserId}'.", gl.Id, userId);
                 }
@@ -228,32 +214,31 @@ public class ActivityModel : ProfileModelBase
             _logger.LogInformation("OnGetAsync: {Count} listas de juegos procesadas para el feed.", gameLists.Count);
 
 
-            // 4. Ordenar todas las actividades por fecha (más reciente primero)
             ActivityFeed = ActivityFeed.OrderByDescending(item => item.Timestamp).ToList();
             _logger.LogInformation("OnGetAsync: Feed de actividad ordenado y listo. Total de items: {ItemCount}", ActivityFeed.Count);
 
 
             return Page();
         }
-        catch (ArgumentException ex) // ✅ Catch específico para ArgumentException
+        catch (ArgumentException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: ArgumentException al cargar actividad del usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = $"Error de argumento: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (InvalidOperationException ex) // ✅ Catch específico para InvalidOperationException
+        catch (InvalidOperationException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: InvalidOperationException al cargar actividad del usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = $"Operación inválida: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red generales
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: HttpRequestException general al cargar actividad del usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = "Problema de conexión al cargar la actividad. Por favor, verifica tu internet.";
             return RedirectToPage("/Error");
         }
-        catch (Exception ex) // ✅ Catch general para cualquier otra excepción
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnGetAsync: Error inesperado al cargar la actividad del usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = "Ocurrió un error inesperado al cargar la actividad. Por favor, inténtalo de nuevo más tarde.";
@@ -273,7 +258,6 @@ public class ActivityModel : ProfileModelBase
         }
 
         string? loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        // ✅ Validar loggedInUserId
         if (string.IsNullOrEmpty(loggedInUserId))
         {
             _logger.LogWarning("OnPostSendRequestAsync: Usuario no autenticado intentando enviar solicitud a '{ProfileUserId}'.", profileUserId);
@@ -317,7 +301,6 @@ public class ActivityModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostAcceptRequestAsync(string requestId, string profileUserId)
     {
-        // ✅ Validar parámetros
         if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostAcceptRequestAsync: requestId o profileUserId es nulo/vacío.");
@@ -362,7 +345,6 @@ public class ActivityModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostRejectRequestAsync(string requestId, string profileUserId)
     {
-        // ✅ Validar parámetros
         if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostRejectRequestAsync: requestId o profileUserId es nulo/vacío.");
@@ -407,7 +389,6 @@ public class ActivityModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostReportUserAsync(string profileUserId, string reason)
     {
-        // ✅ Validar parámetros de entrada
         if (string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostReportUserAsync: profileUserId es nulo o vacío.");

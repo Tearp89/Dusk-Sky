@@ -20,7 +20,6 @@
                 <div class="col">
                     <div class="card h-100 list-card">
                         <div class="list-image-stack-container" id="list-images-@list.Id">
-                            @* Las imágenes se cargarán aquí con JavaScript *@
                             @if (!list.GameImageUrls.Any())
                             {
                                 <img src="~/images/noImage.png" alt="No Games" class="default-list-image" />
@@ -33,7 +32,7 @@
                                 </a>
                                 @if (!list.IsPublic)
                                 {
-                                    <span class="badge bg-secondary ms-2"><i class="bi bi-lock-fill"></i> Private</span>
+                                    <span class="badge bg-secondary ms-2"><i class="bi bi-lock-fill"></i> Privada</span>
                                 }
                             </h5>
                             <p class="card-text text-muted text-truncate-3-lines flex-grow-1">
@@ -47,7 +46,6 @@
                     </div>
                 </div>
 
-                @* Script para cada lista - se coloca dentro del bucle *@
                 <script>
                     document.addEventListener("DOMContentLoaded", function () {
                         // Pasamos las URLs de las imágenes y el ID del contenedor
@@ -104,16 +102,15 @@
     }
 </div>
 
-@* Estilos CSS para las tarjetas de listas y la pila de imágenes *@
 <style>
     .list-card {
         border: 1px solid #e0e0e0;
         border-radius: 0.75rem;
         box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        overflow: hidden; /* Importante para la pila de imágenes */
-        position: relative; /* Para que las imágenes absolutas se posicionen dentro */
-        min-height: 280px; /* Altura mínima para la tarjeta */
+        overflow: hidden; 
+        position: relative; 
+        min-height: 280px; 
     }
     .list-card:hover {
         transform: translateY(-3px);
@@ -129,28 +126,25 @@
 
     .list-image-stack-container {
         position: relative;
-        width: 100%; /* El ancho del contenedor */
-        height: 150px; /* Altura de la sección de imágenes */
-        overflow: hidden; /* Recorta si las imágenes se salen */
-        background-color: #f0f0f0; /* Fondo si no hay imágenes */
+        width: 100%; 
+        height: 150px; 
+        overflow: hidden; 
+        background-color: #f0f0f0; 
         border-bottom: 1px solid #e0e0e0;
     }
 
     .list-image-stack-container .poster {
-        /* Estilos base ya definidos en JS, pero se pueden refinar aquí */
-        border: 2px solid white; /* Borde blanco para separar las imágenes */
+        border: 2px solid white; 
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         top: 0;
-        /* El width individual se ajustará en JS o con un cálculo más complejo */
-        width: calc(100% - 90px); /* Ajusta el ancho para que quepan varias solapadas */
-        /* Si quieres que se solapen más, haz el 'left' en JS más pequeño y el 'width' más grande */
+        width: calc(100% - 90px); 
     }
 
     .list-image-stack-container .default-list-image {
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Para que el icono noImage se vea completo */
-        opacity: 0.5; /* Más tenue */
-        padding: 20px; /* Espaciado */
+        object-fit: contain; 
+        opacity: 0.5; 
+        padding: 20px; 
     }
 </style>

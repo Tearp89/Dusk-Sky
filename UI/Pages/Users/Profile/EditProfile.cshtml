@@ -1,67 +1,77 @@
 @page "/Users/EditProfile/{userId?}"
 @model EditProfileModel
 @{
-    ViewData["Title"] = "Edit Profile";
+    ViewData["Title"] = "Editar Perfil";
     ViewData["ShowBackground"] = false;
 }
 
 <div class="container py-4" style="margin-top: 50px; max-width: 700px;">
     <div class="card p-4 shadow-sm rounded-4 bg-light">
-        <h2 class="mb-4 text-center fw-bold">Edit Profile</h2>
+        <h2 class="mb-4 text-center fw-bold">Editar Perfil</h2>
 
-        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        @if (TempData["StatusMessage"] != null)
         {
-            var alertClass = Model.StatusMessage.StartsWith("Error") ? "alert-danger" : "alert-success";
-            <div class="alert @alertClass alert-dismissible fade show" role="alert">
-                @Model.StatusMessage
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+                <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive"
+                    aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            @TempData["StatusMessage"]
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                            aria-label="Cerrar"></button>
+                    </div>
+                </div>
             </div>
         }
 
-        <form method="post" enctype="multipart/form-data"> @* ¡IMPORTANTE: Añadir enctype="multipart/form-data" para subir archivos! *@
+        <form method="post" enctype="multipart/form-data"> 
             <input type="hidden" asp-for="Input.UserId" />
 
             <div class="mb-3">
-                <label asp-for="Input.Username" class="form-label">Username</label>
+                <label asp-for="Input.Username" class="form-label">Nombre de Usuario</label>
                 <input asp-for="Input.Username" class="form-control" />
                 <span asp-validation-for="Input.Username" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Input.Bio" class="form-label">Bio</label>
+                <label asp-for="Input.Bio" class="form-label">Biografía</label>
                 <textarea asp-for="Input.Bio" class="form-control" rows="4"></textarea>
                 <span asp-validation-for="Input.Bio" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Input.AvatarFile" class="form-label">Upload Avatar</label>
-                <input asp-for="Input.AvatarFile" type="file" class="form-control" accept="image/*" /> @* input type="file" *@
+                <label asp-for="Input.AvatarFile" class="form-label">Subir Avatar</label>
+                <input asp-for="Input.AvatarFile" type="file" class="form-control" accept="image/*" /> 
                 <span asp-validation-for="Input.AvatarFile" class="text-danger"></span>
                 @if (!string.IsNullOrEmpty(Model.Input.CurrentAvatarUrl))
                 {
                     <div class="mt-2 text-center">
-                        <p class="text-muted small mb-1">Current Avatar:</p>
-                        <img src="@Model.Input.CurrentAvatarUrl" alt="Current Avatar" class="img-thumbnail rounded-circle" style="width: 100px; height: 100px; object-fit: cover;" />
+                        <p class="text-muted small mb-1">Avatar Actual:</p>
+                        <img src="@Model.Input.CurrentAvatarUrl" alt="Avatar Actual" class="img-thumbnail rounded-circle"
+                            style="width: 100px; height: 100px; object-fit: cover;" />
                     </div>
                 }
             </div>
 
             <div class="mb-3">
-                <label asp-for="Input.BannerFile" class="form-label">Upload Banner</label>
-                <input asp-for="Input.BannerFile" type="file" class="form-control" accept="image/*" /> @* input type="file" *@
+                <label asp-for="Input.BannerFile" class="form-label">Subir Banner</label>
+                <input asp-for="Input.BannerFile" type="file" class="form-control" accept="image/*" />
                 <span asp-validation-for="Input.BannerFile" class="text-danger"></span>
                 @if (!string.IsNullOrEmpty(Model.Input.CurrentBannerUrl))
                 {
                     <div class="mt-2 text-center">
-                        <p class="text-muted small mb-1">Current Banner:</p>
-                        <img src="@Model.Input.CurrentBannerUrl" alt="Current Banner" class="img-thumbnail" style="max-width: 100%; height: 150px; object-fit: cover;" />
+                        <p class="text-muted small mb-1">Banner Actual:</p>
+                        <img src="@Model.Input.CurrentBannerUrl" alt="Banner Actual" class="img-thumbnail"
+                            style="max-width: 100%; height: 150px; object-fit: cover;" />
                     </div>
                 }
             </div>
 
             <div class="d-grid gap-2 mt-4">
-                <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
-                <a asp-page="/Users/Profile/Index" asp-route-userId="@Model.Input.UserId" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary btn-lg">Guardar Cambios</button>
+                <a asp-page="/Users/Profile/Index" asp-route-userId="@Model.Input.UserId"
+                    class="btn btn-outline-secondary">Cancelar</a>
             </div>
         </form>
     </div>
@@ -70,7 +80,3 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-
-<style>
-    /* ... (tus estilos existentes, no necesitan cambios) ... */
-</style>

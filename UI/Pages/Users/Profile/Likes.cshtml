@@ -18,7 +18,7 @@
             @foreach (var game in Model.LikedGames)
             {
                 <div class="col">
-                    <div class="card h-100 game-liked-card"> @* Nueva clase para la tarjeta de juego liked *@
+                    <div class="card h-100 game-liked-card"> 
                         <a asp-page="/Games/Details" asp-route-gameId="@game.Id" class="text-decoration-none">
                             <img src="@game.HeaderUrl" class="card-img-top game-liked-img" alt="Portada de @game.Title">
                             <div class="card-body p-2">
@@ -45,10 +45,9 @@
     }
 </div>
 
-@* Opcional: Estilos para las tarjetas de juegos "likeados" *@
 <style>
     .game-liked-card {
-        border: none; /* Quita el borde por defecto de la tarjeta */
+        border: none; 
         border-radius: 0.5rem;
         overflow: hidden;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -60,9 +59,9 @@
     }
     .game-liked-img {
         width: 100%;
-        height: 180px; /* Altura fija para la portada del juego */
-        object-fit: cover; /* Recorta la imagen para que cubra el área */
-        object-position: center; /* Centra la imagen */
+        height: 180px; 
+        object-fit: cover; 
+        object-position: center; 
     }
     .text-truncate {
         white-space: nowrap;

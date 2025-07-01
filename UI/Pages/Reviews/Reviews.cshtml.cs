@@ -10,7 +10,7 @@ public class ReviewsModel : PageModel
     private readonly IGameService _gameService;
     private readonly IAuthService _authService;
     private readonly IUserManagerService _userManagerService;
-    private readonly ILogger<ReviewsModel> _logger; // ✅ Inyectamos el logger
+    private readonly ILogger<ReviewsModel> _logger; 
 
     public List<ReviewCardViewModel> PopularReviews { get; set; } = new();
     public List<ReviewCardViewModel> RecentReviews { get; set; } = new();
@@ -20,14 +20,13 @@ public class ReviewsModel : PageModel
         IGameService gameService,
         IAuthService authService,
         IUserManagerService userManagerService,
-        ILogger<ReviewsModel> logger) // ✅ Agregamos ILogger al constructor
+        ILogger<ReviewsModel> logger) 
     {
-        // ✅ Validaciones de nulos para servicios y logger
         _reviewService = reviewService ?? throw new ArgumentNullException(nameof(reviewService), "IReviewService no puede ser nulo.");
         _gameService = gameService ?? throw new ArgumentNullException(nameof(gameService), "IGameService no puede ser nulo.");
         _authService = authService ?? throw new ArgumentNullException(nameof(authService), "IAuthService no puede ser nulo.");
         _userManagerService = userManagerService ?? throw new ArgumentNullException(nameof(userManagerService), "IUserManagerService no puede ser nulo.");
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); // ✅ Validar el logger
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); 
     }
 
     public async Task OnGetAsync()
@@ -46,21 +45,21 @@ public class ReviewsModel : PageModel
             PopularReviews = (await Task.WhenAll(popularTasks)).ToList();
             RecentReviews = (await Task.WhenAll(recentTasks)).ToList();
         }
-        catch (ArgumentNullException ex) // ✅ Catch específico para argumentos nulos (ej. si un servicio devuelve inesperadamente una colección nula)
+        catch (ArgumentNullException ex) 
         {
             _logger.LogError(ex, "Error de argumento nulo al cargar las reseñas. Detalles: {Message}", ex.Message);
             TempData["ErrorMessage"] = "Hubo un problema de datos al cargar las reseñas. Por favor, inténtalo de nuevo más tarde.";
             PopularReviews = new List<ReviewCardViewModel>();
             RecentReviews = new List<ReviewCardViewModel>();
         }
-        catch (InvalidOperationException ex) // ✅ Catch específico para operaciones inválidas
+        catch (InvalidOperationException ex) 
         {
             _logger.LogError(ex, "Error de operación inválida al cargar las reseñas. Detalles: {Message}", ex.Message);
             TempData["ErrorMessage"] = "No se pudieron procesar algunas operaciones al cargar las reseñas. Inténtalo más tarde.";
             PopularReviews = new List<ReviewCardViewModel>();
             RecentReviews = new List<ReviewCardViewModel>();
         }
-        catch (Exception ex) // ✅ Catch general para cualquier otra excepción
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "Ocurrió un error inesperado al cargar las reseñas. Detalles: {Message}", ex.Message);
             TempData["ErrorMessage"] = "Ocurrió un error inesperado al cargar las reseñas. Por favor, inténtalo de nuevo.";
@@ -129,10 +128,9 @@ public class ReviewsModel : PageModel
                 CreatedAt = reviewDto.CreatedAt
             };
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red con servicios externos
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "Error de red al mapear la reseña '{ReviewId}'. Detalles: {Message}", reviewDto.Id, ex.Message);
-            // Puedes devolver un ViewModel con un mensaje de error específico para este caso
             return new ReviewCardViewModel
             {
                 ReviewId = reviewDto.Id ?? Guid.Empty.ToString(),
@@ -148,7 +146,7 @@ public class ReviewsModel : PageModel
                 CreatedAt = reviewDto.CreatedAt
             };
         }
-        catch (Exception ex) // ✅ Catch general para cualquier otra excepción durante el mapeo
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "Error inesperado al mapear la reseña '{ReviewId}'. Detalles: {Message}", reviewDto.Id, ex.Message);
             return new ReviewCardViewModel

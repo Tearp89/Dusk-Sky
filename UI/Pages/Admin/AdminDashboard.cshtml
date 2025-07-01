@@ -9,14 +9,19 @@
 <div class="container py-4">
     <h2 class="mb-4 text-center fw-bold py-5">Admin/Moderador Dashboard</h2>
 
-    @if (!string.IsNullOrEmpty(Model.StatusMessage))
-    {
-        var alertClass = Model.StatusMessage.StartsWith("Error") ? "alert-danger" : "alert-success";
-        <div class="alert @alertClass alert-dismissible fade show" role="alert">
-            @Model.StatusMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    @if (TempData["StatusMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["StatusMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
         </div>
-    }
+    </div>
+}
 
     @* --- SECCIÓN SÓLO PARA ADMINS --- *@
     @if (User.IsInRole("admin"))
@@ -166,16 +171,18 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                @if (Model.AllUsers.Any())
+                @if (Model.AllUsers.Any() && Model.AllUsers != null)
                 {
                     <ul class="list-group">
                         @foreach (var user in Model.AllUsers)
                         {
+                            if(user != null){
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <img src="@user.AvatarUrl" alt="Avatar" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
                                 @user.Username (@user.UserId)
                                 <span class="badge bg-primary rounded-pill">@user.Role</span> 
                             </li>
+                            }
                         }
                     </ul>
                 }
@@ -188,7 +195,7 @@
     </div>
 </div>
 
-@* Modal: View Reports (Admin & Moderator) - SIN CAMBIOS (no afecta el problema del 400) *@
+@* Modal: View Reports (Admin & Moderator) *@
 <div class="modal fade" id="viewReportsModal" tabindex="-1" aria-labelledby="viewReportsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">

@@ -30,10 +30,9 @@
                             
                             <div class="d-flex align-items-center mb-2 review-rating-stars">
                                 @{
-                                    // Aseguramos que Rating sea un double para cálculos decimales
                                     double rating = (double)review.Rating; 
-                                    int fullStars = (int)Math.Floor(rating); // Número de estrellas completas (ej. para 3.5 es 3)
-                                    bool hasHalfStar = (rating - fullStars) >= 0.5; // Verifica si hay media estrella (para 3.5 es true)
+                                    int fullStars = (int)Math.Floor(rating); 
+                                    bool hasHalfStar = (rating - fullStars) >= 0.5; 
                                 }
 
                                 @for (int i = 0; i < 5; i++)

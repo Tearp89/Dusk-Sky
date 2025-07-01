@@ -177,14 +177,19 @@ public class SearcherModel : PageModel
 
             var userTasks = userMatches.Select(async user =>
             {
+
+                if (user == null || user.status == "deleted") 
+            {
+                _logger.LogInformation("Usuario {UserId} con estado 'deleted' o nulo, excluyéndolo de la búsqueda.", user?.Id ?? "N/A");
+                return null; 
+            }
                 string avatarUrl = "/Images/noImage.png";
                 try
                 {
-                    // Validación de null: user.Id
                     if (string.IsNullOrEmpty(user.Id))
                     {
                         _logger.LogWarning("Usuario con ID nulo o vacío encontrado al buscar perfiles.");
-                        return null; // Retorna null para filtrar más tarde
+                        return null; 
                     }
 
                     var profile = await _userManagerService.GetProfileAsync(user.Id);

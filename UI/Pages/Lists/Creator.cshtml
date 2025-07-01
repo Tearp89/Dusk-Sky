@@ -1,12 +1,9 @@
 @page
 @model CreateListModel
 @{
-    ViewData["Title"] = "Create List";
+    ViewData["Title"] = "Crear Lista";
 }
 
-<!-- ✅ Enlace a estilos personalizados -->
-
-<!-- ✅ Enlace a validaciones de cliente -->
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
@@ -23,41 +20,36 @@
 
 
 <div class="container mb-5 py-5 glass-container text-light" style="margin-top: 100px; max-width: 700px;">
-    <h2 class="mb-4 text-dark text-center">Create a New List</h2>
+    <h2 class="mb-4 text-dark text-center">Crear una Nueva Lista</h2>
 
-    <!-- ✔️ Validación general -->
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     
     <form method="post">
         <input type="hidden" asp-for="GameId" />
 
-        <!-- 📌 Nombre -->
         <div class="form-group">
-            <label asp-for="List.Name" class="glass-label">List Name</label>
-            <input asp-for="List.Name" class="form-control glass-input" placeholder="e.g. Favorite Indies" />
+            <label asp-for="List.Name" class="glass-label">Nombre de la Lista</label>
+            <input asp-for="List.Name" class="form-control glass-input" placeholder="Ej: Juegos Indie Favoritos" />
             <span asp-validation-for="List.Name" class="text-danger small"></span>
         </div>
 
 
-        <!-- 📌 Visibilidad -->
         <div class="form-group">
-            <label asp-for="List.IsPublic" class="glass-label">Visibility</label>
+            <label asp-for="List.IsPublic" class="glass-label">Visibilidad</label>
             <select asp-for="List.IsPublic" class="form-select glass-select">
-                <option value="false">🔒 Private (only me)</option>
-                <option value="true">🌍 Public (everyone)</option>
+                <option value="false">🔒 Privada (solo yo)</option>
+                <option value="true">🌍 Pública (todos)</option>
             </select>
         </div>
 
-        <!-- 📌 Descripción -->
         <div class="form-group">
-            <label asp-for="List.Description" class="glass-label">Description</label>
-            <textarea asp-for="List.Description" class="form-control glass-textarea" rows="4" placeholder="What is this list about?"></textarea>
+            <label asp-for="List.Description" class="glass-label">Descripción</label>
+            <textarea asp-for="List.Description" class="form-control glass-textarea" rows="4" placeholder="¿De qué trata esta lista?"></textarea>
             <span asp-validation-for="List.Description" class="text-danger small"></span>
         </div>
 
-        <!-- 🔘 Botón -->
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-success glass-btn">Next: Select Games →</button>
+            <button type="submit" class="btn btn-success glass-btn">Siguiente: Seleccionar Juegos →</button>
         </div>
     </form>
 </div>

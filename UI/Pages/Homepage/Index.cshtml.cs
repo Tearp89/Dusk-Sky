@@ -8,7 +8,7 @@ namespace UI.Pages;
 [Authorize]
 public class IndexModel : PageModel
 {
-    // --- Servicios y Propiedades (Sin cambios) ---
+    
     private readonly ILogger<IndexModel> _logger;
     private readonly IGameService _gameService;
     private readonly IGameListService _gameListService;
@@ -25,12 +25,11 @@ public class IndexModel : PageModel
     public List<GameListWithUserDto> RecentLists { get; set; } = new();
     public List<GamePreviewDTO> Games { get; set; } = new();
     public bool HasFriends { get; set; }
-    private string? currentUserId; // Guardar el ID del usuario para usarlo en los helpers
+    private string? currentUserId; 
     public string UserId { get; private set; }
-    private readonly SemaphoreSlim _throttle = new(10); // Máximo 10 tareas al mismo tiempo
+    private readonly SemaphoreSlim _throttle = new(10); 
 
 
-    // MANTENEMOS: Constructor con validaciones de nulos
     public IndexModel(ILogger<IndexModel> logger, IGameService gameService, IGameListItemService gameListItemService, IGameListService gameListService, IReviewService reviewService, IUserManagerService userManagerService, IAuthService authService, IFriendshipService friendshipService)
     {
         ArgumentNullException.ThrowIfNull(logger);
@@ -52,7 +51,6 @@ public class IndexModel : PageModel
         _friendshipService = friendshipService;
     }
 
-    // MANTENEMOS: OnPostToggleLikeAsync con manejo de errores
     public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -62,7 +60,6 @@ public class IndexModel : PageModel
         }
         try
         {
-            // Asumo que no tienes un ToggleLikeAsync, así que mantengo la lógica original
             var userLiked = await _reviewService.HasUserLikedAsync(ReviewId, userId);
             bool nowLiked;
             if (userLiked)
@@ -85,7 +82,6 @@ public class IndexModel : PageModel
     }
 
 
-    // MODIFICADO: OnGetAsync con un try-catch general
     public async Task<IActionResult> OnGetAsync()
     {
         currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -94,14 +90,12 @@ public class IndexModel : PageModel
 
         try
         {
-            ViewData["WelcomeMessage"] = $"Welcome back, {User.Identity?.Name ?? "User"}. Here’s what we’ve been playing...";
+            ViewData["WelcomeMessage"] = $"Bienvenid@ de vuelta, {User.Identity?.Name ?? "User"}. Aqui está lo que hemos estado jugando...";
 
-            // Lógica para determinar amigos (ya era segura, la mantenemos)
             var friendIds = (await _friendshipService.GetFriendsAsync(currentUserId) ?? new())
                 .Select(f => f.SenderId == currentUserId ? f.ReceiverId : f.SenderId).ToList();
             HasFriends = friendIds.Any();
 
-            // Carga de datos secuencial pero segura
             if (HasFriends)
             {
                 var friendsReviews = await _reviewService.GetFriendsReviewsAsync(friendIds, 6);
@@ -133,16 +127,14 @@ public class IndexModel : PageModel
         }
     }
     
-    // --- MÉTODOS DE AYUDA MODIFICADOS PARA SER RESILIENTES ---
-
-    // MODIFICADO: LoadReviewCards con try-catch interno por cada reseña
+    
     private async Task LoadReviewCards(List<ReviewDTO>? reviews, List<ReviewFullDto> targetList)
     {
         if (reviews == null) return;
 
         foreach (var review in reviews)
         {
-            try // NUEVO: Si falla una reseña, no se detiene el proceso
+            try 
             {
                 var userProfileTask = _userService.GetProfileAsync(review.UserId);
                 var gamePreviewTask = _gameService.GetGamePreviewByIdAsync(review.GameId);
@@ -176,8 +168,7 @@ public class IndexModel : PageModel
         }
     }
 
-    // Los siguientes métodos ya tenían una estructura bastante segura,
-    // pero los encapsulamos para mayor claridad en OnGetAsync.
+   
 
     private async Task LoadReviewImages()
     {
@@ -218,7 +209,7 @@ public class IndexModel : PageModel
         
         foreach (var list in listsDataSource)
         {
-            try // NUEVO: Si falla una lista, no se detiene el proceso
+            try 
             {
                 var userTask = _userService.GetProfileAsync(list.UserId);
                 var itemsTask = _gameListItemService.GetItemsByListIdAsync(list.Id);
@@ -242,7 +233,7 @@ public class IndexModel : PageModel
 
                 RecentLists.Add(new GameListWithUserDto
                 {
-                    // ... (resto de las propiedades de la lista)
+                    
                     Id = list.Id, Name = list.Name, Description = list.Description, IsPublic = list.IsPublic, UserId = list.UserId,
                     Date = list.CreatedAt, UserName = userWithName?.Username ?? "Usuario desconocido", AvatarUrl = user?.AvatarUrl ?? "/Images/noImage.png",
                     GameHeaders = headersUrl

@@ -1,17 +1,17 @@
 @page
 @model ReviewsModel
 @{
-    ViewData["Title"] = "Game Reviews";
+    ViewData["Title"] = "Reseñas de Juegos";
 }
 
 <div class="container mt-5" style="padding-top: 80px;">
     <div class="mb-5">
-        <h1 class="display-4 text-primary">Game Reviews</h1>
-        <p class="lead text-muted">See what the community is saying about their favorite games.</p>
+        <h1 class="display-4 text-primary">Reseñas de Juegos</h1>
+        <p class="lead text-muted">Descubre lo que dice la comunidad sobre sus juegos favoritos.</p>
     </div>
 
     <section class="mb-5">
-        <h2 class="text-dark mb-4">Popular Reviews</h2>
+        <h2 class="text-dark mb-4">Reseñas Populares</h2>
         @if (Model.PopularReviews?.Any() == true)
         {
             <div class="row">
@@ -23,7 +23,7 @@
                                 <img src="@review.GameImageUrl" alt="@review.GameTitle" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" />
                                 <div>
                                     <h6 class="mb-0">@review.GameTitle</h6>
-                                    <a asp-page="/Games/GameDetails" asp-route-gameId="@review.GameId" class="text-muted small text-decoration-none">View Game</a>
+                                    <a asp-page="/Games/GameDetails" asp-route-gameId="@review.GameId" class="text-muted small text-decoration-none">Ver Juego</a>
                                 </div>
                             </div>
 
@@ -42,14 +42,14 @@
                                 </div>
                                 
                                 <p class="card-text text-secondary small flex-grow-1">
-                                    "@(review.Content.Length > 150 ? review.Content.Substring(0, 150) + "..." : review.Content)"
+                                    "@((review.Content.Length > 150 ? review.Content.Substring(0, 150) + "..." : review.Content))"
                                 </p>
-                                <a asp-page="/Reviews/Details" asp-route-reviewId="@review.ReviewId" class="small mt-auto">Read more...</a>
+                                <a asp-page="/Reviews/Details" asp-route-reviewId="@review.ReviewId" class="small mt-auto">Leer más...</a>
                             </div>
 
                             <div class="card-footer text-muted d-flex justify-content-between small">
-                                <span><i class="bi bi-heart-fill text-danger"></i> @review.LikesCount Likes</span>
-                                <span>@review.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                <span><i class="bi bi-heart-fill text-danger"></i> @review.LikesCount Me gusta</span>
+                                <span>@review.CreatedAt.ToString("dd MMM, yyyy")</span>
                             </div>
                         </div>
                     </div>
@@ -58,12 +58,12 @@
         }
         else
         {
-            <p class="text-muted">No popular reviews to show at the moment.</p>
+            <p class="text-muted">No hay reseñas populares para mostrar en este momento.</p>
         }
     </section>
 
     <section class="mb-5">
-        <h2 class="text-dark mb-4">Recent Reviews</h2>
+        <h2 class="text-dark mb-4">Reseñas Recientes</h2>
         @if (Model.RecentReviews?.Any() == true)
         {
             <div class="row">
@@ -75,7 +75,7 @@
                                 <img src="@review.GameImageUrl" alt="@review.GameTitle" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" />
                                 <div>
                                     <h6 class="mb-0">@review.GameTitle</h6>
-                                    <a asp-page="/Games/GameDetails" asp-route-gameId="@review.GameId" class="text-muted small text-decoration-none">View Game</a>
+                                    <a asp-page="/Games/GameDetails" asp-route-gameId="@review.GameId" class="text-muted small text-decoration-none">Ver Juego</a>
                                 </div>
                             </div>
                             <div class="card-body d-flex flex-column">
@@ -92,13 +92,13 @@
                                     </div>
                                 </div>
                                 <p class="card-text text-secondary small flex-grow-1">
-                                    "@(review.Content.Length > 150 ? review.Content.Substring(0, 150) + "..." : review.Content)"
+                                    "@((review.Content.Length > 150 ? review.Content.Substring(0, 150) + "..." : review.Content))"
                                 </p>
-                                <a href="/Reviews/Details?reviewId=@review.ReviewId" class="small mt-auto">Read more...</a>
+                                <a href="/Reviews/Details?reviewId=@review.ReviewId" class="small mt-auto">Leer más...</a>
                             </div>
                             <div class="card-footer text-muted d-flex justify-content-between small">
-                                <span><i class="bi bi-heart-fill text-danger"></i> @review.LikesCount Likes</span>
-                                <span>@review.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                <span><i class="bi bi-heart-fill text-danger"></i> @review.LikesCount Me gusta</span>
+                                <span>@review.CreatedAt.ToString("dd MMM, yyyy")</span>
                             </div>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
         }
         else
         {
-            <p class="text-muted">No recent reviews to show at the moment.</p>
+            <p class="text-muted">No hay reseñas recientes para mostrar en este momento.</p>
         }
     </section>
 </div>
@@ -123,6 +123,6 @@
         box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     }
     .rating-stars {
-        color: #ffc107; /* Color de estrella de Bootstrap */
+        color: #ffc107; 
     }
 </style>

@@ -34,7 +34,6 @@
                         </div>
 
                         @{
-                            // Renderizar contenido específico según el tipo de actividad
                             switch (activity.Type)
                             {
                                 case "Review":
@@ -113,15 +112,14 @@
     }
 </div>
 
-@* Opcional: Estilos para las tarjetas de actividad *@
 <style>
     .activity-card {
-        border-left: 5px solid #007bff; /* Un borde lateral para distinguirlas */
+        border-left: 5px solid #007bff; 
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         border-radius: 0.5rem;
     }
     .activity-card:not(:last-child) {
-        margin-bottom: 1.5rem; /* Espacio entre tarjetas */
+        margin-bottom: 1.5rem; 
     }
     .text-truncate-2-lines {
         display: -webkit-box;

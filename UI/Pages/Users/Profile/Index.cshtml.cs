@@ -5,17 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging; // ✅ Asegúrate de incluir este using
-using System.Net.Http; // ✅ Añadir para HttpRequestException
+using Microsoft.Extensions.Logging; 
+using System.Net.Http; 
 
-// Asegúrate de que los using apunten a tus servicios y ViewModels
-// Por ejemplo:
-// using YourApp.Services;
-// using YourApp.ViewModels; // Donde están tus ActivityFeedItemViewModel, etc.
+
 
 public class ProfileModel : ProfileModelBase
 {
-    // --- Servicios inyectados (mantener los existentes y añadir los necesarios) ---
     private readonly IUserManagerService _userManagerService_private;
     private readonly IReviewService _reviewService_private;
     private readonly IGameListService _listService_private;
@@ -23,7 +19,7 @@ public class ProfileModel : ProfileModelBase
     private readonly IGameService _gameService_private;
     private readonly IGameListItemService _gameListItemService_private;
     private readonly IModerationReportService _moderationService;
-    private readonly ILogger<ProfileModel> _logger; // ✅ Declaración del logger
+    private readonly ILogger<ProfileModel> _logger; 
 
     // --- Propiedades para las nuevas secciones ---
     public List<FriendViewModel> Friends { get; set; } = new();
@@ -41,9 +37,8 @@ public class ProfileModel : ProfileModelBase
         IGameService gameService,
         IGameListItemService gameListItemService,
         IModerationReportService moderationService,
-        ILogger<ProfileModel> logger) // ✅ Inyección de ILogger
+        ILogger<ProfileModel> logger) 
     {
-        // ✅ Validaciones de nulos para todos los servicios y el logger
         _authService = authService ?? throw new ArgumentNullException(nameof(authService), "IAuthService no puede ser nulo.");
         _friendshipService = friendshipService ?? throw new ArgumentNullException(nameof(friendshipService), "IFriendshipService no puede ser nulo.");
         _userManagerService_private = userManagerService ?? throw new ArgumentNullException(nameof(userManagerService), "IUserManagerService no puede ser nulo.");
@@ -53,14 +48,13 @@ public class ProfileModel : ProfileModelBase
         _gameService_private = gameService ?? throw new ArgumentNullException(nameof(gameService), "IGameService no puede ser nulo.");
         _gameListItemService_private = gameListItemService ?? throw new ArgumentNullException(nameof(gameListItemService), "IGameListItemService no puede ser nulo.");
         _moderationService = moderationService ?? throw new ArgumentNullException(nameof(moderationService), "IModerationReportService no puede ser nulo.");
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); // ✅ Validar el logger
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); 
     }
 
     public async Task<IActionResult> OnGetAsync(string userId)
     {
         ActiveTab = "Profile";
 
-        // ✅ Validar que userId no sea nulo o vacío
         if (string.IsNullOrWhiteSpace(userId))
         {
             _logger.LogWarning("OnGetAsync: userId es nulo o vacío. Redirigiendo a BadRequest.");
@@ -72,7 +66,6 @@ public class ProfileModel : ProfileModelBase
         {
             _logger.LogInformation("OnGetAsync: Iniciando carga del perfil para el usuario '{ProfileUserId}'.", userId);
 
-            // Llamada a LoadProfileHeaderData que ahora usa los campos protegidos
             var userExists = await LoadProfileHeaderData(
                 userId,
                 _authService,
@@ -90,40 +83,36 @@ public class ProfileModel : ProfileModelBase
                 return NotFound();
             }
 
-            // --- Cargar Amigos ---
             await LoadFriends(userId);
 
-            // --- Cargar Datos para Quick Stats ---
             await LoadQuickStats(userId);
 
-            // --- Cargar Datos para Latest Activity ---
             await LoadLatestActivity(userId);
 
-            // --- Cargar Datos para Recent Liked Games ---
             await LoadRecentLikedGames(userId);
 
             _logger.LogInformation("OnGetAsync: Carga del perfil para el usuario '{ProfileUserId}' completada exitosamente.", userId);
             return Page();
         }
-        catch (ArgumentException ex) // ✅ Catch específico para ArgumentException
+        catch (ArgumentException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: ArgumentException al cargar el perfil para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = $"Error de argumento: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (InvalidOperationException ex) // ✅ Catch específico para InvalidOperationException
+        catch (InvalidOperationException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: InvalidOperationException al cargar el perfil para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = $"Operación inválida: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red generales
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: HttpRequestException general al cargar el perfil para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = "Problema de conexión al cargar el perfil. Por favor, verifica tu internet.";
             return RedirectToPage("/Error");
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnGetAsync: Error inesperado al cargar el perfil para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = "Ocurrió un error inesperado al cargar el perfil. Por favor, inténtalo de nuevo más tarde.";
@@ -153,6 +142,12 @@ public class ProfileModel : ProfileModelBase
                     try
                     {
                         var friendAuthUser = await _authService.SearchUserByIdAsync(friendId);
+                        
+                        if (friendAuthUser != null && friendAuthUser.status == "deleted")
+                        {
+                            return null;
+                        }
+
                         var friendProfile = await _userManagerService_private.GetProfileAsync(friendId);
                         return new FriendViewModel
                         {
@@ -164,16 +159,16 @@ public class ProfileModel : ProfileModelBase
                     catch (HttpRequestException ex)
                     {
                         _logger.LogError(ex, "LoadFriends: HttpRequestException al obtener datos de amigo '{FriendId}' para el usuario '{ProfileUserId}'.", friendId, userId);
-                        return null; // Devuelve null si falla la carga de un amigo
+                        return null; 
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "LoadFriends: Error inesperado al obtener datos de amigo '{FriendId}' para el usuario '{ProfileUserId}'.", friendId, userId);
                         return null;
                     }
-                }).Where(t => t != null); // Filtra tareas que retornaron null
+                }).Where(t => t != null); 
                 
-                Friends = (await Task.WhenAll(friendTasks)).Where(f => f != null).ToList()!; // Filtra resultados nulos
+                Friends = (await Task.WhenAll(friendTasks)).Where(f => f != null).ToList()!; 
                 _logger.LogInformation("LoadFriends: {Count} amigos cargados para el usuario '{ProfileUserId}'.", Friends.Count, userId);
             }
             else
@@ -181,12 +176,12 @@ public class ProfileModel : ProfileModelBase
                 _logger.LogInformation("LoadFriends: No se encontraron amigos para el usuario '{ProfileUserId}'.", userId);
             }
         }
-        catch (HttpRequestException ex) // Catch específico para problemas de red con el servicio de amistad
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "LoadFriends: HttpRequestException al cargar la lista de amigos para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
-            Friends = new List<FriendViewModel>(); // Asegurar lista vacía en caso de error
+            Friends = new List<FriendViewModel>(); 
         }
-        catch (Exception ex) // Catch general
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "LoadFriends: Error inesperado al cargar la lista de amigos para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             Friends = new List<FriendViewModel>();
@@ -200,7 +195,7 @@ public class ProfileModel : ProfileModelBase
             _logger.LogDebug("LoadQuickStats: Cargando estadísticas rápidas para el usuario '{ProfileUserId}'.", userId);
             var completedGameIds = await _gameTrackingService_private.GetGameIdsByStatusAsync(userId, "played");
             QuickStats.CompletedGamesCount = completedGameIds?.Count ?? 0;
-            QuickStats.ReviewsCount = ProfileHeader.ReviewCount; // Asume que ProfileHeader ya fue cargado con éxito
+            QuickStats.ReviewsCount = ProfileHeader.ReviewCount; 
 
             var userReviews = await _reviewService_private.GetFriendsReviewsAsync(new List<string> { userId });
             if (userReviews != null && userReviews.Any())
@@ -219,7 +214,7 @@ public class ProfileModel : ProfileModelBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "LoadQuickStats: HttpRequestException al cargar estadísticas rápidas para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
-            QuickStats = new QuickStatsViewModel(); // Resetear stats en caso de error
+            QuickStats = new QuickStatsViewModel(); 
         }
         catch (Exception ex)
         {
@@ -259,7 +254,7 @@ public class ProfileModel : ProfileModelBase
                             Type = "Review",
                             Timestamp = r.CreatedAt,
                             UserId = r.UserId,
-                            Username = ProfileHeader.Username, // Asume ProfileHeader está cargado
+                            Username = ProfileHeader.Username, 
                             UserAvatarUrl = ProfileHeader.AvatarUrl,
                             ReviewId = r.Id,
                             GameId = r.GameId.ToString(),
@@ -306,7 +301,7 @@ public class ProfileModel : ProfileModelBase
                         allActivityItems.Add(new GameLogActivityViewModel
                         {
                             Type = "GameLog",
-                            Timestamp = gt.LastUpdatedAt, // ASUMO QUE EXISTE ESTA PROPIEDAD
+                            Timestamp = gt.LastUpdatedAt, 
                             UserId = gt.UserId,
                             Username = ProfileHeader.Username,
                             UserAvatarUrl = ProfileHeader.AvatarUrl,
@@ -373,7 +368,7 @@ public class ProfileModel : ProfileModelBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "LoadLatestActivity: HttpRequestException general al cargar la actividad más reciente para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
-            LatestActivity = null; // Reiniciar en caso de error
+            LatestActivity = null; 
         }
         catch (Exception ex)
         {
@@ -405,7 +400,7 @@ public class ProfileModel : ProfileModelBase
                 catch (HttpRequestException ex)
                 {
                     _logger.LogError(ex, "LoadRecentLikedGames: HttpRequestException al obtener GamePreview para el juego '{GameId}' gustado por el usuario '{ProfileUserId}'.", gameId, userId);
-                    gamePreviewTasks.Add(Task.FromResult<GamePreviewDTO?>(null)); // Añadir una tarea nula para no romper Task.WhenAll
+                    gamePreviewTasks.Add(Task.FromResult<GamePreviewDTO?>(null)); 
                 }
                 catch (Exception ex)
                 {
@@ -428,13 +423,11 @@ public class ProfileModel : ProfileModelBase
         }
     }
 
-    // --- Métodos OnPost para manejar las acciones de amistad ---
-    // (Estos métodos no necesitan cambios adicionales, ya están en ProfileModel)
+   
 
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostSendRequestAsync(string profileUserId)
     {
-        // ✅ Validar profileUserId
         if (string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostSendRequestAsync: profileUserId es nulo o vacío.");
@@ -443,7 +436,6 @@ public class ProfileModel : ProfileModelBase
         }
 
         string? loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        // ✅ Validar loggedInUserId
         if (string.IsNullOrEmpty(loggedInUserId))
         {
             _logger.LogWarning("OnPostSendRequestAsync: Usuario no autenticado intentando enviar solicitud a '{ProfileUserId}'.", profileUserId);
@@ -532,7 +524,6 @@ public class ProfileModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostRejectRequestAsync(string requestId, string profileUserId)
     {
-        // ✅ Validar parámetros
         if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostRejectRequestAsync: requestId o profileUserId es nulo/vacío.");
@@ -574,10 +565,9 @@ public class ProfileModel : ProfileModelBase
         return RedirectToPage(new { userId = profileUserId });
     }
 
-    [ValidateAntiForgeryToken] // Siempre para formularios POST que modifican datos
+    [ValidateAntiForgeryToken] 
     public async Task<IActionResult> OnPostReportUserAsync(string profileUserId, string reason)
     {
-        // ✅ Validar parámetros de entrada
         if (string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostReportUserAsync: profileUserId es nulo o vacío.");

@@ -7,6 +7,33 @@
     ViewData["BackgroundImage"] = Url.Content(Model.Game.RandomScreenshot);
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+}
 <!-- Overlay de información encima del fondo -->
 <div class="game-overlay-content container d-flex gap-4 align-items-end">
     <img src="@Model.Game.HeaderUrl" class="rounded shadow" alt="Poster"
@@ -20,13 +47,13 @@
                 <input type="hidden" name="trackingType" value="watch" />
                 <input type="hidden" name="gameId" value="@Model.Game.Id" />
                 <button class="btn btn-outline-light btn-sm button-glass" type="submit">
-                    <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i> Played                </button>
+                    <i class="bi @(Model.IsWatched ? "bi-eye-fill" : "bi-eye")"></i> Jugado                </button>
             </form>
             <form method="post" asp-page-handler="ToggleTracking">
                 <input type="hidden" name="trackingType" value="like" />
                 <input type="hidden" name="gameId" value="@Model.Game.Id" />
                 <button class="btn btn-outline-light btn-sm button-glass" type="submit">
-                    <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i> Like
+                    <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i> Me gusta
                 </button>
             </form>
             <form method="post" asp-page-handler="ToggleTracking">
@@ -36,11 +63,11 @@
                     <i class="bi @(Model.IsInWatchlist ? "bi-bookmark-check-fill" : "bi-bookmark-plus")"></i> Playlist
                 </button>
             </form>
-            <button type="button" class="btn btn-outline-light btn-sm button-glass" data-bs-toggle="modal" data-bs-target="#reviewLogModal">
-                <i class="bi bi-pencil"></i> Review or log...
+            <button type="button" class="btn btn-outline-light btn-sm button-glass" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                <i class="bi bi-pencil"></i> Reseñar...
             </button>
             <button class="btn btn-outline-light btn-sm button-glass" data-bs-toggle="modal" data-bs-target="#listModal">
-                <i class="bi bi-list-stars"></i> Add to list
+                <i class="bi bi-list-stars"></i> Agregar a una lista
             </button>
         </div>
     </div>
@@ -54,7 +81,7 @@
             <p class="text-muted">@Model.Game.Description</p>
 
             <div class="mb-3">
-                <strong>Genres:</strong>
+                <strong>Géneros:</strong>
                 @foreach (var genre in Model.Game.Genres)
                 {
                     <span class="badge bg-primary me-1">@genre</span>
@@ -62,10 +89,10 @@
             </div>
 
             <div class="mb-3">
-                <strong>Publisher:</strong> @Model.Game.Publisher
+                <strong>Distribuidor:</strong> @Model.Game.Publisher
             </div>
             <div class="mb-3">
-                <strong>Platforms:</strong>
+                <strong>Plataformas:</strong>
                 @foreach (var platform in Model.Game.Platforms.Where(p => p.Value))
                 {
                     <span class="badge bg-secondary me-1 text-capitalize">@platform.Key</span>
@@ -95,7 +122,7 @@
                 </div>
             </div>
             
-            <h5 class="mt-4 fw-bold">Popular Reviews</h5>
+            <h5 class="mt-4 fw-bold">Reviews Populares</h5>
             @foreach (var review in Model.Reviews)
             {
                 <div class="card mb-4 shadow-sm border-0">
@@ -105,7 +132,7 @@
         <div class="flex-grow-1">
             <div class="d-flex justify-content-between align-items-center mb-1">
                 <div>
-                    <strong>@review.UserName</strong> <span class="text-muted">reviewed</span>
+                    <strong>@review.UserName</strong> <span class="text-muted">reseñado</span>
                     <strong>@review.GameTitle</strong>
                 </div>
             </div>
@@ -156,7 +183,7 @@
         <div class="modal-content bg-light text-black">
             <div class="modal-header border-0">
                 <h5 class="modal-title fw-bold" id="listModalTitle" data-game-id="@Model.Game.Id">
-                    Add ‘@Model.GamePreview.Title’ to a list
+                    Agregar ‘@Model.GamePreview.Title’ a una lista
                 </h5>
                 <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"
                     aria-label="Close"></button>
@@ -179,7 +206,7 @@
 
                 <div class="text-center">
                     <button onclick="location.href='/Lists/Creator?defaultName=&gameId=@Model.Game.Id'">
-                        Create New List
+                        Crear nueva lista
                     </button>
                 </div>
             </div>
@@ -188,50 +215,95 @@
 </div>
 
 <div id="listSuccessMessage" class="alert alert-success d-none mt-3 text-center">
-    List created and game added successfully!
+    ¡Lista creada y juego añadido exitosamente!
 </div>
 
-<div class="modal fade" id="reviewLogModal" tabindex="-1" aria-labelledby="reviewLogModalLabel" aria-hidden="true">
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow glassy-modal">
-            <div class="modal-header bg-primary text-white button-glass-blue">
-                <h5 class="modal-title" id="reviewLogModalLabel">Log a Game</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-dark text-white button-glass-blue">
+                <h5 class="modal-title" id="reviewModalLabel">Jugué...</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
-            <form id="reviewForm" method="post">
+            <form id="logReviewForm" method="post" asp-page-handler="LogReviewWithTracking">
                 <div class="modal-body">
-                    <input type="hidden" name="GameId" value="@Model.Game.Id" />
+                    <input type="hidden" name="GameId" value="@Model.GamePreview.Id.ToString()" />
 
-                    <div class="mb-3">
-                        <label for="Content" class="form-label">Review</label>
-                        <textarea class="form-control" name="Content" rows="4" required></textarea>
+                    <div class="d-flex flex-column flex-md-row gap-4 mb-4 align-items-start">
+                        <img src="@Model.GamePreview.HeaderUrl" alt="Game cover" class="rounded shadow"
+                            style="width: 180px; height: auto; max-height: 240px; object-fit: cover;" />
+
+                        <div class="flex-grow-1">
+                            <h4 class="fw-bold">@Model.GamePreview.Title <span
+                                    class="text-muted">@Model.Game.ReleaseDate</span></h4>
+
+                            <div class="mb-3 d-flex align-items-center gap-2">
+                                <input type="radio" name="Like" id="likedTrueModal" value="true" class="d-none" />
+                                <input type="radio" name="Like" id="likedFalseModal" value="false" checked class="d-none" />
+
+                                <label for="likedTrueModal" class="heart-label-modal" style="cursor: pointer;">
+                                    <svg class="heart-icon-modal" viewBox="0 0 24 24">
+                                        <path id="heartPathModal" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                                                2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09
+                                                C13.09 3.81 14.76 3 16.5 3
+                                                19.58 3 22 5.42 22 8.5
+                                                c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                    </svg>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Rating</label>
-                        <div id="starRating" class="d-flex gap-1">
-                            @for (var i = 1; i <= 5; i++)
+                        <label for="Content" class="form-label">Reseña</label>
+                        <textarea name="Content" class="form-control" placeholder="Añade una reseña..."
+                            rows="4"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Calificación</label>
+                        <div class="full-star-rating-modal">
+                            @for (int i = 5; i >= 1; i--)
                             {
-                                <i class="bi bi-star-fill text-secondary star" data-value="@i"
-                                    style="cursor: pointer; font-size: 1.5rem;"></i>
+                                var value = i.ToString();
+                                var id = $"starModal-{value}";
+                                <input type="radio" name="Rating" id="@id" value="@value" />
+                                <label for="@id">
+                                    <svg viewBox="0 0 24 24" class="star-svg-modal">
+                                        <path
+                                            d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"
+                                            class="star-base-modal" />
+                                    </svg>
+                                </label>
                             }
                         </div>
-                        <input type="hidden" name="Rating" id="RatingInput" value="0" />
+                        <input type="hidden" name="Rating" id="RatingInputModal" value="0" />
                     </div>
 
-                    <div class="form-check mb-2">
-                        <input type="checkbox" class="form-check-input" id="WatchedBefore" name="WatchedBefore">
-                        <label class="form-check-label" for="WatchedBefore">I've played this before</label>
+                    <div class="mb-3 watched-box glassy p-3 rounded-4 shadow-sm">
+                        <div class="form-check form-switch mb-2">
+                            <input name="WatchedOnEnabled" class="form-check-input" type="checkbox" id="watchedToggleModal"
+                                checked />
+                            <label class="form-check-label fw-semibold" for="watchedToggleModal">Jugado el</label>
+                        </div>
+                        <input type="date" name="WatchedOn" class="form-control mt-2 glassy-box-input" id="watchedDateModal"
+                            max="@DateTime.Now.ToString("yyyy-MM-dd")" style="max-width: 220px;"
+                            value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+
+
+                        <div class="form-check mt-3" id="playedBeforeContainerModal">
+                            <input name="PlayedBefore" class="form-check-input" type="checkbox" id="PlayedBeforeModal" />
+                            <label class="form-check-label" for="PlayedBeforeModal">Jugué esto antes</label>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="WatchedOn" class="form-label">Played On</label>
-                        <input type="date" name="WatchedOn" class="form-control" />
-                    </div>
+                    
+
                 </div>
                 <div class="modal-footer">
-                    <span id="reviewSuccessMessage" class="text-success me-auto d-none">Review submitted!</span>
-                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                    <span id="reviewSuccessMessageModal" class="text-success me-auto d-none">¡Reseña enviada!</span>
+                    <button type="submit" class="btn btn-success button-glass-blue">Guardar</button>
                 </div>
             </form>
         </div>
@@ -255,63 +327,252 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // ⭐ Rating
-            const stars = document.querySelectorAll('.star');
-            const ratingInput = document.getElementById('RatingInput');
+            
+            const starRatingContainerModal = document.querySelector(".full-star-rating-modal");
+            const ratingInputModal = document.getElementById("RatingInputModal");
 
-            stars.forEach(star => {
+            if (starRatingContainerModal && ratingInputModal) {
+                const starsModal = starRatingContainerModal.querySelectorAll(".star-svg-modal");
+                const radioButtonsModal = starRatingContainerModal.querySelectorAll("input[type='radio']");
+
+                starRatingContainerModal.addEventListener('click', function(e) {
+                    const target = e.target.closest('label');
+                    if (target) {
+                        const selectedValue = target.getAttribute('for').split('-')[1];
+                        ratingInputModal.value = selectedValue; 
+
+                    }
+                });
+
+                
+                starRatingContainerModal.addEventListener('mouseover', function(e) {
+                    const targetLabel = e.target.closest('label');
+                    if (targetLabel) {
+                        const hoveredValue = parseInt(targetLabel.getAttribute('for').split('-')[1]);
+                        starsModal.forEach((star, index) => {
+                            const starValue = parseInt(star.closest('label').getAttribute('for').split('-')[1]);
+                            if (starValue <= hoveredValue) {
+                                star.style.fill = 'gold'; 
+                            } else {
+                                const correspondingRadio = document.getElementById(`starModal-${starValue}`);
+                                if (!correspondingRadio.checked) {
+                                    star.style.fill = '#ddd';
+                                }
+                            }
+                        });
+                    }
+                });
+
+                starRatingContainerModal.addEventListener('mouseout', function() {
+                    starsModal.forEach(star => {
+                        const starValue = parseInt(star.closest('label').getAttribute('for').split('-')[1]);
+                        const correspondingRadio = document.getElementById(`starModal-${starValue}`);
+                        if (correspondingRadio.checked) {
+                            star.style.fill = 'gold'; 
+                        } else {
+                            star.style.fill = '#ddd'; 
+                        }
+                    });
+                });
+
+                
+                function initializeStarRatingModal() {
+                    const initialRating = parseInt(ratingInputModal.value);
+                    starsModal.forEach(star => {
+                        star.style.fill = '#ddd'; 
+                    });
+                    if (initialRating > 0) {
+                        for (let i = 1; i <= initialRating; i++) {
+                            const starLabel = document.querySelector(`.full-star-rating-modal label[for="starModal-${i}"]`);
+                            if (starLabel) {
+                                starLabel.querySelector('.star-svg-modal').style.fill = 'gold';
+                                const radioButton = document.getElementById(`starModal-${i}`);
+                                if (radioButton) {
+                                    radioButton.checked = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                
+                const reviewModalElement = document.getElementById('reviewModal');
+                if (reviewModalElement) {
+                    reviewModalElement.addEventListener('show.bs.modal', initializeStarRatingModal);
+                } else {
+                    
+                    initializeStarRatingModal();
+                }
+            }
+
+
+           
+            const heartIconModal = document.querySelector(".heart-icon-modal");
+            const likedTrueModal = document.getElementById("likedTrueModal");
+            const likedFalseModal = document.getElementById("likedFalseModal");
+
+            if (heartIconModal && likedTrueModal && likedFalseModal) {
+                document.querySelector(".heart-label-modal").addEventListener("click", function () {
+                    if (likedTrueModal.checked) {
+                        likedFalseModal.checked = true;
+                        likedTrueModal.checked = false;
+                        heartIconModal.style.fill = "none"; 
+                    } else {
+                        likedTrueModal.checked = true;
+                        likedFalseModal.checked = false;
+                        heartIconModal.style.fill = "#dc3545"; 
+                    }
+                });
+
+                
+                function initializeHeartStateModal() {
+                    if (likedTrueModal.checked) {
+                        heartIconModal.style.fill = "#dc3545";
+                    } else {
+                        heartIconModal.style.fill = "none";
+                    }
+                }
+                const reviewModalElement = document.getElementById('reviewModal');
+                if (reviewModalElement) {
+                    reviewModalElement.addEventListener('show.bs.modal', initializeHeartStateModal);
+                } else {
+                    initializeHeartStateModal();
+                }
+            }
+
+
+            const watchedToggleModal = document.getElementById("watchedToggleModal");
+            const watchedDateModal = document.getElementById("watchedDateModal");
+            const playedBeforeContainerModal = document.getElementById("playedBeforeContainerModal");
+
+            if (watchedToggleModal && watchedDateModal && playedBeforeContainerModal) {
+                function toggleWatchedFieldsModal() {
+                    const show = watchedToggleModal.checked;
+                    watchedDateModal.style.display = show ? "block" : "none";
+                    playedBeforeContainerModal.style.display = show ? "block" : "none";
+
+                    if (!show) {
+                        document.getElementById("PlayedBeforeModal").checked = false;
+                    }
+                }
+
+                watchedToggleModal.addEventListener("change", toggleWatchedFieldsModal);
+                const reviewModalElement = document.getElementById('reviewModal');
+                if (reviewModalElement) {
+                    reviewModalElement.addEventListener('show.bs.modal', toggleWatchedFieldsModal);
+                } else {
+                    toggleWatchedFieldsModal();
+                }
+            }
+
+
+            const logReviewForm = document.getElementById('logReviewForm');
+            if (logReviewForm) {
+                logReviewForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const form = e.target;
+                    const data = new FormData(form);
+
+                    if (!watchedToggleModal.checked) {
+                        data.delete('WatchedOn');
+                    }
+                    if (!playedBeforeContainerModal.style.display === 'block') { 
+                        data.delete('PlayedBefore');
+                    }
+
+
+                    const response = await fetch('?handler=LogReviewWithTracking', {
+                        method: 'POST',
+                        body: data
+                    });
+
+                    const reviewSuccessMessageModal = document.getElementById('reviewSuccessMessageModal');
+                    if (response.ok) {
+                        if (reviewSuccessMessageModal) {
+                            reviewSuccessMessageModal.classList.remove('d-none');
+                        }
+                        setTimeout(() => {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('reviewModal')); 
+                            if (modal) modal.hide();
+                            form.reset();
+                            // Resetear estrellas
+                            if (ratingInputModal) ratingInputModal.value = 0;
+                            if (starsModal) { // Asegurarse de que starsModal esté definido
+                                starsModal.forEach(s => s.style.fill = '#ddd');
+                            }
+                            // Resetear corazón
+                            if (likedFalseModal) likedFalseModal.checked = true;
+                            if (heartIconModal) heartIconModal.style.fill = "none";
+                            // Resetear toggles
+                            if (watchedToggleModal) watchedToggleModal.checked = true; 
+                            toggleWatchedFieldsModal(); 
+                            
+                            if (reviewSuccessMessageModal) {
+                                reviewSuccessMessageModal.classList.add('d-none');
+                            }
+                        }, 1500);
+                    } else {
+                        alert('Failed to submit review.');
+                    }
+                });
+            }
+
+
+           
+            const starsPage = document.querySelectorAll('.star'); 
+            const ratingInputPage = document.getElementById('RatingInput'); 
+
+            starsPage.forEach(star => {
                 star.addEventListener('click', () => {
                     const rating = star.dataset.value;
-                    ratingInput.value = rating;
+                    if (ratingInputPage) ratingInputPage.value = rating;
 
-                    stars.forEach(s => {
+                    starsPage.forEach(s => {
                         s.classList.remove('text-warning');
-                        if (s.dataset.value <= rating) {
+                        if (parseInt(s.dataset.value) <= parseInt(rating)) {
                             s.classList.add('text-warning');
                         }
                     });
                 });
             });
 
-            // 📝 Enviar review
-            const reviewForm = document.getElementById('reviewForm');
-            reviewForm.addEventListener('submit', async function (e) {
-                e.preventDefault();
-                const form = e.target;
-                const data = new FormData(form);
+          
+            const reviewFormPage = document.getElementById('reviewForm');
+            if (reviewFormPage && reviewFormPage.id !== 'logReviewForm') { 
+                reviewFormPage.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const form = e.target;
+                    const data = new FormData(form);
 
-                const response = await fetch('?handler=LogReviewWithTracking', {
-                    method: 'POST',
-                    body: data
+                    const response = await fetch('?handler=LogReviewWithTracking', { 
+                        body: data
+                    });
+
+                    if (response.ok) {
+                        const reviewSuccessMessage = document.getElementById('reviewSuccessMessage');
+                        if (reviewSuccessMessage) reviewSuccessMessage.classList.remove('d-none');
+                        setTimeout(() => {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('reviewLogModal')); 
+                            if (modal) modal.hide();
+                            form.reset();
+                            starsPage.forEach(s => s.classList.remove('text-warning'));
+                            if (ratingInputPage) ratingInputPage.value = 0;
+                            if (reviewSuccessMessage) reviewSuccessMessage.classList.add('d-none');
+                        }, 1500);
+                    } else {
+                        alert('Failed to submit review.');
+                    }
                 });
+            }
 
 
-                if (response.ok) {
-                    document.getElementById('reviewSuccessMessage').classList.remove('d-none');
-                    setTimeout(() => {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('reviewLogModal'));
-                        if (modal) modal.hide();
-                        form.reset();
-                        stars.forEach(s => s.classList.remove('text-warning'));
-                        ratingInput.value = 0;
-                        document.getElementById('reviewSuccessMessage').classList.add('d-none');
+            const searchListInput = document.getElementById("searchListInput");
+            const userListsContainer = document.getElementById("userListsContainer");
 
-                        // TODO: Opcional: Recargar lista de reseñas
-                        // location.reload();
-                    }, 1500);
-                } else {
-                    alert('Failed to submit review.');
-                }
-            });
-
-            // 🔍 Filtrar listas
-            const input = document.getElementById("searchListInput");
-            const container = document.getElementById("userListsContainer");
-
-            if (input && container) {
-                input.addEventListener("input", () => {
-                    const query = input.value.toLowerCase();
-                    const forms = container.querySelectorAll("form");
+            if (searchListInput && userListsContainer) {
+                searchListInput.addEventListener("input", () => {
+                    const query = searchListInput.value.toLowerCase();
+                    const forms = userListsContainer.querySelectorAll("form");
 
                     forms.forEach(form => {
                         const text = form.querySelector("button").innerText.toLowerCase();
@@ -320,11 +581,9 @@
                 });
             }
 
-            // 📥 Enviar formularios de agregar a lista (sin recargar)
             document.querySelectorAll(".add-list-form").forEach(form => {
                 form.addEventListener("submit", async (e) => {
                     e.preventDefault();
-
                     const formData = new FormData(form);
 
                     try {
@@ -335,20 +594,20 @@
 
                         const result = await response.json();
 
-                        const modal = document.getElementById("listModal");
-                        const modalInstance = bootstrap.Modal.getInstance(modal);
-                        if (modalInstance) modalInstance.hide();
+                        const listModal = document.getElementById("listModal");
+                        const listModalInstance = bootstrap.Modal.getInstance(listModal);
+                        if (listModalInstance) listModalInstance.hide();
 
-                        const message = document.getElementById("listSuccessMessage");
-                        if (message) {
-                            message.textContent = result.success
+                        const listSuccessMessage = document.getElementById("listSuccessMessage");
+                        if (listSuccessMessage) {
+                            listSuccessMessage.textContent = result.success
                                 ? "✅ Game added to list!"
                                 : "❌ " + (result.message || "Error adding game to list.");
 
-                            message.classList.remove("d-none", "alert-success", "alert-danger");
-                            message.classList.add(result.success ? "alert-success" : "alert-danger");
+                            listSuccessMessage.classList.remove("d-none", "alert-success", "alert-danger");
+                            listSuccessMessage.classList.add(result.success ? "alert-success" : "alert-danger");
 
-                            setTimeout(() => message.classList.add('d-none'), 4000);
+                            setTimeout(() => listSuccessMessage.classList.add('d-none'), 4000);
                         }
                     } catch (err) {
                         console.error("Error en AddGameToList:", err);
@@ -359,22 +618,20 @@
             const screenshotModal = document.getElementById('screenshotModal');
             const enlargedScreenshot = document.getElementById('enlargedScreenshot');
 
-            screenshotModal.addEventListener('show.bs.modal', event => {
-                // `relatedTarget` es el elemento que activó el modal (el screenshot-item cliqueado)
-                const triggerElement = event.relatedTarget;
-                const screenshotUrl = triggerElement.dataset.screenshotUrl; // Obtenemos la URL de la imagen
+            if (screenshotModal && enlargedScreenshot) {
+                screenshotModal.addEventListener('show.bs.modal', event => {
+                    const triggerElement = event.relatedTarget;
+                    const screenshotUrl = triggerElement.dataset.screenshotUrl;
 
-                if (enlargedScreenshot && screenshotUrl) {
-                    enlargedScreenshot.src = screenshotUrl; // Asignamos la URL a la imagen del modal
-                }
-            });
+                    if (screenshotUrl) {
+                        enlargedScreenshot.src = screenshotUrl;
+                    }
+                });
 
-            // Opcional: Limpiar el src de la imagen cuando el modal se cierra
-            screenshotModal.addEventListener('hidden.bs.modal', event => {
-                if (enlargedScreenshot) {
-                    enlargedScreenshot.src = ""; // Limpia la imagen para liberar memoria
-                }
-            });
+                screenshotModal.addEventListener('hidden.bs.modal', event => {
+                    enlargedScreenshot.src = "";
+                });
+            }
         });
     </script>
 }
@@ -391,15 +648,80 @@
     }
 
     #screenshotModal .modal-header .btn-close {
-        font-size: 1.5rem; /* Hace el icono de cerrar más grande */
-        margin-right: 0.5rem; /* Ajusta el margen */
+        font-size: 1.5rem; 
+        margin-right: 0.5rem; 
     }
 
-    /* Ajuste para la imagen dentro del modal */
     #enlargedScreenshot {
-        max-width: 100%; /* Asegura que no se desborde */
-        object-fit: contain; /* Para que la imagen se ajuste completamente */
-        /* max-height: 90vh; ya lo tienes inline, pero puedes definirlo aquí */
+        max-width: 100%; 
+        object-fit: contain; 
+        
     }
+
+    
+    .glassy-modal {
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px); 
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+   
+
+    
+    .heart-icon-modal {
+        width: 28px;
+        height: 28px;
+        fill: none; 
+        stroke: #dc3545; 
+        stroke-width: 2;
+        transition: fill 0.3s ease; 
+    }
+
+    
+    .full-star-rating-modal {
+        display: flex;
+        flex-direction: row-reverse; /
+        justify-content: flex-end; 
+    }
+
+    .full-star-rating-modal input[type="radio"] {
+        display: none; 
+    }
+
+    .full-star-rating-modal label {
+        cursor: pointer;
+        font-size: 1.5rem; 
+        color: #ddd; 
+        transition: color 0.2s ease-in-out;
+    }
+
+    .full-star-rating-modal label .star-svg-modal {
+        width: 1.5em; 
+        height: 1.5em;
+        fill: #ddd; 
+        transition: fill 0.2s ease-in-out;
+    }
+
+    .full-star-rating-modal label:hover .star-svg-modal,
+    .full-star-rating-modal label:hover ~ label .star-svg-modal {
+        fill: gold; /* Color dorado al pasar el ratón */
+    }
+
+    
+    .full-star-rating-modal input[type="radio"]:checked ~ label .star-svg-modal {
+        fill: gold; /* Color dorado cuando están seleccionadas */
+    }
+
+   
+    .watched-box {
+        border: 1px solid rgba(0, 0, 0, 0.125); /* Borde sutil */
+    }
+
+    .glassy-box-input {
+        background-color: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
 </style>
 

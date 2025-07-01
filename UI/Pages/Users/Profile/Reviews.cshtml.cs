@@ -5,29 +5,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging; // ✅ Asegúrate de incluir este using
-using System.Net.Http; // ✅ Para HttpRequestException
+using Microsoft.Extensions.Logging; 
+using System.Net.Http; 
 
-// Asegúrate de que los using apunten a tus servicios y ViewModels
-// Por ejemplo:
-// using YourApp.Services;
-// using YourApp.ViewModels;
+
 
 public class ReviewsProfileModel : ProfileModelBase
 {
-    // --- Servicios necesarios para esta página y para la clase base ---
     private readonly IReviewService _reviewService;
-    private readonly IAuthService _authService_private; // Usar nombre diferente si _authService es de la base
-    private readonly IUserManagerService _userManagerService_private; // Usar nombre diferente
-    private readonly IFriendshipService _friendshipService_private; // Usar nombre diferente
-    private readonly IGameListService _listService_private; // Usar nombre diferente
+    private readonly IAuthService _authService_private; 
+    private readonly IUserManagerService _userManagerService_private; 
+    private readonly IFriendshipService _friendshipService_private; 
+    private readonly IGameListService _listService_private; 
     private readonly IGameService _gameService;
-    private readonly IGameTrackingService _gameTrackingService_private; // Usar nombre diferente
+    private readonly IGameTrackingService _gameTrackingService_private; 
     private readonly IModerationReportService _moderationService;
-    private readonly ILogger<ReviewsProfileModel> _logger; // ✅ Declaración del logger
+    private readonly ILogger<ReviewsProfileModel> _logger; 
 
 
-    // --- Propiedad para guardar las reseñas de este usuario ---
     public List<ReviewCardViewModel> UserReviews { get; set; } = new();
 
     public ReviewsProfileModel(
@@ -39,9 +34,8 @@ public class ReviewsProfileModel : ProfileModelBase
         IGameService gameService,
         IGameTrackingService gameTrackingService,
         IModerationReportService moderationReportService,
-        ILogger<ReviewsProfileModel> logger) // ✅ Inyección de ILogger
+        ILogger<ReviewsProfileModel> logger) 
     {
-        // ✅ Validaciones de nulos para todos los servicios y el logger
         _reviewService = reviewService ?? throw new ArgumentNullException(nameof(reviewService), "IReviewService no puede ser nulo.");
         _authService_private = authService ?? throw new ArgumentNullException(nameof(authService), "IAuthService no puede ser nulo.");
         _userManagerService_private = userManagerService ?? throw new ArgumentNullException(nameof(userManagerService), "IUserManagerService no puede ser nulo.");
@@ -50,14 +44,13 @@ public class ReviewsProfileModel : ProfileModelBase
         _gameService = gameService ?? throw new ArgumentNullException(nameof(gameService), "IGameService no puede ser nulo.");
         _gameTrackingService_private = gameTrackingService ?? throw new ArgumentNullException(nameof(gameTrackingService), "IGameTrackingService no puede ser nulo.");
         _moderationService = moderationReportService ?? throw new ArgumentNullException(nameof(moderationReportService), "IModerationReportService no puede ser nulo.");
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); // ✅ Validar el logger
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); 
     }
 
     public async Task<IActionResult> OnGetAsync(string userId)
     {
         ActiveTab = "Reviews";
 
-        // ✅ Validar que userId no sea nulo o vacío
         if (string.IsNullOrWhiteSpace(userId))
         {
             _logger.LogWarning("OnGetAsync: userId es nulo o vacío. Redirigiendo a BadRequest.");
@@ -69,13 +62,12 @@ public class ReviewsProfileModel : ProfileModelBase
         {
             _logger.LogInformation("OnGetAsync: Iniciando carga de reseñas para el usuario '{ProfileUserId}'.", userId);
 
-            // Llamada a LoadProfileHeaderData que ahora usa los campos protegidos de ProfileModelBase
             var userExists = await LoadProfileHeaderData(
                 userId,
-                _authService_private, // Pasa tus servicios privados al método base si es necesario
+                _authService_private, 
                 _userManagerService_private,
                 _friendshipService_private,
-                _reviewService, // Aquí va el reviewService de esta clase (ya se validó su nullabilidad)
+                _reviewService,
                 _listService_private,
                 _gameTrackingService_private);
 
@@ -87,12 +79,12 @@ public class ReviewsProfileModel : ProfileModelBase
             }
 
             var reviewDocs = await _reviewService.GetFriendsReviewsAsync(new List<string> { userId });
-            reviewDocs ??= new List<ReviewDTO>(); // ✅ Asegurar que reviewDocs no sea nulo
+            reviewDocs ??= new List<ReviewDTO>(); 
 
             if (reviewDocs.Any())
             {
-                var reviewTasks = reviewDocs.Select(dto => MapToViewModelAsync(dto, ProfileHeader.Username, ProfileHeader.AvatarUrl)); // Pasa ProfileHeader datos
-                UserReviews = (await Task.WhenAll(reviewTasks)).Where(vm => vm != null).ToList()!; // ✅ Filtrar ViewModels nulos
+                var reviewTasks = reviewDocs.Select(dto => MapToViewModelAsync(dto, ProfileHeader.Username, ProfileHeader.AvatarUrl)); 
+                UserReviews = (await Task.WhenAll(reviewTasks)).Where(vm => vm != null).ToList()!; 
                 _logger.LogInformation("OnGetAsync: {Count} reseñas procesadas y cargadas para el usuario '{ProfileUserId}'.", UserReviews.Count, userId);
             }
             else
@@ -102,25 +94,25 @@ public class ReviewsProfileModel : ProfileModelBase
 
             return Page();
         }
-        catch (ArgumentException ex) // ✅ Catch específico para ArgumentException
+        catch (ArgumentException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: ArgumentException al cargar reseñas para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = $"Error de argumento: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (InvalidOperationException ex) // ✅ Catch específico para InvalidOperationException
+        catch (InvalidOperationException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: InvalidOperationException al cargar reseñas para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = $"Operación inválida: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red generales
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: HttpRequestException general al cargar reseñas para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = "Problema de conexión al cargar las reseñas. Por favor, verifica tu internet.";
             return RedirectToPage("/Error");
         }
-        catch (Exception ex) // ✅ Catch general para cualquier otra excepción
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnGetAsync: Error inesperado al cargar las reseñas para el usuario '{ProfileUserId}'. Mensaje: {Message}", userId, ex.Message);
             TempData["StatusMessage"] = "Ocurrió un error inesperado al cargar las reseñas. Por favor, inténtalo de nuevo más tarde.";
@@ -128,20 +120,16 @@ public class ReviewsProfileModel : ProfileModelBase
         }
     }
 
-    // MODIFICADO: MapToViewModelAsync con try-catch interno y parámetros para datos del perfil
     private async Task<ReviewCardViewModel> MapToViewModelAsync(ReviewDTO reviewDto, string profileUsername, string profileAvatarUrl)
     {
-        // ✅ Validar reviewDto no sea nulo
         if (reviewDto == null)
         {
             _logger.LogWarning("MapToViewModelAsync: Se intentó mapear un ReviewDTO nulo.");
-            return new ReviewCardViewModel { /* valores por defecto */ };
+            return new ReviewCardViewModel { };
         }
-        // ✅ Validar reviewDto.GameId
         if (reviewDto.GameId == Guid.Empty)
         {
             _logger.LogWarning("MapToViewModelAsync: ReviewDTO '{ReviewId}' tiene un GameId vacío.", reviewDto.Id);
-            // Podrías devolver un ViewModel con valores de error o simplemente GameTitle/ImageUrl por defecto
         }
 
         try
@@ -150,20 +138,20 @@ public class ReviewsProfileModel : ProfileModelBase
 
             return new ReviewCardViewModel
             {
-                ReviewId = reviewDto.Id ?? Guid.Empty.ToString(), // Asegura que ID no sea nulo
+                ReviewId = reviewDto.Id ?? Guid.Empty.ToString(), 
                 GameId = reviewDto.GameId.ToString(),
                 GameTitle = game?.Title ?? "Unknown Game",
                 GameImageUrl = game?.HeaderUrl ?? "/images/noImage.png",
                 UserId = reviewDto.UserId,
-                UserName = profileUsername, // Usar el username del ProfileHeader
-                UserAvatarUrl = profileAvatarUrl, // Usar el avatar del ProfileHeader
+                UserName = profileUsername, 
+                UserAvatarUrl = profileAvatarUrl, 
                 Content = reviewDto.Content,
                 Rating = reviewDto.Rating,
                 LikesCount = reviewDto.Likes,
                 CreatedAt = reviewDto.CreatedAt
             };
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red con IGameService
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "MapToViewModelAsync: HttpRequestException al obtener GamePreview para el juego '{GameId}' de la reseña '{ReviewId}'. Mensaje: {Message}", reviewDto.GameId, reviewDto.Id, ex.Message);
             return new ReviewCardViewModel
@@ -181,7 +169,7 @@ public class ReviewsProfileModel : ProfileModelBase
                 CreatedAt = reviewDto.CreatedAt
             };
         }
-        catch (Exception ex) // ✅ Catch general para cualquier otra excepción durante el mapeo
+        catch (Exception ex)
         {
             _logger.LogError(ex, "MapToViewModelAsync: Error inesperado al mapear ReviewDTO '{ReviewId}'. Mensaje: {Message}", reviewDto.Id, ex.Message);
             return new ReviewCardViewModel
@@ -204,7 +192,6 @@ public class ReviewsProfileModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostSendRequestAsync(string profileUserId)
     {
-        // ✅ Validar profileUserId
         if (string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostSendRequestAsync: profileUserId es nulo o vacío.");
@@ -213,7 +200,6 @@ public class ReviewsProfileModel : ProfileModelBase
         }
 
         string? loggedInUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        // ✅ Validar loggedInUserId
         if (string.IsNullOrEmpty(loggedInUserId))
         {
             _logger.LogWarning("OnPostSendRequestAsync: Usuario no autenticado intentando enviar solicitud a '{ProfileUserId}'.", profileUserId);
@@ -229,7 +215,6 @@ public class ReviewsProfileModel : ProfileModelBase
 
         try
         {
-            // Usar _friendshipService_private si se asigna a uno privado en el constructor de esta clase
             var success = await _friendshipService_private.SendRequestAsync(loggedInUserId, profileUserId); 
             if (success)
             {
@@ -275,7 +260,7 @@ public class ReviewsProfileModel : ProfileModelBase
 
         try
         {
-            var success = await _friendshipService_private.AcceptRequestAsync(requestId); // Usar _friendshipService_private
+            var success = await _friendshipService_private.AcceptRequestAsync(requestId); 
             if (success)
             {
                 _logger.LogInformation("OnPostAcceptRequestAsync: Solicitud de amistad '{RequestId}' aceptada por el usuario '{AccepterId}'.", requestId, loggedInUserId);
@@ -303,7 +288,6 @@ public class ReviewsProfileModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostRejectRequestAsync(string requestId, string profileUserId)
     {
-        // ✅ Validar parámetros
         if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostRejectRequestAsync: requestId o profileUserId es nulo/vacío.");
@@ -320,7 +304,7 @@ public class ReviewsProfileModel : ProfileModelBase
 
         try
         {
-            var success = await _friendshipService_private.RejectRequestAsync(requestId); // Usar _friendshipService_private
+            var success = await _friendshipService_private.RejectRequestAsync(requestId); 
             if (success)
             {
                 _logger.LogInformation("OnPostRejectRequestAsync: Solicitud de amistad '{RequestId}' rechazada por el usuario '{RejecterId}'.", requestId, loggedInUserId);
@@ -345,10 +329,9 @@ public class ReviewsProfileModel : ProfileModelBase
         return RedirectToPage(new { userId = profileUserId });
     }
     
-    [ValidateAntiForgeryToken] // Siempre para formularios POST que modifican datos
+    [ValidateAntiForgeryToken] 
     public async Task<IActionResult> OnPostReportUserAsync(string profileUserId, string reason)
     {
-        // ✅ Validar parámetros de entrada
         if (string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostReportUserAsync: profileUserId es nulo o vacío.");

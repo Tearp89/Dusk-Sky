@@ -179,6 +179,11 @@ public class AdminDashboardModel : PageModel
                     continue; 
                 }
 
+                if (user.status == "deleted")
+                {
+                    continue;
+                }
+
                 UserProfileDTO? profile = null;
                 try
                 {
@@ -233,6 +238,14 @@ public class AdminDashboardModel : PageModel
                         _logger.LogWarning("Usuario con ID nulo o vacío encontrado al cargar todos los usuarios. Saltando.");
                         return null; 
                     }
+
+                    if (u.Id != null && u.status == "deleted")
+                    {
+                         _logger.LogWarning("Usuario eliminado. Saltando.");
+                        return null;
+                    }
+
+                    
                     UserProfileDTO? profile = null;
                     try
                     {
@@ -444,6 +457,12 @@ public class AdminDashboardModel : PageModel
                 {
                     _logger.LogWarning("Usuario con ID nulo o vacío encontrado al buscar perfiles para roles. Saltando.");
                     continue; 
+                }
+
+                if (user != null && user.status == "deleted")
+                {
+                    _logger.LogWarning("Usuario eliminado");
+                    continue;
                 }
                 UserProfileDTO? profile = null;
                 try

@@ -32,12 +32,15 @@
             }
 
             <!-- Users -->
-            @if (Model.Users.Any())
+            @if (Model.Users != null && Model.Users.Any() )
 {
     <h5 id="users" class="text-primary">Users</h5>
     <div class="scroll-section mb-5">
         @foreach (var user in Model.Users)
         {
+            if(user != null){
+                
+            
             <div class="card-blue-light text-decoration-none me-3 p-3 d-flex flex-column justify-content-between" style="width: 260px; height: 160px;">
                 <a asp-page="/Users/Profile/Index" asp-route-userId="@user.Id" class="text-decoration-none d-flex align-items-center mb-3">
                     <img src="@user.AvatarUrl" alt="@user.Username" class="rounded-circle me-3" width="48" height="48" />
@@ -81,6 +84,7 @@
                     }
                 </div>
             </div>
+            }
         }
     </div>
 }

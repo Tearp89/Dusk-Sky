@@ -31,9 +31,8 @@ public class ReviewDetailsModel : PageModel
         IGameListItemService gameListItemService,
         IGameListService gameListService,
         IModerationReportService moderationReportService,
-        ILogger<ReviewDetailsModel> logger) // ✅ Inyección de ILogger
+        ILogger<ReviewDetailsModel> logger) 
     {
-        // ✅ Validaciones de nulos para todos los servicios y el logger inyectados en el constructor
         _reviewService = reviewService ?? throw new ArgumentNullException(nameof(reviewService), "IReviewService no puede ser nulo.");
         _commentService = commentService ?? throw new ArgumentNullException(nameof(commentService), "ICommentService no puede ser nulo.");
         _userService = userService ?? throw new ArgumentNullException(nameof(userService), "IUserManagerService no puede ser nulo.");
@@ -43,7 +42,7 @@ public class ReviewDetailsModel : PageModel
         _gameListItemService = gameListItemService ?? throw new ArgumentNullException(nameof(gameListItemService), "IGameListItemService no puede ser nulo.");
         _gameListService = gameListService ?? throw new ArgumentNullException(nameof(gameListService), "IGameListService no puede ser nulo.");
         _moderationReportService = moderationReportService ?? throw new ArgumentNullException(nameof(moderationReportService), "IModerationReportService no puede ser nulo.");
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); // ✅ Validar el logger
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); 
     }
 
     [BindProperty(SupportsGet = true)]
@@ -51,7 +50,7 @@ public class ReviewDetailsModel : PageModel
     [TempData]
     public string? SuccessMessage { get; set; }
     [TempData]
-    public string? ErrorMessage { get; set; } // ✅ Propiedad para mensajes de error
+    public string? ErrorMessage { get; set; } 
 
     public ReviewWithUserDto? Review { get; set; }
     public List<CommentViewModel> Comments { get; set; } = new();
@@ -64,7 +63,7 @@ public class ReviewDetailsModel : PageModel
     public bool IsWatched => Tracking?.Status == "played";
     public bool IsInWatchlist => Tracking?.Status == "backlog";
     public bool IsLiked => Tracking?.Liked == true;
-    public string UserId { get; set; } = string.Empty; // ✅ Inicializar para evitar nulos
+    public string UserId { get; set; } = string.Empty; 
     public List<string> UserIds { get; set; } = new();
 
     [BindProperty]
@@ -75,35 +74,32 @@ public class ReviewDetailsModel : PageModel
     {
         try
         {
-            UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty; // ✅ Asegurar que UserId no sea nulo
+            UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty; 
             _logger.LogInformation("OnGetAsync: Iniciando carga de detalles de reseña '{ReviewId}' para el usuario '{UserId}'.", ReviewId, UserId); // ✅ Registro de información
 
             // ✅ Validar que ReviewId no sea nulo o vacío
             if (string.IsNullOrWhiteSpace(ReviewId))
             {
-                _logger.LogWarning("OnGetAsync: ReviewId es nulo o vacío. Redirigiendo a /Error."); // ✅ Registro de advertencia
+                _logger.LogWarning("OnGetAsync: ReviewId es nulo o vacío. Redirigiendo a /Error."); 
                 ErrorMessage = "ID de la reseña no proporcionado.";
                 return RedirectToPage("/Error");
             }
 
             var reviewDto = await _reviewService.GetReviewByIdAsync(ReviewId);
-            // ✅ Validar que la review exista
             if (reviewDto is null)
             {
-                _logger.LogWarning("OnGetAsync: Reseña con ID '{ReviewId}' no encontrada.", ReviewId); // ✅ Registro de advertencia
+                _logger.LogWarning("OnGetAsync: Reseña con ID '{ReviewId}' no encontrada.", ReviewId); 
                 ErrorMessage = "Reseña no encontrada.";
                 return NotFound();
             }
 
-            // ✅ Validar que reviewDto.UserId no sea nulo o vacío antes de usarlo
             if (string.IsNullOrWhiteSpace(reviewDto.UserId))
             {
-                _logger.LogError("OnGetAsync: Reseña con ID '{ReviewId}' tiene un UserId nulo o vacío.", ReviewId); // ✅ Registro de error
+                _logger.LogError("OnGetAsync: Reseña con ID '{ReviewId}' tiene un UserId nulo o vacío.", ReviewId); 
                 ErrorMessage = "ID de usuario de la reseña inválido.";
                 return NotFound();
             }
 
-            // Cargar datos del usuario autor de la review
             UserProfileDTO? userProfile = null;
             UserSearchResultDto? userAccount = null;
             try
@@ -121,20 +117,17 @@ public class ReviewDetailsModel : PageModel
             }
 
 
-            // ✅ Validar que reviewDto.GameId no sea Guid.Empty
             if (reviewDto.GameId == Guid.Empty)
             {
-                _logger.LogError("OnGetAsync: Reseña con ID '{ReviewId}' tiene un GameId vacío.", ReviewId); // ✅ Registro de error
+                _logger.LogError("OnGetAsync: Reseña con ID '{ReviewId}' tiene un GameId vacío.", ReviewId); 
                 ErrorMessage = "ID de juego de la reseña inválido.";
                 return NotFound();
             }
 
-            // Cargar datos del juego asociado
             var game = await _gameService.GetGamePreviewByIdAsync(reviewDto.GameId);
-            // ✅ Validar que el juego exista
             if (game == null)
             {
-                _logger.LogWarning("OnGetAsync: Juego asociado a la reseña '{ReviewId}' con GameId '{GameId}' no encontrado.", ReviewId, reviewDto.GameId); // ✅ Registro de advertencia
+                _logger.LogWarning("OnGetAsync: Juego asociado a la reseña '{ReviewId}' con GameId '{GameId}' no encontrado.", ReviewId, reviewDto.GameId); 
                 ErrorMessage = "Juego asociado a la reseña no encontrado.";
                 return NotFound();
             }
@@ -161,14 +154,14 @@ public class ReviewDetailsModel : PageModel
                 ProfileImageUrl = userProfile?.AvatarUrl ?? "/images/noavatar.png",
                 GameImageUrl = game?.HeaderUrl ?? "/images/noimage.png"
             };
-            _logger.LogDebug("OnGetAsync: DTO de reseña enriquecido para la reseña '{ReviewId}'.", ReviewId); // ✅ Registro de depuración
+            _logger.LogDebug("OnGetAsync: DTO de reseña enriquecido para la reseña '{ReviewId}'.", ReviewId); 
 
             Tracking = await _gameTrackingService.GetByUserAndGameAsync(UserId, Review.GameId.ToString());
-            Tracking ??= new GameTrackingDto(); // ✅ Asegurar que Tracking no sea nulo
-            _logger.LogDebug("OnGetAsync: Tracking cargado para el juego '{GameId}' y usuario '{UserId}'.", Review.GameId, UserId); // ✅ Registro de depuración
+            Tracking ??= new GameTrackingDto(); 
+            _logger.LogDebug("OnGetAsync: Tracking cargado para el juego '{GameId}' y usuario '{UserId}'.", Review.GameId, UserId); 
 
             var commentList = await _commentService.GetCommentsByReviewIdAsync(ReviewId);
-            Comments = new List<CommentViewModel>(); // ✅ Inicializar antes de añadir
+            Comments = new List<CommentViewModel>(); 
             if (commentList != null)
             {
                 foreach (var comment in commentList)
@@ -199,15 +192,15 @@ public class ReviewDetailsModel : PageModel
                         _logger.LogError(ex, "OnGetAsync: Error inesperado al cargar detalles del autor del comentario '{CommentId}' para la reseña '{ReviewId}'.", comment.Id, ReviewId);
                     }
                 }
-                _logger.LogInformation("OnGetAsync: {Count} comentarios cargados para la reseña '{ReviewId}'.", Comments.Count, ReviewId); // ✅ Registro de información
+                _logger.LogInformation("OnGetAsync: {Count} comentarios cargados para la reseña '{ReviewId}'.", Comments.Count, ReviewId); 
             }
             else
             {
-                _logger.LogInformation("OnGetAsync: No se encontraron comentarios para la reseña '{ReviewId}'.", ReviewId); // ✅ Registro de información
+                _logger.LogInformation("OnGetAsync: No se encontraron comentarios para la reseña '{ReviewId}'.", ReviewId); 
             }
 
             UserReviews = new List<ReviewWithGameDto>();
-            UserIds.Add(UserId); // Añadir el ID del propio usuario a UserIds para GetFriendsReviewsAsync si es el caso
+            UserIds.Add(UserId); 
 
             var userReviews = await _reviewService.GetFriendsReviewsAsync(UserIds);
             if (userReviews != null)
@@ -246,36 +239,36 @@ public class ReviewDetailsModel : PageModel
                         _logger.LogError(ex, "OnGetAsync: Error inesperado al cargar vista previa del juego para la reseña de usuario '{ReviewId}'.", review.Id);
                     }
                 }
-                _logger.LogInformation("OnGetAsync: {Count} reseñas de usuario cargadas.", UserReviews.Count); // ✅ Registro de información
+                _logger.LogInformation("OnGetAsync: {Count} reseñas de usuario cargadas.", UserReviews.Count); 
             }
             else
             {
-                _logger.LogInformation("OnGetAsync: No se encontraron reseñas de usuario para el usuario '{UserId}'.", UserId); // ✅ Registro de información
+                _logger.LogInformation("OnGetAsync: No se encontraron reseñas de usuario para el usuario '{UserId}'.", UserId); 
             }
 
             UserLists = await _gameListService.GetUserListsAsync(UserId);
-            UserLists ??= new List<GameListDTO>(); // ✅ Asegurar que UserLists no sea nulo
-            _logger.LogInformation("OnGetAsync: {Count} listas de usuario cargadas para el usuario '{UserId}'.", UserLists.Count, UserId); // ✅ Registro de información
+            UserLists ??= new List<GameListDTO>(); 
+            _logger.LogInformation("OnGetAsync: {Count} listas de usuario cargadas para el usuario '{UserId}'.", UserLists.Count, UserId); 
         }
-        catch (ArgumentException ex) // ✅ Catch específico para ArgumentException
+        catch (ArgumentException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: ArgumentException al cargar detalles de la reseña '{ReviewId}'. Mensaje: {Message}", ReviewId, ex.Message);
             ErrorMessage = $"Error de argumento: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (InvalidOperationException ex) // ✅ Catch específico para InvalidOperationException
+        catch (InvalidOperationException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: InvalidOperationException al cargar detalles de la reseña '{ReviewId}'. Mensaje: {Message}", ReviewId, ex.Message);
             ErrorMessage = $"Operación inválida: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red generales
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: HttpRequestException general al cargar detalles de la reseña '{ReviewId}'. Mensaje: {Message}", ReviewId, ex.Message);
             ErrorMessage = $"Problema de conexión al cargar la reseña: {ex.Message}";
             return RedirectToPage("/Error");
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnGetAsync: Error inesperado al cargar los detalles de la reseña '{ReviewId}'. Mensaje: {Message}", ReviewId, ex.Message);
             ErrorMessage = $"Ocurrió un error al cargar los detalles de la reseña: {ex.Message}";
@@ -287,7 +280,6 @@ public class ReviewDetailsModel : PageModel
 
     public async Task<IActionResult> OnPostAgregarComentarioAsync(string reviewId, string nuevoComentario)
     {
-        // ✅ Validar reviewId y nuevoComentario al inicio
         if (string.IsNullOrWhiteSpace(reviewId))
         {
             _logger.LogWarning("OnPostAgregarComentarioAsync: ID de reseña nulo o vacío para el comentario.");
@@ -304,7 +296,6 @@ public class ReviewDetailsModel : PageModel
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // ✅ Validar que userId no sea nulo o vacío
             if (string.IsNullOrEmpty(userId))
             {
                 _logger.LogWarning("OnPostAgregarComentarioAsync: Usuario no autenticado intentando comentar en la reseña '{ReviewId}'.", reviewId);
@@ -324,13 +315,14 @@ public class ReviewDetailsModel : PageModel
             await _commentService.CreateCommentAsync(nuevo);
             _logger.LogInformation("OnPostAgregarComentarioAsync: Comentario agregado exitosamente por el usuario '{UserId}' en la reseña '{ReviewId}'.", userId, reviewId);
             TempData["SuccessMessage"] = "Comentario agregado exitosamente.";
+            return RedirectToPage("/Reviews/Details", new { reviewId });
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "OnPostAgregarComentarioAsync: HttpRequestException al agregar comentario en la reseña '{ReviewId}'. Mensaje: {Message}", reviewId, ex.Message);
             TempData["ErrorMessage"] = $"Problema de conexión al agregar el comentario: {ex.Message}";
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnPostAgregarComentarioAsync: Error inesperado al agregar comentario en la reseña '{ReviewId}'. Mensaje: {Message}", reviewId, ex.Message);
             TempData["ErrorMessage"] = $"Ocurrió un error al agregar el comentario: {ex.Message}";
@@ -340,7 +332,6 @@ public class ReviewDetailsModel : PageModel
 
     public async Task<IActionResult> OnPostToggleTrackingAsync(string reviewId, string trackingType)
     {
-        // ✅ Validar reviewId y trackingType al inicio
         if (string.IsNullOrWhiteSpace(reviewId))
         {
             _logger.LogWarning("OnPostToggleTrackingAsync: ID de reseña nulo o vacío para el seguimiento.");
@@ -357,7 +348,7 @@ public class ReviewDetailsModel : PageModel
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // ✅ Validar que userId no sea nulo o vacío
+            
             if (string.IsNullOrEmpty(userId))
             {
                 _logger.LogWarning("OnPostToggleTrackingAsync: Usuario no autenticado para el seguimiento en la reseña '{ReviewId}'.", reviewId);
@@ -366,14 +357,12 @@ public class ReviewDetailsModel : PageModel
             }
 
             var review = await _reviewService.GetReviewByIdAsync(reviewId);
-            // ✅ Validar que la review exista
             if (review is null)
             {
                 _logger.LogWarning("OnPostToggleTrackingAsync: Reseña con ID '{ReviewId}' no encontrada para el seguimiento.", reviewId);
                 TempData["ErrorMessage"] = "Reseña no encontrada para el seguimiento.";
                 return RedirectToPage("/Reviews/Details", new { reviewId });
             }
-            // ✅ Validar que review.GameId no sea Guid.Empty
             if (review.GameId == Guid.Empty)
             {
                 _logger.LogError("OnPostToggleTrackingAsync: Reseña con ID '{ReviewId}' tiene un GameId vacío.", reviewId);
@@ -421,12 +410,12 @@ public class ReviewDetailsModel : PageModel
 
             TempData["SuccessMessage"] = "Seguimiento actualizado exitosamente.";
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "OnPostToggleTrackingAsync: HttpRequestException al actualizar el seguimiento para la reseña '{ReviewId}'. Mensaje: {Message}", reviewId, ex.Message);
             TempData["ErrorMessage"] = $"Problema de conexión al actualizar el seguimiento: {ex.Message}";
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnPostToggleTrackingAsync: Error inesperado al actualizar el seguimiento para la reseña '{ReviewId}'. Mensaje: {Message}", reviewId, ex.Message);
             TempData["ErrorMessage"] = $"Ocurrió un error al actualizar el seguimiento: {ex.Message}";
@@ -436,7 +425,6 @@ public class ReviewDetailsModel : PageModel
 
     public async Task<IActionResult> OnPostToggleTrackingAjaxAsync([FromBody] TrackingRequest request)
     {
-        // ✅ Validar request y sus propiedades al inicio
         if (request == null || string.IsNullOrWhiteSpace(request.ReviewId) || string.IsNullOrWhiteSpace(request.Type))
         {
             _logger.LogWarning("OnPostToggleTrackingAjaxAsync: Datos de solicitud de tracking inválidos (ReviewId o Type nulo/vacío).");
@@ -459,7 +447,6 @@ public class ReviewDetailsModel : PageModel
                 return new JsonResult(new { success = false, message = "Reseña no encontrada." }) { StatusCode = 404 };
             }
 
-            // ✅ Validar que review.GameId no sea Guid.Empty
             if (review.GameId == Guid.Empty)
             {
                 _logger.LogError("OnPostToggleTrackingAjaxAsync: Reseña con ID '{ReviewId}' tiene un GameId vacío.", request.ReviewId);
@@ -513,7 +500,7 @@ public class ReviewDetailsModel : PageModel
                 }
             });
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "OnPostToggleTrackingAjaxAsync: HttpRequestException al actualizar el seguimiento para la reseña '{ReviewId}'. Mensaje: {Message}", request.ReviewId, ex.Message);
             return new JsonResult(new { success = false, message = $"Problema de conexión al actualizar el seguimiento: {ex.Message}" }) { StatusCode = 500 };
@@ -538,11 +525,10 @@ public class ReviewDetailsModel : PageModel
         }
 
         bool IsOwner = Review.UserId == UserId;
-            
+
 
         try
         {
-            // ✅ Validar roles antes de cualquier operación costosa
             if (!User.IsInRole("admin") && !User.IsInRole("moderator") && !IsOwner)
             {
                 _logger.LogWarning("OnPostDeleteReviewAsync: Usuario '{UserId}' sin permisos intentó eliminar la reseña '{ReviewId}'.", User.FindFirstValue(ClaimTypes.NameIdentifier), ReviewId);
@@ -568,13 +554,14 @@ public class ReviewDetailsModel : PageModel
             await _reviewService.DeleteReviewAsync(ReviewId, review.UserId);
             _logger.LogInformation("OnPostDeleteReviewAsync: Reseña '{ReviewId}' eliminada exitosamente por el usuario '{UserId}'.", ReviewId, User.FindFirstValue(ClaimTypes.NameIdentifier));
             SuccessMessage = "Reseña eliminada exitosamente.";
+            return RedirectToPage("/Homepage/Index");
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red
+        catch (HttpRequestException ex) 
         {
             _logger.LogError(ex, "OnPostDeleteReviewAsync: HttpRequestException al eliminar la reseña '{ReviewId}'. Mensaje: {Message}", ReviewId, ex.Message);
             TempData["ErrorMessage"] = $"Problema de conexión al eliminar la reseña: {ex.Message}";
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnPostDeleteReviewAsync: Error inesperado al eliminar la reseña '{ReviewId}'. Mensaje: {Message}", ReviewId, ex.Message);
             TempData["ErrorMessage"] = $"Ocurrió un error al eliminar la reseña: {ex.Message}";
@@ -585,7 +572,6 @@ public class ReviewDetailsModel : PageModel
 
     public async Task<IActionResult> OnPostReportReviewAsync(string ContentId, string ContentType, string Reason, DateTime CreatedAt)
     {
-        // ✅ Validar parámetros de entrada al inicio
         if (string.IsNullOrWhiteSpace(ContentId) || string.IsNullOrWhiteSpace(ContentType) || string.IsNullOrWhiteSpace(Reason))
         {
             _logger.LogWarning("OnPostReportReviewAsync: Datos de reporte incompletos (ContentId: '{ContentId}', ContentType: '{ContentType}', Reason vacía).", ContentId, ContentType);
@@ -610,7 +596,6 @@ public class ReviewDetailsModel : PageModel
                 TempData["ErrorMessage"] = "Reseña a reportar no encontrada.";
                 return RedirectToPage("/Reviews/Details", new { reviewId = ContentId });
             }
-            // ✅ Validar que review.UserId no sea nulo o vacío
             if (string.IsNullOrWhiteSpace(review.UserId))
             {
                 _logger.LogError("OnPostReportReviewAsync: La reseña '{ContentId}' tiene un UserId nulo o vacío.", ContentId);
@@ -627,7 +612,6 @@ public class ReviewDetailsModel : PageModel
                 ReportedAt = CreatedAt,
                 Status = "pending"
             };
-            // ✅ Considerar validar que CreatedAt no sea DateTime.MinValue. Si es una fecha predeterminada, registrar advertencia.
             if (CreatedAt == DateTime.MinValue)
             {
                 _logger.LogWarning("OnPostReportReviewAsync: CreatedAt es DateTime.MinValue para el reporte de la reseña '{ContentId}'.", ContentId);
@@ -636,24 +620,25 @@ public class ReviewDetailsModel : PageModel
             await _moderationReportService.CreateAsync(dto);
             _logger.LogInformation("OnPostReportReviewAsync: Reseña '{ContentId}' reportada exitosamente por el usuario '{UserId}'. Tipo: {ContentType}, Razón: '{Reason}'", ContentId, userId, ContentType, Reason);
             SuccessMessage = "Reseña reportada exitosamente.";
+            return RedirectToPage("/Reviews/Details", new { reviewId = ContentId });
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red
+        catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "OnPostReportReviewAsync: HttpRequestException al reportar la reseña '{ContentId}'. Mensaje: {Message}", ContentId, ex.Message);
             TempData["ErrorMessage"] = $"Problema de conexión al reportar la reseña: {ex.Message}";
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex)
         {
             _logger.LogError(ex, "OnPostReportReviewAsync: Error inesperado al reportar la reseña '{ContentId}'. Mensaje: {Message}", ContentId, ex.Message);
             TempData["ErrorMessage"] = $"Ocurrió un error al reportar la reseña: {ex.Message}";
         }
         return RedirectToPage("/Reviews/Details", new { reviewId = ContentId });
+        
     }
 
 
     public async Task<IActionResult> OnPostLogReviewWithTrackingAsync(Guid GameId, string Content, double Rating, DateTime? WatchedOn, bool PlayedBefore, bool Like)
     {
-        // ✅ Validar GameId y Content al inicio
         if (GameId == Guid.Empty)
         {
             _logger.LogWarning("OnPostLogReviewWithTrackingAsync: GameId es Guid.Empty. No se puede procesar la reseña.");
@@ -674,7 +659,6 @@ public class ReviewDetailsModel : PageModel
                 return new JsonResult(new { success = false, message = "Usuario no autenticado." }) { StatusCode = 401 };
             }
 
-            // Crear y guardar la reseña
             var review = new ReviewDTO
             {
                 GameId = GameId,
@@ -686,7 +670,6 @@ public class ReviewDetailsModel : PageModel
             await _reviewService.CreateReviewAsync(review);
             _logger.LogInformation("OnPostLogReviewWithTrackingAsync: Reseña creada para el juego '{GameId}' por el usuario '{UserId}'.", GameId, userId);
 
-            // Obtener o crear tracking
             var tracking = await _gameTrackingService.GetByUserAndGameAsync(userId, GameId.ToString());
             tracking ??= new GameTrackingDto
             {
@@ -699,7 +682,6 @@ public class ReviewDetailsModel : PageModel
                 tracking.Status = "played";
                 tracking.Liked = Like;
             }
-            // ✅ Asegurar que el ID de tracking sea correcto antes de actualizar/crear
             if (tracking.Id == Guid.Empty)
             {
                 await _gameTrackingService.CreateAsync(tracking);
@@ -712,13 +694,14 @@ public class ReviewDetailsModel : PageModel
             }
 
             return new JsonResult(new { success = true, message = "Reseña y seguimiento guardados exitosamente." });
+            
         }
-        catch (HttpRequestException ex) // ✅ Catch específico para problemas de red
+        catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "OnPostLogReviewWithTrackingAsync: HttpRequestException al registrar reseña/tracking para el juego '{GameId}'. Mensaje: {Message}", GameId, ex.Message);
             return new JsonResult(new { success = false, message = $"Problema de conexión al registrar la reseña: {ex.Message}" }) { StatusCode = 500 };
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex)
         {
             _logger.LogError(ex, "OnPostLogReviewWithTrackingAsync: Error inesperado al registrar reseña/tracking para el juego '{GameId}'. Mensaje: {Message}", GameId, ex.Message);
             return new JsonResult(new { success = false, message = "Ocurrió un error en el servidor al intentar registrar la reseña." }) { StatusCode = 500 };
@@ -727,14 +710,13 @@ public class ReviewDetailsModel : PageModel
 
 
     [BindProperty]
-    public string NewListName { get; set; } = ""; // ✅ Se usa directamente el BindProperty
+    public string NewListName { get; set; } = ""; 
 
     [BindProperty]
-    public bool IsPublic { get; set; } // ✅ Se usa directamente el BindProperty
+    public bool IsPublic { get; set; } 
 
     public async Task<IActionResult> OnPostCreateListAsync(string NewListName, bool IsPublic, Guid GameId)
     {
-        // ✅ Validar parámetros de entrada
         if (string.IsNullOrWhiteSpace(NewListName))
         {
             _logger.LogWarning("OnPostCreateListAsync: El nombre de la lista está vacío.");
@@ -783,7 +765,6 @@ public class ReviewDetailsModel : PageModel
             if (!added)
             {
                 _logger.LogError("OnPostCreateListAsync: Falló al añadir el juego '{GameId}' a la lista recién creada '{CreatedListId}'. Eliminando la lista.", GameId, createdListId);
-                // Considera eliminar la lista recién creada si el juego no se puede añadir.
                 await _gameListService.DeleteListAsync(createdListId);
                 return new JsonResult(new { success = false, message = "No se pudo agregar el juego a la nueva lista." }) { StatusCode = 500 };
             }
@@ -805,7 +786,6 @@ public class ReviewDetailsModel : PageModel
 
     public async Task<IActionResult> OnPostAddGameToListAsync(string ListId, Guid GameId)
     {
-        // ✅ Validar parámetros de entrada
         if (string.IsNullOrWhiteSpace(ListId))
         {
             _logger.LogWarning("OnPostAddGameToListAsync: ID de lista nulo o vacío.");
@@ -865,7 +845,6 @@ public class ReviewDetailsModel : PageModel
 
     public async Task<IActionResult> OnPostToggleLikeAsync(string ReviewId)
     {
-        // ✅ Validar ReviewId al inicio
         if (string.IsNullOrWhiteSpace(ReviewId))
         {
             _logger.LogWarning("OnPostToggleLikeAsync: ID de reseña nulo o vacío.");

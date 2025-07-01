@@ -3,15 +3,15 @@
 @using System.Text.Json
 
 @{
-    ViewData["Title"] = "Game Lists";
+    ViewData["Title"] = "Listas de Juegos";
 }
 
 <div class="container mt-5 py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-primary">Recent Lists</h1>
+        <h1 class="text-primary">Listas Recientes</h1>
         <div>
             <a asp-page="/Lists/Creator" class="btn btn-primary btn-lg">
-                <i class="bi bi-plus-circle-fill me-2"></i>Create New List
+                <i class="bi bi-plus-circle-fill me-2"></i>Crear Nueva Lista
             </a>
         </div>
     </div>
@@ -28,7 +28,7 @@
                 <div class="col-lg-4 col-md-6 mb-4">
                     <a href="/Lists/ListDetails/@list.Id" class="card h-100 text-decoration-none card-lift">
                         <div id="@id" class="card-img-top" style="height: 200px; background-color: #e9ecef; position: relative; overflow: hidden; border-radius: 0.25rem 0.25rem 0 0;">
-                            </div>
+                        </div>
 
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-dark">@list.Name</h5>
@@ -53,7 +53,7 @@
                             images.forEach((url, i) => {
                                 const img = document.createElement('img');
                                 img.src = url;
-                                img.alt = "Game";
+                                img.alt = "Imagen del juego"; // Texto alternativo traducido
                                 img.classList.add('poster');
                                 img.style.position = 'absolute';
                                 img.style.left = `${i * 40}px`; // El efecto de "abanico"
@@ -72,9 +72,9 @@
     else
     {
         <div class="text-center py-5">
-            <h4 class="text-muted">No lists found.</h4>
-            <p class="text-muted">Why not be the first to create one?</p>
-            <a asp-page="/Lists/Create" class="btn btn-primary mt-3">Create a List</a>
+            <h4 class="text-muted">No se encontraron listas.</h4>
+            <p class="text-muted">¿Por qué no eres el primero en crear una?</p>
+            <a asp-page="/Lists/Create" class="btn btn-primary mt-3">Crear una Lista</a>
         </div>
     }
 </div>

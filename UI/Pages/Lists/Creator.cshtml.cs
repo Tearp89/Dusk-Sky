@@ -9,7 +9,6 @@ public class CreateListModel : PageModel
 
     public CreateListModel(IGameListService listService, ILogger<CreateListModel> logger)
     {
-        // Validar que el servicio inyectado no sea nulo.
         _listService = listService ?? throw new ArgumentNullException(nameof(listService), "El servicio de lista de juegos no puede ser nulo.");
          _logger = logger ?? throw new ArgumentNullException(nameof(logger), "El logger no puede ser nulo.");
     }
@@ -24,7 +23,6 @@ public class CreateListModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        // Validar que el objeto List no sea nulo, aunque ya se inicializa, es una buena práctica.
         if (List == null)
         {
             TempData["ErrorMessage"] = "Los datos de la lista son inválidos.";
@@ -36,7 +34,6 @@ public class CreateListModel : PageModel
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // Validar que el userId no sea nulo o vacío.
             if (string.IsNullOrEmpty(userId))
             {
                 TempData["ErrorMessage"] = "Usuario no autenticado o ID de usuario no encontrado.";
@@ -46,17 +43,15 @@ public class CreateListModel : PageModel
 
             List.UserId = userId;
 
-            // Validar que List.UserId no sea nulo antes de pasarlo al servicio.
             if (string.IsNullOrEmpty(List.UserId))
             {
                 TempData["ErrorMessage"] = "El ID de usuario para la lista es nulo o vacío.";
-                _logger.LogWarning("List.UserId es nulo o vacío antes de crear la lista."); // ✅ Registro de advertencia
+                _logger.LogWarning("List.UserId es nulo o vacío antes de crear la lista."); 
                 return Page();
             }
 
             var listId = await _listService.CreateListAsync(List);
 
-            // Validar si la creación de la lista fue exitosa.
             if (string.IsNullOrEmpty(listId))
             {
                 TempData["ErrorMessage"] = "Hubo un problema al crear la lista. El servicio no devolvió un ID de lista válido.";
@@ -69,33 +64,26 @@ public class CreateListModel : PageModel
         }
         catch (ArgumentNullException ex)
         {
-            // Captura excepciones específicas de argumentos nulos.
-            _logger.LogError(ex, "ArgumentNullException en OnPostAsync al crear lista: {ErrorMessage}", ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "ArgumentNullException en OnPostAsync al crear lista: {ErrorMessage}", ex.Message); 
             TempData["ErrorMessage"] = $"Error de validación: {ex.Message}";
-            // Opcional: registrar el error para depuración
-            // _logger.LogError(ex, "Error de argumento nulo al crear la lista.");
+            
             return Page();
         }
         catch (InvalidOperationException ex)
         {
-            // Captura excepciones cuando una operación no es válida en el estado actual del objeto.
-            _logger.LogError(ex, "InvalidOperationException en OnPostAsync al crear lista: {ErrorMessage}", ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "InvalidOperationException en OnPostAsync al crear lista: {ErrorMessage}", ex.Message); 
             TempData["ErrorMessage"] = $"Error de operación: {ex.Message}";
-            // Opcional: registrar el error para depuración
-            // _logger.LogError(ex, "Error de operación al crear la lista.");
+            
             return Page();
-        } catch (HttpRequestException ex) // ✅ Ejemplo de catch específico para problemas de red si el servicio hace llamadas HTTP
+        } catch (HttpRequestException ex) 
         {
-            _logger.LogError(ex, "HttpRequestException en OnPostAsync al comunicarse con el servicio: {ErrorMessage}", ex.Message); // ✅ Registro de error
+            _logger.LogError(ex, "HttpRequestException en OnPostAsync al comunicarse con el servicio: {ErrorMessage}", ex.Message); 
             TempData["ErrorMessage"] = $"Problema de conexión al crear la lista: {ex.Message}";
             return Page();
         }
         catch (Exception ex)
         {
-            // Captura cualquier otra excepción inesperada.
             TempData["ErrorMessage"] = $"Ocurrió un error inesperado al crear la lista: {ex.Message}";
-            // Opcional: registrar el error para depuración
-            // _logger.LogError(ex, "Error inesperado al crear la lista.");
             return Page();
         }
     }

@@ -7,17 +7,12 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http; // Necessary for HttpRequestException
+using System.Net.Http; 
 using System.Security.Claims;
-using System.Text.Json; // Necessary for JsonException
+using System.Text.Json; 
 using System.Threading.Tasks;
 
-// Ensure your 'using' statements point to your actual service and ViewModel namespaces
-// For example:
-// using YourApp.Services;
-// using YourApp.ViewModels;
-// using YourApp.Utilities; // If UserSessionManager is in a utility namespace
-// using YourApp.Models; // For SanctionType and other data models
+
 
 [AllowAnonymous]
 public class StartPageModel : PageModel
@@ -27,7 +22,7 @@ public class StartPageModel : PageModel
     private readonly IGameService _gameService;
     private readonly IGameListService _gameListService;
     private readonly IGameListItemService _gameListItemService;
-    private readonly UserSessionManager _sessionManager; // Assuming this is a singleton or registered service
+    private readonly UserSessionManager _sessionManager; 
 
     private readonly IUserManagerService _userService;
 
@@ -40,14 +35,15 @@ public class StartPageModel : PageModel
     [BindProperty]
     public RegisterRequestDto RegisterData { get; set; } = new();
 
-    public string? ErrorMessage { get; set; } // Property to display error messages in the UI
+    
+    public string? ErrorMessage { get; set; } 
 
-    public List<GamePreviewDTO> Games { get; set; } = new(); // Initialize to prevent NullReferenceException
-    public List<ReviewDTO> Reviews { get; set; } = new(); // Initialize
-    public List<ReviewFullDto> ReviewCards { get; set; } = new(); // Initialize
-    public List<GameListWithUserDto> RecentLists { get; set; } = new(); // Initialize
-    public List<ImageReviewDto> ReviewImages { get; set; } = new(); // Initialize
-    public List<UserSearchResultDto> Users { get; set; } = new(); // Initialize
+    public List<GamePreviewDTO> Games { get; set; } = new(); 
+    public List<ReviewDTO> Reviews { get; set; } = new(); 
+    public List<ReviewFullDto> ReviewCards { get; set; } = new(); 
+    public List<GameListWithUserDto> RecentLists { get; set; } = new(); 
+    public List<ImageReviewDto> ReviewImages { get; set; } = new(); 
+    public List<UserSearchResultDto> Users { get; set; } = new(); 
 
     public StartPageModel(
         ILogger<StartPageModel> logger,
@@ -67,7 +63,7 @@ public class StartPageModel : PageModel
         _userService = userService;
         _gameListItemService = gameListItemService;
         _gameListService = gameListService;
-        _sessionManager = userSessionManager; // Assignment of the sessionManager
+        _sessionManager = userSessionManager; 
         _sanctionService = sanctionService;
     }
 
@@ -75,7 +71,7 @@ public class StartPageModel : PageModel
     {
         _logger.LogInformation("Attempting login for user: {Username}", LoginData.Username);
 
-        // Initial model validation (e.g., if required fields are empty)
+        
         
 
         AuthResponseDto? result = null;
@@ -102,17 +98,18 @@ public class StartPageModel : PageModel
             return Page();
         }
 
-        // Null validation for result and AccessToken
         if (result != null && !string.IsNullOrWhiteSpace(result.AccessToken))
         {
             var token = result.AccessToken;
             UserSearchResultDto? user = null;
             try
             {
-                // Search users by exact name
                 var usersFound = await _authService.SearchUsersAsync(LoginData.Username);
-                // Null validation for usersFound
                 user = usersFound?.FirstOrDefault(u => u.Username == LoginData.Username);
+                if (user.status == "deleted")
+                {
+                    return Page();
+                }
                 if (user == null)
                 {
                     _logger.LogWarning("User '{Username}' not found after successful login. Possible data inconsistency.", LoginData.Username);
@@ -127,19 +124,16 @@ public class StartPageModel : PageModel
                 return Page();
             }
 
-            // --- Sanction Verification ---
             try
             {
                 var sanctions = await _sanctionService.GetAllAsync();
-                // Null validation for sanctions
                 if (sanctions == null)
                 {
                     _logger.LogWarning("GetAllAsync for sanctions returned null. Initializing as empty list.");
-                    sanctions = new List<SanctionDTO>(); // Treat as empty list to prevent NRE
+                    sanctions = new List<SanctionDTO>(); 
                 }
 
                 _logger.LogInformation("Verifying sanctions for user: {UserId}", user.Id);
-                // Console.WriteLine calls are removed in favor of ILogger
                 foreach (var s in sanctions)
                 {
                     _logger.LogDebug("Sanction for: {SanctionUserId} | Type: {SanctionType} | Dates: {StartDate} - {EndDate}",
@@ -159,15 +153,14 @@ public class StartPageModel : PageModel
                 if (hasActiveSanction)
                 {
                     _logger.LogWarning("Access denied for user {UserId} due to active sanction (ban/suspension).", user.Id);
-                    ErrorMessage = "Access denied: your account is currently banned or suspended.";
-                    // Important: Do not log in the user if sanctioned
+                    ErrorMessage = "Accesso denegado: tu cuenta está baneada o suspendida.";
                     return Page();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error verifying sanctions for user {UserId}.", user.Id);
-                ErrorMessage = "An error occurred while verifying your account status. Please try again.";
+                ErrorMessage = "Ocurrió un error verificando el estado de tu cuenta. Por favor intenta de nuevo.";
                 return Page();
             }
 
@@ -179,7 +172,7 @@ public class StartPageModel : PageModel
                 if (profile == null)
                 {
                     _logger.LogWarning("User profile not found for ID: {UserId}. Using default avatar.", user.Id);
-                    // Not a critical error if a default avatar is used, but we log it.
+                    
                 }
             }
             catch (Exception ex)
@@ -189,7 +182,7 @@ public class StartPageModel : PageModel
                 return Page();
             }
 
-            // Save custom session (if UserSessionManager is a singleton or service)
+           
             try
             {
                 _sessionManager.SetSession(token, user.Id.ToString(), user.Username);
@@ -198,19 +191,17 @@ public class StartPageModel : PageModel
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error setting custom session for user: {UserId}", user.Id);
-                // Decide if this error should prevent login. For now, we allow it to continue.
+                
             }
 
-            // --- Claims Creation and Cookie Authentication ---
             try
             {
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    // Ensure profile is not null before accessing AvatarUrl
                     new Claim("avatar_url", profile?.AvatarUrl ?? "/images/default_avatar.png"),
-                    new Claim(ClaimTypes.Role, user.Role ?? "user") // Ensure Role is not null
+                    new Claim(ClaimTypes.Role, user.Role ?? "user") 
                 };
 
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -226,16 +217,13 @@ public class StartPageModel : PageModel
                     });
                 _logger.LogInformation("User {UserId} successfully authenticated into ASP.NET Core Cookies.", user.Id);
 
-                // --- DuskSkyToken cookie configuration ---
                 Response.Cookies.Append("DuskSkyToken", token, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = HttpContext.Request.IsHttps, // Use true if you're on HTTPS
+                    Secure = HttpContext.Request.IsHttps, 
                     SameSite = SameSiteMode.Strict,
                     Expires = DateTime.UtcNow.AddDays(30),
-                    // If your application runs on a specific domain, configure it here.
-                    // For local development, "localhost" or leaving it blank usually works.
-                    Domain = HttpContext.Request.Host.Host // More dynamic than "localhost"
+                    
                 });
                 _logger.LogInformation("Cookie 'DuskSkyToken' set for user {UserId}.", user.Id);
 
@@ -249,7 +237,6 @@ public class StartPageModel : PageModel
             }
         }
 
-        // If `result` is null or `AccessToken` is empty/null, login failed
         _logger.LogWarning("Login failed for user '{Username}'. Incorrect credentials or invalid service response.", LoginData.Username);
         ErrorMessage = "Incorrect email or password.";
         return Page();
@@ -358,7 +345,7 @@ public class StartPageModel : PageModel
                     return Page();
                 }
 
-                // Save custom session
+                
                 try
                 {
                     _sessionManager.SetSession(token, user.Id.ToString(), user.Username);
@@ -369,7 +356,6 @@ public class StartPageModel : PageModel
                     _logger.LogError(ex, "Error setting custom session for registered user: {UserId}", user.Id);
                 }
 
-                // --- Claims Creation and Cookie Authentication ---
                 try
                 {
                     var claims = new List<Claim>
@@ -393,7 +379,6 @@ public class StartPageModel : PageModel
                         });
                     _logger.LogInformation("Registered user {UserId} successfully authenticated into ASP.NET Core Cookies.", user.Id);
 
-                    // --- DuskSkyToken cookie configuration ---
                     Response.Cookies.Append("DuskSkyToken", token, new CookieOptions
                     {
                         HttpOnly = true,
@@ -443,18 +428,16 @@ public class StartPageModel : PageModel
                 Response.Cookies.Delete("DuskSkyToken", new CookieOptions
                 {
                     Path = "/",
-                    Domain = HttpContext.Request.Host.Host, // Dynamically adjust domain
+                    Domain = HttpContext.Request.Host.Host, 
                     SameSite = SameSiteMode.Strict,
-                    Secure = HttpContext.Request.IsHttps, // Adjust based on HTTPS
+                    Secure = HttpContext.Request.IsHttps, 
                     HttpOnly = true
                 });
                 _logger.LogInformation("Cookie 'DuskSkyToken' deleted.");
 
-                // Optional: Delete all remaining cookies as a reinforcement.
-                // Be cautious as this might delete cookies you didn't intend to.
+                
                 foreach (var cookie in Request.Cookies.Keys)
                 {
-                    // Avoid deleting critical ASP.NET Core system cookies if not necessary
                     if (cookie != ".AspNetCore.Antiforgery" && cookie != ".AspNetCore.Cookies" && cookie != CookieAuthenticationDefaults.AuthenticationScheme)
                     {
                         Response.Cookies.Delete(cookie);
@@ -467,21 +450,18 @@ public class StartPageModel : PageModel
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during logout process.");
-                // Even if there's an error in logout, we usually want to redirect to the start page.
-                // You could set an error message in TempData if it's critical.
-                TempData["LogoutErrorMessage"] = "There was a problem completely logging you out. Please try again.";
+                
+                TempData["ErrorMessage"] = "There was a problem completely logging you out. Please try again.";
             }
             return RedirectToPage("/StartPage");
         }
 
-        // If the user is already authenticated, redirect to the homepage
         if (User.Identity != null && User.Identity.IsAuthenticated)
         {
             _logger.LogInformation("User already authenticated, redirecting to /Homepage/Index.");
             return RedirectToPage("/Homepage/Index");
         }
 
-        // Load data for the main page
         await LoadHomePageDataAsync();
 
         return Page();
@@ -491,7 +471,6 @@ public class StartPageModel : PageModel
     {
         _logger.LogInformation("Loading data for the anonymous homepage.");
 
-        // --- Game Loading ---
         try
         {
             var previews = await _gameService.GetGamePreviewsAsync();
@@ -509,27 +488,26 @@ public class StartPageModel : PageModel
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading game previews.");
-            Games = new List<GamePreviewDTO>(); // Ensure the list is not null
+            Games = new List<GamePreviewDTO>(); 
         }
 
-        // --- Recent Reviews and their Images Loading ---
         try
         {
             var recentReviews = await _reviewService.GetRecentReviewsAsync();
             if (recentReviews == null)
             {
                 _logger.LogWarning("GetRecentReviewsAsync returned null. Initializing Reviews as empty list.");
-                Reviews = new List<ReviewDTO>(); // Or Reviews = new(), depending on your usage
+                Reviews = new List<ReviewDTO>(); 
             }
             else
             {
                 var top10 = recentReviews.Take(10).ToList();
-                ReviewImages = new(); // Ensure it's always initialized
-                var seenGameIds = new HashSet<Guid>(); // Use a HashSet to track seen games
+                ReviewImages = new(); 
+                var seenGameIds = new HashSet<Guid>(); 
 
                 foreach (var review in top10)
                 {
-                    if (seenGameIds.Add(review.GameId)) // Only process the first review per GameId
+                    if (seenGameIds.Add(review.GameId)) 
                     {
                         try
                         {
@@ -557,20 +535,17 @@ public class StartPageModel : PageModel
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading recent reviews or their images.");
-            ReviewImages = new List<ImageReviewDto>(); // Ensure the list is not null
+            ReviewImages = new List<ImageReviewDto>(); 
         }
 
-        // --- Fill ReviewImages if necessary ---
         int minReviewImageCards = 10;
         while (ReviewImages.Count < minReviewImageCards)
         {
             ReviewImages.Add(new ImageReviewDto { HeaderUrl = "/Images/noImage.png" });
         }
 
-        // --- Full Review Cards Loading ---
         try
         {
-            // Request 6 reviews. Assuming GetRecentReviewsAsync(int count) exists.
             var recentReviewsCards = await _reviewService.GetRecentReviewsAsync(6);
             if (recentReviewsCards == null)
             {
@@ -588,7 +563,6 @@ public class StartPageModel : PageModel
 
                     try
                     {
-                        // Validate and get user profile
                         if (!string.IsNullOrEmpty(review.UserId))
                         {
                             var userProfileTask = _userService.GetProfileAsync(review.UserId);
@@ -614,8 +588,7 @@ public class StartPageModel : PageModel
                             _logger.LogWarning("Null/empty UserId in review {ReviewId}.", review.Id);
                         }
 
-                        // Validate and get game details
-                        if (review.GameId != Guid.Empty) // GameId is Guid, correct validation is against Guid.Empty
+                        if (review.GameId != Guid.Empty) 
                         {
                             var game = await _gameService.GetGamePreviewByIdAsync(review.GameId);
                             if (game != null)
@@ -636,7 +609,6 @@ public class StartPageModel : PageModel
                     catch (Exception innerEx)
                     {
                         _logger.LogError(innerEx, "Error processing user or game details for review {ReviewId}.", review.Id);
-                        // Use default values
                     }
 
                     return new ReviewFullDto
@@ -651,7 +623,7 @@ public class StartPageModel : PageModel
                         ProfileImageUrl = avatarUrl,
                         GameImageUrl = gameImageUrl
                     };
-                }).ToList(); // .ToList() to materialize before Task.WhenAll
+                }).ToList(); 
 
                 ReviewCards = (await Task.WhenAll(reviewCardTasks)).ToList();
                 _logger.LogInformation("Loaded {Count} full review cards.", ReviewCards.Count);
@@ -660,11 +632,10 @@ public class StartPageModel : PageModel
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading full review cards.");
-            ReviewCards = new List<ReviewFullDto>(); // Ensure the list is not null
+            ReviewCards = new List<ReviewFullDto>(); 
         }
 
 
-        // --- Recent Public Lists Loading ---
         try
         {
             var allRecentLists = await _gameListService.GetRecentListsAsync();
@@ -680,11 +651,10 @@ public class StartPageModel : PageModel
 
                 var listTasks = publicLists.Select(async list =>
                 {
-                    // Validate list.Id before using it for GetItemsByListIdAsync
                     if (string.IsNullOrWhiteSpace(list.Id))
                     {
                         _logger.LogWarning("List with null/empty ID found. Skipping list processing.");
-                        return null; // Return null to be filtered later
+                        return null; 
                     }
 
                     string userName = "Unknown User";
@@ -713,7 +683,6 @@ public class StartPageModel : PageModel
                             _logger.LogWarning("Null user profile for list {ListId} (UserId: {UserId}).", list.Id, list.UserId);
                         }
 
-                        // Validate items before iterating
                         if (items != null)
                         {
                             foreach (var item in items.Take(4))
@@ -743,8 +712,7 @@ public class StartPageModel : PageModel
                             _logger.LogWarning("Null list items for list {ListId}. Initializing with empty list for logic.", list.Id);
                         }
 
-                        // If no images are added (empty list), add a default one
-                        if (!headersUrl.Any()) // More robust than headersUrl.Count == 0
+                        if (!headersUrl.Any()) 
                         {
                             headersUrl.Add("/Images/noImage.png");
                         }
@@ -752,7 +720,7 @@ public class StartPageModel : PageModel
                     catch (Exception innerEx)
                     {
                         _logger.LogError(innerEx, "Error processing list {ListId}.", list.Id);
-                        return null; // Return null if there's an error processing the list
+                        return null; 
                     }
 
                     return new GameListWithUserDto
@@ -767,16 +735,16 @@ public class StartPageModel : PageModel
                         AvatarUrl = avatarUrl,
                         GameHeaders = headersUrl
                     };
-                }).Where(dto => dto != null); // Filter out lists that returned null due to errors or invalid IDs
+                }).Where(dto => dto != null); 
 
-                RecentLists = (await Task.WhenAll(listTasks)).ToList()!; // The '!' indicates we expect no nulls after the filter
+                RecentLists = (await Task.WhenAll(listTasks)).ToList()!; 
                 _logger.LogInformation("Loaded {Count} recent public lists.", RecentLists.Count);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading recent lists.");
-            RecentLists = new List<GameListWithUserDto>(); // Ensure the list is not null
+            RecentLists = new List<GameListWithUserDto>(); 
         }
 
         _logger.LogInformation("Homepage data loading completed.");

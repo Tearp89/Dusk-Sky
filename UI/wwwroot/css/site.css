@@ -199,7 +199,7 @@ html, body {
     font-weight: 700; /* Más específico para 'bolder' */
     color: #fff; /* Texto blanco en la cita (asumiendo que está sobre una imagen oscura) */
     padding: 15px 20px; /* Ajuste de padding */
-    background-color: rgba(0, 0, 0, 0.2); /* Sutil fondo translúcido para contraste */
+    background-color: rgba(0, 0, 0, 0); /* Sutil fondo translúcido para contraste */
     border-radius: 10px;
     max-width: 80%; /* Para evitar que sea demasiado ancho en pantallas grandes */
 }
@@ -798,7 +798,7 @@ html, body {
     font-weight: 700; /* Asegura un buen peso */
     color: #fff; /* Asumo que sigue sobre imagen oscura */
     padding: 15px 20px;
-    background-color: rgba(0, 0, 0, 0.2); /* Sutil fondo para contraste */
+    background-color: rgba(0, 0, 0, 0); /* Sutil fondo para contraste */
     border-radius: 10px;
     max-width: 90%; /* Mejor adaptabilidad */
 }
