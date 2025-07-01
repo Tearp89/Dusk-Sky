@@ -1,0 +1,55 @@
+@page
+@model CreateListModel
+@{
+    ViewData["Title"] = "Crear Lista";
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-danger border-0 show" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+}
+
+
+<div class="container mb-5 py-5 glass-container text-light" style="margin-top: 100px; max-width: 700px;">
+    <h2 class="mb-4 text-dark text-center">Crear una Nueva Lista</h2>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    
+    <form method="post">
+        <input type="hidden" asp-for="GameId" />
+
+        <div class="form-group">
+            <label asp-for="List.Name" class="glass-label">Nombre de la Lista</label>
+            <input asp-for="List.Name" class="form-control glass-input" placeholder="Ej: Juegos Indie Favoritos" />
+            <span asp-validation-for="List.Name" class="text-danger small"></span>
+        </div>
+
+
+        <div class="form-group">
+            <label asp-for="List.IsPublic" class="glass-label">Visibilidad</label>
+            <select asp-for="List.IsPublic" class="form-select glass-select">
+                <option value="false">🔒 Privada (solo yo)</option>
+                <option value="true">🌍 Pública (todos)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="List.Description" class="glass-label">Descripción</label>
+            <textarea asp-for="List.Description" class="form-control glass-textarea" rows="4" placeholder="¿De qué trata esta lista?"></textarea>
+            <span asp-validation-for="List.Description" class="text-danger small"></span>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-success glass-btn">Siguiente: Seleccionar Juegos →</button>
+        </div>
+    </form>
+</div>

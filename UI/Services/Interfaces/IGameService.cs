@@ -10,4 +10,5 @@ public interface IGameService
     Task<GamePreviewDTO?> GetGamePreviewByIdAsync(Guid id);
     Task<List<GameDetailsDTO>> SearchGameDetailsByNameAsync(string name);
     Task<List<GamePreviewDTO>> SearchGamePreviewsByNameAsync(string name);
+    
 }

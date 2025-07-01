@@ -2,306 +2,285 @@
 @using System.Text.Json
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Página de inicio";
     ViewData["ShowBackground"] = true;
+    ViewData["UseBlurEffect"] = false;
     ViewData["BackgroundImage"] = Url.Content("~/Images/startpage.png");
-    int index = 0;
-    
+    int index = 0; 
 }
 
 <script src="https://kit.fontawesome.com/6f575f0f1f.js" crossorigin="anonymous"></script>
-
 <script src="~/js/site.js"></script>
 
-
-<div class="index-text">
-    <h4>Welcome back, Swizzy13. Here’s what we’ve been watching…</h4>
-    <h6>This homepage will become customized as you follow active members on Letterboxd.</h6>
-</div>
-
-
- <div class="section-container">
-    <h6>New on Dusk Sky</h6>
-    <hr>
- </div>
-
-
-<div class="card-group custom-card-index">
-    @if (TempData["SuccessMessage"] != null)
+@if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
     </div>
 }
 
-   
-    @if (Model.ReviewCards != null && Model.ReviewCards.Count > 0)
-    {
-        @foreach (var review in Model.ReviewCards.Take(6))
-        {
-            <div class="card review-card">
-    <img src="@review.GameImageUrl" class="card-img-top" alt="@review.Id">
-    <div class="card-body d-flex align-items-center px-2 py-2">
-        <img src="@review.ProfileImageUrl" class="avatar-img me-2" alt="avatar">
-        <div class="flex-grow-1">
-            <strong>@review.UserName</strong>
-        </div>
-        <span class=" small">@review.CreatedAt.ToString("MMM dd")</span>
-    </div>
-    <div class="card-footer px-2 py-1 border-0 bg-transparent">
-        <div class="rating-stars">
-            @for (int i = 1; i <= 5; i++)
-            {
-                if (i <= Math.Floor(review.Rating))
-                {
-                    <i class="bi bi-star-fill"></i>
-                }
-                else if (i - review.Rating < 1)
-                {
-                    <i class="bi bi-star-half"></i>
-                }
-                else
-                {
-                    <i class="bi bi-star"></i>
-                }
-            }
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
         </div>
     </div>
+}
+
+<div class="index-text">
+    <h4 style="color: white;">@ViewData["WelcomeMessage"]</h4> 
+    <h6>Esta página de inicio se personalizará a medida que sigas a miembros activos en Letterboxd.</h6>
 </div>
 
-        }
-
-        @for (int i = Model.ReviewCards.Count; i < 6; i++)
+<div class="section-container">
+    <h6>
+        @if (Model.HasFriends)
         {
-            <div class="card card-glossy m-2" style="width: 12rem;">
-                <img src="/Images/noImage.png" class="card-img-top poster" alt="Placeholder">
-            </div>
+            <span>Novedades de tus amigos</span>
         }
-    }
-    else
-    {
-        @for (int i = 0; i < 6; i++)
+        else
         {
-            <div class="card card-glossy m-2" style="width: 12rem;">
-                <img src="/Images/noImage.png" class="card-img-top poster" alt="Placeholder">
-            </div>
+            <span>Novedades en Dusk Sky</span>
         }
-    }
-</div>
-
-<div >
-    <br>
-    <h6>Popular with friends</h6>
+    </h6>
     <hr>
-    <div>
-        <div class="card-group custom-card-reviewed">
-            @if (Model.Games != null && Model.Games.Count > 0)
-            {
-                @foreach (var game in Model.Games.Take(6))
-                {
-                    <div class="card">
-                        <div class="card-body">
+</div>
 
-                            <img src="@game.HeaderUrl" class="card-img-top">
+<div class="card-group custom-card-index">
+    
+
+    @{
+        var reviewsToDisplay = Model.ReviewCards?.Take(6).ToList() ?? new List<ReviewFullDto>();
+        for (int i = 0; i < 6; i++)
+        {
+            if (i < reviewsToDisplay.Count)
+            {
+                var review = reviewsToDisplay[i];
+                <div class="card review-card clickable-card" data-href="/Reviews/Details?reviewId=@review.Id">
+                    <img src="@review.GameImageUrl" class="card-img-top" alt="@review.Id">
+                    <div class="card-body d-flex align-items-center px-2 py-2">
+                        <img src="@review.ProfileImageUrl" class="avatar-img me-2" alt="avatar">
+                        <div class="flex-grow-1">
+                            <strong>@review.UserName</strong>
+                        </div>
+                        <span class="small">@review.CreatedAt.ToString("MMM dd")</span>
+                    </div>
+                    <div class="card-footer px-2 py-1 border-0 bg-transparent">
+                        <div class="rating-stars">
+                            @for (int j = 1; j <= 5; j++)
+                            {
+                                if (j <= Math.Floor(review.Rating))
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                }
+                                else if (j - review.Rating < 1)
+                                {
+                                    <i class="bi bi-star-half"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star"></i>
+                                }
+                            }
                         </div>
                     </div>
-                }
-                @for (int i = Model.Games.Count; i < 10; i++)
-                {
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title">Sin Comentarios</h6>
-                            <p class="card-text">No hay comentarios recientes.</p>
-                        </div>
-                    </div>
-                }
+                </div>
             }
             else
             {
-                @for (int i = 0; i < 10; i++)
-                {
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title">Cargando...</h6>
-                            <p class="card-text">Esperando comentarios.</p>
-                        </div>
-                    </div>
-                }
+                <div class="card card-glossy m-2" style="width: 12rem;">
+                    <img src="/Images/noImage.png" class="card-img-top poster" alt="Marcador de posición">
+                </div>
             }
-        </div>
-
+        }
+    }
 </div>
 
 <div>
     <br>
-    <h6>Popular reviews This week</h6>
+    <h6>Algunos juegos para empezar</h6>
     <hr>
-    <div style="display: flex; gap: 20px; align-items: flex-start;">
-        <div style="flex: 1;" class="d-flex flex-column gap-3">
-@foreach (var review in Model.ReviewCards.Take(10))
-{
-    <div class="card mb-4 rounded-3 shadow-sm border-0" clickable-review-card data-href="/Reviews/Details?reviewId=@review.Id"
-     style="cursor: pointer;" >
-        <div class="row g-0">
-            <!-- Imagen del juego -->
-            <div class="col-md-4 position-relative">
-                <img src="@review.GameImageUrl"
-                     class="img-fluid h-100 object-fit-cover rounded-start"
-                     alt="Juego asociado">
-                <!-- Badge de likes en la esquina -->
-                <div class="position-absolute top-0 end-0 m-2 badge bg-primary-subtle text-primary-emphasis px-2 py-1 fs-6 like-badge animate-like" data-review-id="@review.Id">
-    <i class="bi bi-heart-fill me-1"></i> <span class="like-count">@review.Likes</span>
-</div>
-
-            </div>
-
-            <!-- Contenido -->
-            <div class="col-md-8 p-3 d-flex flex-column justify-content-between">
-                <!-- Encabezado -->
-                <div>
-                    <h5 class="card-title mb-1">
-                        @review.Content.Substring(0, Math.Min(30, review.Content.Length))...
-                        <span class="text-muted fs-6">(@review.CreatedAt.ToString("yyyy"))</span>
-                    </h5>
-
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <img src="@review.ProfileImageUrl" class="rounded-circle" alt="@review.UserName" width="36" height="36" style="object-fit: cover;">
-                        <strong>@review.UserName</strong>
-                    </div>
-
-                    <p class="mb-2">@review.Content</p>
-                    <small class="text-muted">Publicado el @review.CreatedAt.ToString("dd MMM")</small>
-                </div>
-
-                <!-- Botones -->
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="/Reviews/Details?reviewId=@review.Id#comentarios"
-   class="btn btn-outline-primary"
-   onclick="event.stopPropagation();">
-   <i class="bi bi-chat-left-text"></i> Comentar
-</a>
-
-
-                    <form method="post" asp-page-handler="ToggleLike" class="like-form" data-review-id="@review.Id">
-    <input type="hidden" name="ReviewId" value="@review.Id" />
-    <input type="hidden" name="UserId" value="@Model.UserId" />
-    <button type="button"
-        class="btn btn-sm @(review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
-        onclick="event.stopPropagation(); toggleLike(this);">
-        <i class="bi @(review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
-        <span class="like-text">@(review.UserLiked ? "Quitar like" : "Me gusta")</span>
-        <span class="like-count visually-hidden">@review.Likes</span>
-    </button>
-</form>
-
-
-                </div>
-            </div>
+    <div>
+        <div class="card-group custom-card-reviewed">
+            @{
+                var gamesToDisplay = Model.Games?.Take(10).ToList() ?? new List<GamePreviewDTO>();
+                for (int i = 0; i < 10; i++)
+                {
+                    if (i < gamesToDisplay.Count)
+                    {
+                        var game = gamesToDisplay[i];
+                        <div class="card clickable-card" data-href="@Url.Page("/Games/GameDetails", new { gameId = game.Id })">
+                            <div class="card-body">
+                                <img src="@game.HeaderUrl" class="card-img-top" alt="Encabezado del juego">
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Sin comentarios</h6>
+                                <p class="card-text">No hay comentarios recientes.</p>
+                            </div>
+                        </div>
+                    }
+                }
+            }
         </div>
-    </div>
-}
-        </div>
-
-        <div style="flex: 1;" class="d-flex flex-column gap-4">
-@foreach (var review in Model.ReviewCards.Take(20))
-{
-    <div class="card mb-4 rounded-3 shadow-sm border-0" clickable-review-card data-href="/Reviews/Details?reviewId=@review.Id"
-     style="cursor: pointer;" >
-        <div class="row g-0">
-            <!-- Imagen del juego -->
-            <div class="col-md-4 position-relative">
-                <img src="@review.GameImageUrl"
-                     class="img-fluid h-100 object-fit-cover rounded-start"
-                     alt="Juego asociado">
-                <!-- Badge de likes en la esquina -->
-                <div class="position-absolute top-0 end-0 m-2 badge bg-primary-subtle text-primary-emphasis px-2 py-1 fs-6 like-badge animate-like" data-review-id="@review.Id">
-    <i class="bi bi-heart-fill me-1"></i> <span class="like-count">@review.Likes</span>
-</div>
-
-            </div>
-
-            <!-- Contenido -->
-            <div class="col-md-8 p-3 d-flex flex-column justify-content-between">
-                <!-- Encabezado -->
-                <div>
-                    <h5 class="card-title mb-1">
-                        @review.Content.Substring(0, Math.Min(30, review.Content.Length))...
-                        <span class="text-muted fs-6">(@review.CreatedAt.ToString("yyyy"))</span>
-                    </h5>
-
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <img src="@review.ProfileImageUrl" class="rounded-circle" alt="@review.UserName" width="36" height="36" style="object-fit: cover;">
-                        <strong>@review.UserName</strong>
-                    </div>
-
-                    <p class="mb-2">@review.Content</p>
-                    <small class="text-muted">Publicado el @review.CreatedAt.ToString("dd MMM")</small>
-                </div>
-
-                <!-- Botones -->
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="/Reviews/Details?reviewId=@review.Id#comentarios"
-   class="btn btn-outline-primary"
-   onclick="event.stopPropagation();">
-   <i class="bi bi-chat-left-text"></i> Comentar
-</a>
-
-
-                    <form method="post" asp-page-handler="ToggleLike" class="like-form" data-review-id="@review.Id">
-    <input type="hidden" name="ReviewId" value="@review.Id" />
-    <input type="hidden" name="UserId" value="@Model.UserId" />
-    <button type="button"
-        class="btn btn-sm @(review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
-        onclick="event.stopPropagation(); toggleLike(this);">
-        <i class="bi @(review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
-        <span class="like-text">@(review.UserLiked ? "Quitar like" : "Me gusta")</span>
-        <span class="like-count visually-hidden">@review.Likes</span>
-    </button>
-</form>
-
-
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
-</div>
-
     </div>
 </div>
 
 <div>
-    <h6><a href="/StartPage">Popular lists This week</a></h6>
+    <br>
+    <h6>Reseñas populares esta semana</h6>
     <hr>
+    <div class="row"> 
+        <div class="col-md-6">
+            <h5>Populares</h5>
+            <div class="d-flex flex-column gap-3">
+                @foreach (var review in Model.PopularReviewCards?.Take(10) ?? new List<ReviewFullDto>())
+                {
+                    <div class="card mb-4 rounded-3 shadow-sm border-0 clickable-card" data-href="/Reviews/Details?reviewId=@review.Id">
+                        <div class="row g-0">
+                            <div class="col-md-4 position-relative">
+                                <img src="@review.GameImageUrl" class="img-fluid h-100 object-fit-cover rounded-start" alt="Juego asociado">
+                                <div class="position-absolute top-0 end-0 m-2 badge bg-primary-subtle text-primary-emphasis px-2 py-1 fs-6 like-badge animate-like" data-review-id="@review.Id">
+                                    <i class="bi bi-heart-fill me-1"></i> <span class="like-count">@review.Likes</span>
+                                </div>
+                            </div>
+                            <div class="col-md-8 p-3 d-flex flex-column justify-content-between">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        @review.GameTitle
+                                        <span class="text-muted fs-6">(@review.CreatedAt.ToString("yyyy"))</span>
+                                    </h5>
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <img src="@review.ProfileImageUrl" class="rounded-circle" alt="@review.UserName" width="36" height="36" style="object-fit: cover;">
+                                        <strong>@review.UserName</strong>
+                                    </div>
+                                    <p class="mb-2">@review.Content</p>
+                                    <small class="text-muted">Publicado el @review.CreatedAt.ToString("dd MMM")</small>
+                                </div>
+                                <div class="d-flex justify-content-between mt-3">
+                                    <a href="/Reviews/Details?reviewId=@review.Id#comentarios"
+                                       class="btn btn-outline-primary"
+                                       onclick="event.stopPropagation();">
+                                        <i class="bi bi-chat-left-text"></i> Comentar
+                                    </a>
+                                    <form method="post" asp-page-handler="ToggleLike" class="like-form" data-review-id="@review.Id">
+                                        <input type="hidden" name="ReviewId" value="@review.Id" />
+                                        <input type="hidden" name="UserId" value="@Model.UserId" />
+                                        <button type="button"
+                                                class="btn btn-sm @(review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
+                                                onclick="event.stopPropagation(); toggleLike(this);">
+                                            <i class="bi @(review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                                            <span class="like-text">@(review.UserLiked ? "Quitar me gusta" : "Me gusta")</span>
+                                            <span class="like-count visually-hidden">@review.Likes</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
 
-    <!-- Scroll horizontal -->
-    <div style="display: flex; overflow-x: auto; gap: 20px; padding-bottom: 10px;">
-        @foreach (var list in Model.RecentLists)
+        <div class="col-md-6"> @* Segunda columna para Reseñas Recientes *@
+            <h5>Recientes</h5>
+            <div class="d-flex flex-column gap-4">
+                @foreach (var review in Model.RecentReviewCards?.Take(10) ?? new List<ReviewFullDto>())
+                {
+                    <div class="card mb-4 rounded-3 shadow-sm border-0 clickable-card" data-href="/Reviews/Details?reviewId=@review.Id">
+                        <div class="row g-0">
+                            <div class="col-md-4 position-relative">
+                                <img src="@review.GameImageUrl" class="img-fluid h-100 object-fit-cover rounded-start" alt="Juego asociado">
+                                <div class="position-absolute top-0 end-0 m-2 badge bg-primary-subtle text-primary-emphasis px-2 py-1 fs-6 like-badge animate-like" data-review-id="@review.Id">
+                                    <i class="bi bi-heart-fill me-1"></i> <span class="like-count">@review.Likes</span>
+                                </div>
+                            </div>
+                            <div class="col-md-8 p-3 d-flex flex-column justify-content-between">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        @review.GameTitle
+                                        <span class="text-muted fs-6">(@review.CreatedAt.ToString("yyyy"))</span>
+                                    </h5>
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <img src="@review.ProfileImageUrl" class="rounded-circle" alt="@review.UserName" width="36" height="36" style="object-fit: cover;">
+                                        <strong>@review.UserName</strong>
+                                    </div>
+                                    <p class="mb-2">@review.Content</p>
+                                    <small class="text-muted">Publicado el @review.CreatedAt.ToString("dd MMM")</small>
+                                </div>
+                                <div class="d-flex justify-content-between mt-3">
+                                    <a href="/Reviews/Details?reviewId=@review.Id#comentarios"
+                                       class="btn btn-outline-primary"
+                                       onclick="event.stopPropagation();">
+                                        <i class="bi bi-chat-left-text"></i> Comentar
+                                    </a>
+                                    <form method="post" asp-page-handler="ToggleLike" class="like-form" data-review-id="@review.Id">
+                                        <input type="hidden" name="ReviewId" value="@review.Id" />
+                                        <input type="hidden" name="UserId" value="@Model.UserId" />
+                                        <button type="button"
+                                                class="btn btn-sm @(review.UserLiked ? "btn-like-filled" : "btn-like-outline") btn-like"
+                                                onclick="event.stopPropagation(); toggleLike(this);">
+                                            <i class="bi @(review.UserLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                                            <span class="like-text">@(review.UserLiked ? "Quitar me gusta" : "Me gusta")</span>
+                                            <span class="like-count visually-hidden">@review.Likes</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <h6>Listas populares esta semana</h6>
+    <hr>
+<div class="d-flex flex-row overflow-auto gap-3 pb-3">
+        @foreach (var list in Model.RecentLists ?? new List<GameListWithUserDto>())
         {
+            if (string.IsNullOrWhiteSpace(list.Id)) continue;
             var id = $"collage-{index++}";
             var json = JsonSerializer.Serialize(list.GameHeaders, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
 
-            <div style="flex: 0 0 auto; width: 250px;" class="card card-glossy-light">
-                <div id="@id" class="poster-collage" style="position: relative; height: 140px; overflow: hidden;"></div>
-                <div class="card-body">
-                    <h5 class="card-title" style="font-size: 1rem;">@list.Name</h5>
-
-                    <div class="d-flex align-items-center user-info mb-2">
-                        <img src="@list.AvatarUrl" alt="Usuario" class="user-avatar" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 5px;">
-                        <span><strong>@list.UserName</strong></span>
+            <div class="flex-shrink-0 clickable-card" style="width: 250px;" data-href="/Lists/ListDetails/@list.Id">
+                <div class="card card-glossy-light h-100">
+                    <div id="@id" class="poster-collage" style="position: relative; height: 140px; overflow: hidden;"></div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title" style="font-size: 1rem;">@list.Name</h5>
+                        <div class="d-flex align-items-center user-info mb-2">
+                            <img src="@list.AvatarUrl" alt="Usuario" class="user-avatar" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 5px;">
+                            <span><strong>@list.UserName</strong></span>
+                        </div>
+                        <p class="card-text mt-auto">
+                            <small class="text-muted">Última actualización...</small>
+                        </p>
                     </div>
-
-                    <p class="card-text">
-                        <small class="text-muted">Última actualización...</small>
-                    </p>
                 </div>
             </div>
-
+            
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     const pelis = @Html.Raw(json);
@@ -312,7 +291,7 @@
                             const img = document.createElement('img');
                             img.src = peli;
                             img.alt = "Imagen del juego";
-                            img.classList.add('poster');
+                            img.classList.add('poster'); // Asegúrate de que esta clase tenga los estilos adecuados
                             img.style.position = 'absolute';
                             img.style.left = `${i * 40}px`;
                             img.style.height = '100%';
@@ -326,3 +305,49 @@
     </div>
 </div>
 
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            document.querySelectorAll('.clickable-card').forEach(card => {
+                card.style.cursor = 'pointer'; 
+                card.addEventListener('click', function(event) {
+                    if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A' || event.target.closest('form')) {
+                        return;
+                    }
+                    const href = this.dataset.href;
+                    if (href) {
+                        window.location.href = href;
+                    }
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+            const toastElList = [].slice.call(document.querySelectorAll('.toast'))
+            const toastList = toastElList.map(function (toastEl) {
+                return new bootstrap.Toast(toastEl, { delay: 4000 }) 
+            })
+            toastList.forEach(toast => toast.show());
+        });
+
+            document.querySelectorAll('.poster-collage').forEach(collageContainer => {
+                const gameHeadersJson = collageContainer.dataset.gameHeaders;
+                if (gameHeadersJson) {
+                    try {
+                        const gameHeaders = JSON.parse(gameHeadersJson);
+                        gameHeaders.forEach((headerUrl, i) => {
+                            const img = document.createElement('img');
+                            img.src = headerUrl;
+                            img.alt = "Imagen del juego";
+                            img.classList.add('poster-collage-item');
+                            img.style.left = `${i * 40}px`; 
+                            collageContainer.appendChild(img);
+                        });
+                    } catch (e) {
+                        console.error("Error al analizar el JSON de gameHeaders:", e);
+                    }
+                }
+            });
+        });
+    </script>
+}

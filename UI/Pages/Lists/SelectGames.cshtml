@@ -1,0 +1,95 @@
+@page "{listId}"
+@model SelectGamesModel
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show">
+            <div class="d-flex">
+                <div class="toast-body">@TempData["SuccessMessage"]</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-danger border-0 show">
+            <div class="d-flex">
+                <div class="toast-body">@TempData["ErrorMessage"]</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="container mt-5 p-4 text-dark rounded shadow main-container" style="max-width: 900px;">
+    <h2 class="mb-4 fw-semibold">Seleccionar Juegos para la Lista</h2>
+
+    <form method="post" asp-page-handler="Search" class="d-flex mb-4">
+        <input asp-for="SearchQuery" class="form-control bg-light text-dark me-2 input-glass rounded-pill" placeholder="Buscar juego..." />
+        <button class="button-glass" type="submit">Buscar</button>
+    </form>
+
+    @if (Model.SelectedGames.Any())
+    {
+        <div class="mb-5">
+            <h5 class="mb-3">Juegos Seleccionados:</h5>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var game in Model.SelectedGames)
+                {
+                    <div class="card glossy-card" style="width: 140px; position: relative;">
+                        <form method="post" asp-page-handler="RemoveGame" style="position: absolute; top: 2px; right: 2px;">
+                            <input type="hidden" name="listId" value="@Model.ListId" />
+                            <input type="hidden" name="gameId" value="@game.Game.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger" style="padding: 2px 6px;">×</button>
+                        </form>
+                        <img src="@game.Game.HeaderUrl" class="card-img-top" style="height: 140px; object-fit: cover;" alt="Imagen de @game.Game.Title" />
+                        <div class="card-body p-2">
+                            <small class="fw-bold">@game.Game.Title</small><br />
+                            <small class="text-muted">@game.Notes</small>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (Model.SearchResults?.Any() == true)
+    {
+        <h5 class="mb-3">Resultados:</h5>
+        <div class="d-flex flex-wrap gap-3">
+            @foreach (var game in Model.SearchResults)
+            {
+                <form method="post" asp-page-handler="AddGame" class="card glass-card text-light p-2" style="width: 12rem;">
+                    <input type="hidden" name="listId" value="@Model.ListId" />
+                    <input type="hidden" name="gameId" value="@game.Id" />
+                    <img src="@game.HeaderUrl" class="card-img-top" style="height: 160px; object-fit: cover;" alt="Imagen de @game.Title" />
+                    <div class="card-body p-2">
+                        <h6 class="card-title">@game.Title</h6>
+                        <textarea name="notes" placeholder="Añadir una nota..." class="form-control form-control-sm mb-2" style="resize: none;"></textarea>
+                        <button type="submit" class="btn btn-sm btn-primary w-100">Añadir</button>
+                    </div>
+                </form>
+            }
+        </div>
+    }
+
+    <form method="post" asp-page-handler="Finish" class="mt-4">
+        <input type="hidden" name="listId" value="@Model.ListId" />
+        <button type="submit" class="button-glass-blue">Finalizar y Guardar Lista</button>
+    </form>
+</div>  
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(t => new bootstrap.Toast(t, { delay: 4000 }).show());
+        });
+    </script>
+}

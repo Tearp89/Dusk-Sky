@@ -1,0 +1,327 @@
+@page "{id}"
+@model ListDetailsModel
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "List Details";
+}
+
+<div class="container mt-5 py-5">
+    @{
+        var successMessage = TempData["SuccessMessage"] as string;
+        var errorMessage = TempData["ErrorMessage"] as string;
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+            <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        @TempData["SuccessMessage"]
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Cerrar"></button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+            <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        @TempData["ErrorMessage"]
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Cerrar"></button>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="card shadow p-4 glossy-card">
+        <div class="d-flex justify-content-between align-items-start">
+            <h2 class="fw-bold">@Model.List.Name</h2>
+
+
+            <div class="dropdown">
+                <button class="btn btn-light btn-sm" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    ⋮
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    <li>
+                        <form method="post" asp-page-handler="DeleteList"
+                            onsubmit="return confirm('¿Seguro que quieres eliminar esta lista? Esta acción no se puede deshacer.');">
+                            <input type="hidden" name="ListId" value="@Model.List.Id" />
+                            @if (Model.IsOwner || User.IsInRole("moderator") || User.IsInRole("admin"))
+                            {
+                                <button type="submit" class="dropdown-item text-danger">🗑 Delete list</button>
+                            }
+
+                        </form>
+                    </li>
+                    <li>
+                        @if (!Model.IsOwner)
+                        {
+                            <button type="button" class="dropdown-item text-warning" data-bs-toggle="modal"
+                                data-bs-target="#reportListModal">
+                                🚩 Report list
+                            </button>
+                        }
+
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+        @if (Model.IsOwner)
+        {
+            <!-- Descripción con botón de editar -->
+            <div class="d-flex align-items-start justify-content-between text-muted mb-3">
+                <div class="flex-grow-1">
+                    <span id="list-description">@Model.List.Description</span>
+                    <form method="post" asp-page-handler="EditDescription" class="d-none d-inline" id="edit-form">
+                        <input type="hidden" name="ListId" value="@Model.List.Id" />
+                        <input type="text" name="NewDescription" id="description-input"
+                            class="form-control form-control-sm d-inline w-auto ms-2 me-2"
+                            value="@Model.List.Description" />
+                        <button type="submit" class="btn btn-success btn-sm me-1">✔</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit()">✖</button>
+                    </form>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm" onclick="startEdit()" id="edit-btn"
+                    title="Editar descripción">
+                    ✏️
+                </button>
+            </div>
+
+        }
+
+        <div class="d-flex align-items-center mb-3">
+            <img src="@Model.UserData.AvatarUrl" class="rounded-circle me-2" style="width: 40px; height: 40px;" />
+            <span class="fw-semibold">@Model.UserData.Username</span>
+        </div>
+
+        <div class="poster-collage mb-3" id="poster-collage"
+            style="height: 180px; border-radius: 12px; overflow: hidden;">
+            @foreach (var game in Model.Games.Take(5))
+            {
+                <img src="@game.Game.HeaderUrl" style="width: 20%; height: 100%; object-fit: cover;" />
+            }
+        </div>
+
+        <h4 class="mt-4 mb-3">Juegos en esta lista</h4>
+
+        <!-- Formulario de búsqueda -->
+        @if (Model.IsOwner)
+        {
+            <form method="post" asp-page-handler="Search" class="d-flex mb-4">
+                <input asp-for="SearchTerm" class="form-control bg-light text-dark me-2 input-glass rounded-pill"
+                    placeholder="Search game..." />
+                <button class="button-glass" type="submit">Search</button>
+            </form>
+        }
+
+        <!-- Resultados de búsqueda -->
+        @if (Model.SearchResults?.Any() == true)
+        {
+            <h5 class="mb-3">Results:</h5>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var game in Model.SearchResults)
+                {
+                    <button type="button" class="btn p-0 border-0 bg-transparent" data-bs-toggle="modal"
+                        data-bs-target="#addGameModal" data-game-id="@game.Id" data-title="@game.Title"
+                        data-img="@game.HeaderUrl">
+                        <div class="card glass-card text-light" style="width: 12rem;">
+                            <img src="@game.HeaderUrl" class="card-img-top" />
+                            <div class="card-body">
+                                <h6 class="card-title">@game.Title</h6>
+                                <small>Click to add</small>
+                            </div>
+                        </div>
+                    </button>
+                }
+            </div>
+        }
+
+        @if (Model.Games.Count == 0)
+        {
+            <div class="alert alert-info">
+                Esta lista no tiene juegos todavía. ¡Agrégale algunos para compartirla!
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var item in Model.Games)
+                {
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100 hover-shadow position-relative">
+                            <a asp-page="/Games/Details" asp-route-id="@item.Game.Id" class="text-decoration-none text-dark">
+                                <img src="@item.Game.HeaderUrl" class="card-img-top"
+                                    style="height: 200px; object-fit: cover;" />
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.Game.Title</h5>
+                                    @if (!string.IsNullOrWhiteSpace(item.Notes))
+                                    {
+                                        <p class="card-text">
+                                            <small class="text-muted">📝 @item.Notes</small>
+                                        </p>
+                                    }
+                                </div>
+                            </a>
+                            @if (Model.IsOwner)
+                            {
+                                <form method="post" asp-page-handler="DeleteGame"
+                                    onsubmit="return confirm('¿Estás seguro de que quieres eliminar este juego de la lista?');"
+                                    class="position-absolute top-0 end-0 m-2">
+                                    <input type="hidden" name="itemId" value="@item.ItemId" />
+                                    <input type="hidden" name="listId" value="@Model.List.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addGameModal" tabindex="-1" aria-labelledby="addGameModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glossy-card">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addGameModalLabel">Agregar juego</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="AddGame">
+                <div class="modal-body">
+                    <input type="hidden" name="gameId" id="modalGameId" />
+                    <input type="hidden" name="listId" value="@Model.List.Id" />
+                    <div class="mb-2">
+                        <strong id="modalGameTitle"></strong>
+                    </div>
+                    <div class="mb-3">
+                        <img id="modalGameImage" src="" class="img-fluid rounded shadow" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalNotes" class="form-label">Comentario (opcional):</label>
+                        <textarea name="notes" id="modalNotes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success button-glass-blue">Agregar</button>
+                    <button type="button" class="btn btn-secondary button-glass"
+                        data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="reportListModal" tabindex="-1" aria-labelledby="reportListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="ReportList">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="reportListModalLabel">🚩 Report List</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="listId" value="@Model.List.Id" />
+
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason:</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="4" required
+                            placeholder="Explain why you are reporting this list..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const collage = document.getElementById("poster-collage");
+            collage.innerHTML = "";
+
+            const images = [
+                    @foreach (var game in Model.Games.Take(5))
+                {
+                    <text>"@game.Game.HeaderUrl",</text>
+                    }
+                ];
+
+            images.forEach(url => {
+                const img = document.createElement("img");
+                img.src = url;
+                img.style.width = "20%";
+                img.style.height = "100%";
+                img.style.objectFit = "cover";
+                collage.appendChild(img);
+            });
+
+            const addGameModal = document.getElementById('addGameModal');
+            if (addGameModal) {
+                addGameModal.addEventListener('show.bs.modal', event => {
+                    const button = event.relatedTarget;
+                    document.getElementById('modalGameId').value = button.getAttribute('data-game-id');
+                    document.getElementById('modalGameTitle').innerText = button.getAttribute('data-title');
+                    document.getElementById('modalGameImage').src = button.getAttribute('data-img');
+                    document.getElementById('modalNotes').value = "";
+                });
+            }
+        });
+
+        function startEdit() {
+            document.getElementById("list-description").style.display = "none";
+            document.getElementById("edit-form").classList.remove("d-none");
+            document.getElementById("edit-btn").style.display = "none";
+        }
+
+        function cancelEdit() {
+            document.getElementById("list-description").style.display = "inline";
+            document.getElementById("edit-form").classList.add("d-none");
+            document.getElementById("edit-btn").style.display = "inline-block";
+        }
+    </script>
+}
+
+<style>
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+    .modal {
+        z-index: 1055 !important;
+    }
+
+    .glassy-modal {
+        z-index: 1056 !important;
+        position: relative;
+    }
+
+    .poster-collage {
+        position: relative;
+        z-index: 1 !important;
+    }
+
+    .dropdown-menu {
+        z-index: 2000;
+    }
+</style>

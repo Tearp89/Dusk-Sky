@@ -1,8 +1,131 @@
 ﻿@page
 @model PrivacyModel
 @{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Política de Privacidad";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container privacy-container mt-5 py-5">
+    <h1 class="text-center mb-4">@ViewData["Title"]</h1>
+    <hr class="mb-5">
+
+    <section class="privacy-section">
+        <h2>Introducción</h2>
+        <p>En nuestra plataforma, nos tomamos muy en serio tu privacidad. Esta política de privacidad explica cómo recopilamos, usamos, procesamos y protegemos tu información personal cuando utilizas nuestro sitio web y servicios.</p>
+        <p>Al acceder o usar nuestra plataforma, aceptas las prácticas descritas en esta política de privacidad. Si no estás de acuerdo con los términos de esta política, por favor, no utilices nuestros servicios.</p>
+    </section>
+
+    <section class="privacy-section">
+        <h2>Información que Recopilamos</h2>
+        <p>Podemos recopilar varios tipos de información en relación con tus actividades en nuestra plataforma, incluyendo:</p>
+        <ul>
+            <li><strong>Información de Registro:</strong> Cuando creas una cuenta, recopilamos tu nombre de usuario, dirección de correo electrónico y contraseña.</li>
+            <li><strong>Información de Perfil:</strong> Puedes optar por proporcionar información adicional en tu perfil, como una biografía y fotos de avatar/banner.</li>
+            <li><strong>Datos de Uso:</strong> Recopilamos información sobre cómo interactúas con la plataforma, incluyendo los juegos que registras, reseñas que publicas, listas que creas, y usuarios que sigues o con los que interactúas.</li>
+            <li><strong>Información Técnica:</strong> Esto puede incluir tu dirección IP, tipo de navegador, sistema operativo, páginas visitadas y el tiempo dedicado a esas páginas.</li>
+        </ul>
+    </section>
+
+    <section class="privacy-section">
+        <h2>Cómo Usamos Tu Información</h2>
+        <p>Usamos la información que recopilamos para diversos fines, incluyendo:</p>
+        <ul>
+            <li>Para proporcionar y mantener nuestros servicios, incluyendo la gestión de tu cuenta y perfil.</li>
+            <li>Para personalizar tu experiencia y ofrecerte contenido relevante (por ejemplo, recomendaciones de juegos).</li>
+            <li>Para mejorar, operar y optimizar nuestra plataforma y servicios.</li>
+            <li>Para comunicarnos contigo sobre tu cuenta, actualizaciones de la plataforma y ofertas promocionales.</li>
+            <li>Para garantizar la seguridad de nuestra plataforma y prevenir actividades fraudulentas o maliciosas.</li>
+            <li>Para cumplir con nuestras obligaciones legales.</li>
+        </ul>
+    </section>
+
+    <section class="privacy-section">
+        <h2>Compartir y Divulgar Información</h2>
+        <p>No vendemos ni alquilamos tu información personal a terceros. Sin embargo, podemos compartir información en las siguientes circunstancias:</p>
+        <ul>
+            <li><strong>Con tu Consentimiento:</strong> Podemos compartir tu información cuando nos das permiso explícito para hacerlo.</li>
+            <li><strong>Proveedores de Servicios:</strong> Podemos compartir información con terceros que realizan servicios en nuestro nombre (por ejemplo, alojamiento, análisis de datos). Estos proveedores están obligados contractualmente a proteger tu información.</li>
+            <li><strong>Cumplimiento Legal:</strong> Podemos divulgar tu información si así lo exige la ley o en respuesta a solicitudes legales válidas (por ejemplo, una orden judicial).</li>
+            <li><strong>Transferencias Comerciales:</strong> En caso de fusión, adquisición o venta de activos, tu información puede ser transferida como parte de esa transacción.</li>
+        </ul>
+    </section>
+
+    <section class="privacy-section">
+        <h2>Tus Derechos de Privacidad</h2>
+        <p>Tienes ciertos derechos con respecto a tu información personal:</p>
+        <ul>
+            <li><strong>Acceso:</strong> Puedes solicitar acceso a la información personal que tenemos sobre ti.</li>
+            <li><strong>Rectificación:</strong> Puedes solicitar que corrijamos cualquier información personal inexacta o incompleta.</li>
+            <li><strong>Eliminación:</strong> Puedes solicitar la eliminación de tu cuenta y datos personales, sujeto a ciertas excepciones legales.</li>
+            <li><strong>Oposición:</strong> Tienes derecho a oponerte al procesamiento de tu información personal en determinadas circunstancias.</li>
+        </ul>
+        <p>Para ejercer cualquiera de estos derechos, por favor, contáctanos utilizando la información proporcionada al final de esta política.</p>
+    </section>
+
+    <section class="privacy-section">
+        <h2>Seguridad de Datos</h2>
+        <p>Implementamos medidas de seguridad técnicas y organizativas razonables para proteger tu información personal contra el acceso no autorizado, la divulgación, la alteración o la destrucción.</p>
+        <p>Sin embargo, ninguna transmisión de datos por internet o sistema de almacenamiento puede garantizarse como 100% segura. Por lo tanto, aunque nos esforzamos por proteger tu información, no podemos garantizar su seguridad absoluta.</p>
+    </section>
+
+    <section class="privacy-section">
+        <h2>Cambios en Esta Política de Privacidad</h2>
+        <p>Podemos actualizar esta política de privacidad ocasionalmente para reflejar cambios en nuestras prácticas o por otras razones operativas, legales o reglamentarias. Te notificaremos sobre cualquier cambio sustancial publicando la nueva política en esta página y actualizando la "Fecha de Última Actualización" en la parte superior.</p>
+        <p class="text-muted small">Última Actualización: 30 de junio de 2025</p>
+    </section>
+
+    <section class="privacy-section">
+        <h2>Contacto</h2>
+        <p>Si tienes preguntas o preocupaciones sobre esta política de privacidad o nuestras prácticas de datos, por favor, contáctanos a través de:</p>
+        <address>
+            <strong>Correo electrónico:</strong> <a href="mailto:soporte@duskysky.com">soporte@duskysky.com</a><br>
+            <strong>Dirección:</strong> [Tu Dirección o Información de Contacto, si aplica]
+        </address>
+    </section>
+
+</div>
+
+<style>
+    /* Estilos generales del contenedor */
+    .privacy-container {
+        background-color: #ffffff; /* Fondo blanco */
+        border-radius: 12px; /* Bordes redondeados */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Sombra suave */
+        padding: 40px; /* Espaciado interno */
+    }
+
+    /* Estilos para los encabezados de sección */
+    .privacy-section h2 {
+        color: #007bff; /* Azul primario de Bootstrap */
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef; /* Línea divisoria */
+        font-weight: 600; /* Seminegrita */
+    }
+
+    /* Estilos para párrafos y listas */
+    .privacy-section p,
+    .privacy-section ul {
+        line-height: 1.8; /* Mayor altura de línea para mejor legibilidad */
+        color: #343a40; /* Texto oscuro */
+        margin-bottom: 15px;
+    }
+
+    .privacy-section ul {
+        padding-left: 25px; /* Sangría para listas */
+    }
+
+    .privacy-section ul li {
+        margin-bottom: 8px; /* Espaciado entre elementos de lista */
+    }
+
+    .privacy-section strong {
+        color: #0056b3; /* Un azul ligeramente más oscuro para resaltar */
+    }
+
+    /* Estilos para el divisor horizontal */
+    hr {
+        border-top: 1px solid #ced4da; /* Un gris más claro para la línea de separación */
+    }
+
+    
+</style>

@@ -1,0 +1,27 @@
+
+
+version: '3.8'
+
+services:
+  frontend: 
+    build:
+      context: ./ 
+      dockerfile: Dockerfile 
+    container_name: dusk_frontend_container 
+    ports:
+      - "8080:80" 
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development 
+      - API_GATEWAY_URL=http://nginx_gateway/
+    volumes:
+      - frontend_dataprotection_keys:/root/.aspnet/DataProtection-Keys 
+      - .:/app 
+    networks:
+      - dusk-sky-microservices_dusk_sky_shared_network 
+
+networks:
+  dusk-sky-microservices_dusk_sky_shared_network:
+    external: true
+
+volumes:
+  frontend_dataprotection_keys: 

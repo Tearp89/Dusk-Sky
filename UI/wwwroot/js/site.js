@@ -89,57 +89,73 @@ document.addEventListener("DOMContentLoaded", function () {
 
   input.addEventListener("input", async function () {
     const term = this.value.trim();
-    const search = this.value.trim().toLowerCase();
-    container.innerHTML = "";
+    container.innerHTML = ""; // Limpiamos el contenedor al empezar
 
+    // La validación de la longitud mínima es correcta
     if (term.length < 2) return;
 
     try {
+      // La llamada fetch sigue siendo la misma
       const response = await fetch(
+        // NOTA: Asegúrate que esta URL sea la correcta para tu proyecto.
+        // Si tu página es /Games/Search, la URL podría ser solo `?handler=Search&term=...`
         `/Games/GameSearch?handler=Search&term=${encodeURIComponent(term)}`
       );
 
+      // El manejo de errores de red sigue siendo correcto
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        throw new Error(`Error de red: ${response.status}`);
       }
 
-      const games = await response.json();
+      // MODIFICADO: La respuesta ahora es un objeto, no un array directamente.
+      const result = await response.json();
 
-      if (!games || games.length === 0) {
-        container.innerHTML = `<li class="list-group-item text-muted">No se encontraron resultados</li>`;
-        return;
+      // NUEVO: Verificamos si la operación en el servidor fue exitosa.
+      if (result && result.success) {
+        // MODIFICADO: El array de juegos ahora está dentro de `result.data`.
+        const games = result.data;
+
+        if (!games || games.length === 0) {
+          container.innerHTML = `<li class="list-group-item text-muted">No se encontraron resultados</li>`;
+          return;
+        }
+
+        // El código para mostrar los resultados no cambia, ya que `games` sigue siendo el array.
+        games.forEach((game) => {
+          const li = document.createElement("li");
+          li.className =
+            "list-group-item list-group-item-action d-flex align-items-center gap-2";
+
+          const img = document.createElement("img");
+          img.src = game.headerUrl || "/Images/noImage.png";
+          img.alt = game.name;
+          img.style.width = "40px";
+          img.style.height = "40px";
+          img.style.objectFit = "cover";
+          img.className = "rounded";
+
+          const span = document.createElement("span");
+          span.textContent = game.name;
+
+          li.appendChild(img);
+          li.appendChild(span);
+
+          li.onclick = () => {
+            window.location.href = `/Reviews/Creator?gameId=${game.id}`;
+          };
+
+          container.appendChild(li);
+        });
+      } else {
+        // NUEVO: Manejo para cuando el servidor responde con success: false
+        const errorMessage = result.message || "Ocurrió un error inesperado en el servidor.";
+        console.error("Error reportado por el servidor:", errorMessage);
+        container.innerHTML = `<li class="list-group-item text-danger">${errorMessage}</li>`;
       }
-
-      // Mostrar resultados
-      games.forEach((game) => {
-        const li = document.createElement("li");
-        li.className =
-          "list-group-item list-group-item-action d-flex align-items-center gap-2";
-
-        const img = document.createElement("img");
-        img.src = game.headerUrl || "/Images/noImage.png";
-        img.alt = game.name;
-        img.style.width = "40px";
-        img.style.height = "40px";
-        img.style.objectFit = "cover";
-        img.className = "rounded";
-
-        const span = document.createElement("span");
-        span.textContent = game.name;
-
-        li.appendChild(img);
-        li.appendChild(span);
-
-        // 🔽 Aquí llamas al modal con los datos del juego seleccionado
-        li.onclick = () => {
-           window.location.href = `/Reviews/Creator?gameId=${game.id}`;
-        };
-
-        container.appendChild(li);
-      });
     } catch (error) {
-      console.error("Error al buscar juegos:", error); // <-- imprime error real
-      container.innerHTML = `<li class="list-group-item text-danger">Error al buscar juegos</li>`;
+      // Este bloque ahora captura errores de red o de parseo del JSON.
+      console.error("Error en la función de búsqueda:", error);
+      container.innerHTML = `<li class="list-group-item text-danger">No se pudo conectar con el servidor.</li>`;
     }
   });
 });
@@ -250,12 +266,21 @@ async function toggleTracking(button) {
  
 
 function togglePlayedBefore() {
-        const watchedOn = document.getElementById("WatchedOnEnabled");
-        const playedBeforeContainer = document.getElementById("playedBeforeContainer");
-        playedBeforeContainer.style.display = watchedOn.checked ? "block" : "none";
-    }
+    const watchedOn = document.getElementById("WatchedOnEnabled");
+    const playedBeforeContainer = document.getElementById("playedBeforeContainer");
 
-    document.addEventListener("DOMContentLoaded", togglePlayedBefore);
+    if (!watchedOn || !playedBeforeContainer) return;
 
+    playedBeforeContainer.style.display = watchedOn.checked ? "block" : "none";
+}
 
-    
+// --- SOLUCIÓN JAVASCRIPT DEFINITIVA para el Modal Atrapado ---
+document.addEventListener('DOMContentLoaded', function () {
+  const deleteModalElement = document.getElementById('confirmDeleteModal');
+
+  if (deleteModalElement) {
+    // Esta línea es la clave: Mueve el modal para que sea un hijo directo del <body>.
+    // Esto lo saca de cualquier "caja" o "contexto de apilamiento" problemático.
+    document.body.appendChild(deleteModalElement);
+  }
+});

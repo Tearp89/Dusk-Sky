@@ -2,6 +2,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 public class ModerationSanctionService : IModerationSanctionService
 {
@@ -10,6 +12,10 @@ public class ModerationSanctionService : IModerationSanctionService
     public ModerationSanctionService(HttpClient http)
     {
         _http = http;
+    }
+
+    public ModerationSanctionService()
+    {
     }
 
     public async Task<List<SanctionDTO>> GetAllAsync()
@@ -27,7 +33,17 @@ public class ModerationSanctionService : IModerationSanctionService
 
     public async Task<bool> CreateAsync(SanctionDTO sanction)
     {
-        var response = await _http.PostAsJsonAsync("/moderation/sanctions", sanction);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+            WriteIndented = true
+        };
+
+        string json = JsonSerializer.Serialize(sanction, options);
+        Console.WriteLine("🔍 Payload enviado al microservicio:");
+        Console.WriteLine(json);
+        var response = await _http.PostAsJsonAsync("/moderation/sanctions", sanction, options);
         return response.IsSuccessStatusCode;
     }
 
@@ -42,4 +58,38 @@ public class ModerationSanctionService : IModerationSanctionService
         var response = await _http.DeleteAsync($"/moderation/sanctions/{id}");
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<List<SanctionDTO>> GetActiveSanctionsForUserAsync(string userId)
+    {
+        // 1. Obtener todas las sanciones
+        List<SanctionDTO> allSanctions = await GetAllAsync(); // Reutilizamos el método existente GetAllAsync()
+
+        if (allSanctions != null)
+        {
+            // 2. Filtrar por el ID de usuario y por aquellas que estén activas
+            var activeSanctionsForUser = allSanctions
+                .Where(s => s.UserId == userId && s.IsActive()) // Usamos el método de extensión IsActive()
+                .ToList();
+
+            return activeSanctionsForUser;
+        }
+        return new List<SanctionDTO>();
+    }
+
+    public async Task<bool> HasActiveSanctionAsync(string userId)
+    {
+        var sanctions = await GetAllAsync(); // Replace with endpoint that only fetches user's sanctions if possible
+        var now = DateTime.UtcNow;
+
+        return sanctions.Any(s =>
+            s.UserId == userId &&
+            (
+                s.Type == SanctionType.ban ||
+                (s.Type == SanctionType.suspension && s.StartDate <= now && s.EndDate >= now)
+            ));
+    }
+
+
+
+
 }

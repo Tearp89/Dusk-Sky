@@ -1,0 +1,100 @@
+@page "/Account/Settings"
+@model SettingsModel
+@{
+    ViewData["Title"] = "Configuración de la Cuenta";
+    ViewData["ShowBackground"] = false; 
+}
+
+<div class="container py-4" style="margin-top: 50px; max-width: 800px;">
+    <div class="card p-4 shadow-sm rounded-4 bg-light">
+        <h2 class="mb-4 text-center fw-bold">Configuración de la Cuenta</h2>
+
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            var alertClass = Model.StatusMessage.StartsWith("Error") ? "alert-danger" : "alert-success";
+            <div class="alert @alertClass alert-dismissible fade show" role="alert">
+                @Model.StatusMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        }
+
+        <h4 class="mt-4 mb-3">Cambiar Contraseña</h4>
+        <form method="post" asp-page-handler="ChangePassword">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label asp-for="ChangePasswordInput.OldPassword" class="form-label">Contraseña Actual</label>
+                <input asp-for="ChangePasswordInput.OldPassword" class="form-control" />
+                <span asp-validation-for="ChangePasswordInput.OldPassword" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ChangePasswordInput.NewPassword" class="form-label">Nueva Contraseña</label>
+                <input asp-for="ChangePasswordInput.NewPassword" class="form-control" />
+                <span asp-validation-for="ChangePasswordInput.NewPassword" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ChangePasswordInput.ConfirmPassword" class="form-label">Confirmar Nueva Contraseña</label>
+                <input asp-for="ChangePasswordInput.ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ChangePasswordInput.ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary button-glass">Actualizar Contraseña</button>
+            </div>
+        </form>
+
+        <hr class="my-5" />
+
+        <h4 class="text-danger mt-4 mb-3">Eliminar Cuenta</h4>
+        <p class="text-muted">Eliminar tu cuenta es una acción permanente que no se puede deshacer. Todos tus datos serán eliminados de nuestro sistema.</p>
+        
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+            Eliminar Cuenta
+        </button>
+
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación de Cuenta</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Estás absolutamente seguro de que quieres eliminar tu cuenta? Esta acción es permanente y no se puede deshacer.</p>
+                        <form method="post" asp-page-handler="DeleteAccount">
+                            @Html.AntiForgeryToken()
+                            <div class="form-check mb-3">
+                                <input asp-for="DeleteAccountInput.ConfirmDeletion" class="form-check-input" type="checkbox" id="confirmDeletionCheck">
+                                <label class="form-check-label" for="confirmDeletionCheck">
+                                    Entiendo y confirmo que deseo eliminar mi cuenta.
+                                </label>
+                                <span asp-validation-for="DeleteAccountInput.ConfirmDeletion" class="text-danger d-block mt-1"></span>
+                            </div>
+                            <div class="text-end">
+                                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-danger" id="finalDeleteBtn" disabled>Eliminar Mi Cuenta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const confirmCheck = document.getElementById('confirmDeletionCheck');
+            const deleteBtn = document.getElementById('finalDeleteBtn');
+
+            if (confirmCheck && deleteBtn) {
+                confirmCheck.addEventListener('change', function () {
+                    deleteBtn.disabled = !this.checked;
+                });
+            }
+        });
+    </script>
+
+}

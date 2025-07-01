@@ -37,13 +37,17 @@ public class FriendshipService : IFriendshipService
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<List<FriendDTO>> GetFriendsAsync(string userId)
+    public async Task<List<FriendDto>> GetFriendsAsync(string userId)
     {
-        return await _http.GetFromJsonAsync<List<FriendDTO>>($"/friendships/user/{userId}") ?? new();
+        return await _http.GetFromJsonAsync<List<FriendDto>>($"/friendships/user/{userId}") ?? new();
     }
 
-    public async Task<List<FriendRequestDTO>> GetPendingRequestsAsync(string userId)
-    {
-        return await _http.GetFromJsonAsync<List<FriendRequestDTO>>($"/friendships/pending/{userId}") ?? new();
-    }
+   // Dentro de tu clase FriendshipService.cs
+
+// Dentro de tu clase FriendshipService.cs
+
+public async Task<List<FriendRequestDTO>> GetPendingRequestsAsync(string userId)
+{
+    return await _http.GetFromJsonAsync<List<FriendRequestDTO>>($"/friendships/pending/{userId}") ?? new();
+}
 }

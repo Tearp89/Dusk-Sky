@@ -9,7 +9,7 @@ public class UserManagerService : IUserManagerService
 
     public async Task<UserProfileDTO?> GetProfileAsync(string userId)
     {
-        var response = await _http.GetAsync($"profiles/{userId}");
+        var response = await _http.GetAsync($"{userId}");
         return response.IsSuccessStatusCode
             ? await response.Content.ReadFromJsonAsync<UserProfileDTO>()
             : null;
@@ -17,20 +17,20 @@ public class UserManagerService : IUserManagerService
 
     public async Task<bool> CreateProfileAsync(string userId, UserProfileCreateDTO payload)
     {
-        var response = await _http.PutAsJsonAsync($"profiles/{userId}", payload);
+        var response = await _http.PutAsJsonAsync($"{userId}", payload);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> DeleteProfileAsync(string userId)
     {
-        var response = await _http.DeleteAsync($"profiles/{userId}");
+        var response = await _http.DeleteAsync($"{userId}");
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> ChangeUsernameAsync(string userId, string newUsername)
     {
         var request = new { new_username = newUsername };
-        var response = await _http.PatchAsJsonAsync($"profiles/{userId}/username", request);
+        var response = await _http.PatchAsJsonAsync($"{userId}/username", request);
         return response.IsSuccessStatusCode;
     }
 
@@ -58,7 +58,7 @@ public class UserManagerService : IUserManagerService
         if (!string.IsNullOrEmpty(uploadData.AboutSection))
             content.Add(new StringContent(uploadData.AboutSection), "about_section");
 
-        var response = await _http.PatchAsync($"/profiles/{userId}/upload", content);
+        var response = await _http.PatchAsync($"{userId}/upload", content);
         return response.IsSuccessStatusCode
             ? await response.Content.ReadFromJsonAsync<UserProfileDTO>()
             : null;

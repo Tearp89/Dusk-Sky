@@ -1,5 +1,10 @@
+using System.Text.Json.Serialization;
+
 public class FriendshipRequestDTO
-    {
-        public string SenderId { get; set; } = string.Empty;
-        public string ReceiverId { get; set; } = string.Empty;
-    }
+{
+    [JsonPropertyName("sender_id")]
+    public string SenderId { get; set; }
+
+    [JsonPropertyName("receiver_id")]
+    public string ReceiverId { get; set; }
+}

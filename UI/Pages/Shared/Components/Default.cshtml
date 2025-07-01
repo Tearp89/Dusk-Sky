@@ -1,0 +1,64 @@
+
+<!-- Modal: Create Account -->
+<div class="modal fade" id="createAccountModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="createAccountLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="createAccountLabel">Sign Up</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page="/Startpage" asp-page-handler="Register">
+                    <div class="mb-3">
+                        <label for="RegisterData_Email" class="form-label">Email address</label>
+                        <input name="RegisterData.Email" id="RegisterData_Email" class="form-control input-glass" type="email" />
+                        
+                    </div>
+                    <div class="mb-3">
+                        <label for="RegisterData_Username" class="form-label">Username</label>
+                        <input name="RegisterData.Username" id="RegisterData_Username" class="form-control input-glass" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="RegisterData_Password" class="form-label">Password</label>
+                        <input name="RegisterData.Password" id="RegisterData_Password" class="form-control input-glass" type="password" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="RegisterData_ConfirmPassword" class="form-label">Confirm Password</label>
+                        <input name="RegisterData.ConfirmPassword" id="RegisterData_ConfirmPassword" class="form-control input-glass" type="password" />
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary button-glass-blue">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Sign In -->
+<div class="modal fade" id="signInModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="signInLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="signInLabel">Sign In</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page="/Startpage" asp-page-handler="Login">
+                    <div class="mb-3">
+                        <label for="LoginData_Username" class="form-label">Email or Username</label>
+                        <input name="LoginData.Username" id="LoginData_Username" class="form-control input-glass" type="text" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="LoginData_Password" class="form-label">Password</label>
+                        <input name="LoginData.Password" id="LoginData_Password" class="form-control input-glass" type="password" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary button-glass-blue">Sign In</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

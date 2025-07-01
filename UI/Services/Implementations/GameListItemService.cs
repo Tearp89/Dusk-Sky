@@ -24,9 +24,17 @@ public class GameListItemService : IGameListItemService
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<bool> DeleteItemAsync(string itemId)
-    {
-        var response = await _http.DeleteAsync($"/lists/items/{itemId}");
-        return response.IsSuccessStatusCode;
-    }
+    public async Task<bool> DeleteItemAsync(string listId, string itemId)
+{
+    var response = await _http.DeleteAsync($"/lists/{listId}/items/{itemId}");
+    return response.IsSuccessStatusCode;
+}
+
+
+    public async Task<bool> ExistsAsync(string listId, Guid gameId)
+{
+    var items = await GetItemsByListIdAsync(listId);
+    return items.Any(i => i.GameId == gameId);
+}
+
 }
