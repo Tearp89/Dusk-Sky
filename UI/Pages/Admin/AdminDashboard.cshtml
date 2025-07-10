@@ -46,6 +46,9 @@
                 <button type="button" class="btn btn-warning btn-lg" data-bs-toggle="modal" data-bs-target="#createSaleModal">
                     <i class="bi bi-cash-coin"></i> Poner en venta
                 </button>
+                <button type="button" class="btn btn-dark btn-lg" data-bs-toggle="modal" data-bs-target="#salesSummaryModal">
+                    <i class="bi bi-graph-up"></i> Resumen de Ventas
+                </button>
 
                 <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#viewAllUsersModal">
                     <i class="bi bi-people"></i> Ver usuarios
@@ -191,6 +194,10 @@
                         <div id="searchSaleGameResults" class="list-group mt-2"></div>
                         <input type="hidden" name="SaleInput.GameId" id="selectedSaleGameId" />
                     </div>
+                    <div id="selectedGamePreview" class="text-center mb-3 p-3 bg-light rounded d-none">
+                        <img id="selectedGameImage" src="" alt="Vista previa del juego" style="width: 150px; border-radius: 8px;"/>
+                        <h6 id="selectedGameTitle" class="mt-2 mb-0"></h6>
+                    </div>
 
                     <div class="mb-3">
                         <label class="form-label">Precio (USD)</label>
@@ -207,6 +214,53 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+@* Modal: Sales Summary (Admin Only) *@
+<div class="modal fade" id="salesSummaryModal" tabindex="-1" aria-labelledby="salesSummaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="salesSummaryModalLabel">Resumen de Ventas</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (Model.SalesSummary.Any())
+                {
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col">Juego</th>
+                                <th scope="col" class="text-end">Precio</th>
+                                <th scope="col" class="text-end">Vendidos</th>
+                                <th scope="col" class="text-end">Disponibles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sale in Model.SalesSummary)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="@sale.GameHeaderUrl" alt="@sale.GameTitle" class="me-3" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px;"/>
+                                            <span class="fw-bold">@sale.GameTitle</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">$@sale.Price.ToString("F2")</td>
+                                    <td class="text-end">@sale.Sold</td>
+                                    <td class="text-end">@sale.Available</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-center text-muted">No hay ventas para mostrar.</p>
+                }
+            </div>
         </div>
     </div>
 </div>
@@ -753,15 +807,20 @@ if (shouldOpenSanctionModal === 'true') {
                 });
             }
 
-             const searchSaleInput = document.getElementById('searchSaleGameInput');
+    const searchSaleInput = document.getElementById('searchSaleGameInput');
     const saleResults = document.getElementById('searchSaleGameResults');
     const selectedGameIdInput = document.getElementById('selectedSaleGameId');
+    const gamePreviewContainer = document.getElementById('selectedGamePreview');
+    const gamePreviewImage = document.getElementById('selectedGameImage');
+    const gamePreviewTitle = document.getElementById('selectedGameTitle');
 
     let saleSearchTimeout = null;
 
     searchSaleInput.addEventListener('input', function () {
         const query = this.value;
         clearTimeout(saleSearchTimeout);
+
+        gamePreviewContainer.classList.add('d-none');
 
         if (query.length < 2) {
             saleResults.innerHTML = '';
@@ -786,6 +845,10 @@ if (shouldOpenSanctionModal === 'true') {
                         item.onclick = () => {
                             selectedGameIdInput.value = game.id;
                             searchSaleInput.value = game.title;
+                            gamePreviewImage.src = game.headerUrl;
+                            gamePreviewTitle.textContent = game.title;
+                            gamePreviewContainer.classList.remove('d-none');
+
                             saleResults.innerHTML = '';
                         };
                         saleResults.appendChild(item);

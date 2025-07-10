@@ -54,14 +54,15 @@ public class SalesService : ISalesService
         return null;
     }
 
-    public async Task<List<dynamic>> GetPurchasesByUserAsync(string userId)
+    public async Task<List<UserPurchaseDto>> GetPurchasesByUserAsync(string userId)
+{
+    var response = await _httpClient.GetAsync($"bought/{userId}");
+    if (response.IsSuccessStatusCode)
     {
-        var response = await _httpClient.GetAsync($"bought/{userId}");
-        if (response.IsSuccessStatusCode)
-        {
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<List<dynamic>>(json) ?? new();
-        }
-        return new();
+        var json = await response.Content.ReadAsStringAsync();
+        // Cambiamos <List<dynamic>> por el DTO correcto
+        return JsonSerializer.Deserialize<List<UserPurchaseDto>>(json) ?? new();
     }
+    return new();
+}
 }

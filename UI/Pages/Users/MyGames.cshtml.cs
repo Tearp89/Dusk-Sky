@@ -32,24 +32,26 @@ public class MyGamesModel : PageModel
         }
 
         var purchases = await _salesService.GetPurchasesByUserAsync(userId);
-        
-        if (purchases != null)
+    
+    if (purchases != null)
+    {
+        // 'purchase' aquí es un objeto UserPurchaseDto
+        foreach (var purchase in purchases)
         {
-            foreach (var purchase in purchases)
+            // El acceso a purchase.GameId es ahora seguro y autocompletable
+            var gameDetails = await _gameService.GetGamePreviewByIdAsync(Guid.Parse(purchase.GameId));
+            if (gameDetails != null)
             {
-                var gameDetails = await _gameService.GetGamePreviewByIdAsync(purchase.GameId);
-                if (gameDetails != null)
+                PurchasedGames.Add(new PurchaseViewModel
                 {
-                    PurchasedGames.Add(new PurchaseViewModel
-                    {
-                        GameId = gameDetails.Id,
-                        GameTitle = gameDetails.Title,
-                        GameHeaderUrl = gameDetails.HeaderUrl
-                    });
-                }
+                    GameId = gameDetails.Id.ToString(),
+                    GameTitle = gameDetails.Title,
+                    GameHeaderUrl = gameDetails.HeaderUrl
+                });
             }
         }
-        
-        return Page();
+    }
+    
+    return Page();
     }
 }

@@ -7,5 +7,5 @@ public interface ISalesService
     Task<bool> BuyGameAsync(string saleId, string userId);
     Task<List<SaleSummaryDto>> GetSalesSummaryAsync();
     Task<SaleDetailsDto?> GetSaleByGameIdAsync(string gameId); 
-    Task<List<dynamic>> GetPurchasesByUserAsync(string userId);
+    Task<List<UserPurchaseDto>> GetPurchasesByUserAsync(string userId);
 }

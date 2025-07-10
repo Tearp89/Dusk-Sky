@@ -26,6 +26,7 @@ public class AdminDashboardModel : PageModel
     public List<UserRoleViewModel> AllUsers { get; set; } = new();
     public List<ReportDisplayViewModel> RecentReports { get; set; } = new();
     public List<SanctionViewModel> ActiveSanctions { get; set; } = new();
+    public List<SaleSummaryViewModel> SalesSummary { get; set; } = new();
 
     public AddGameViewModel AddGameResult { get; set; } = new();
     public AddGameViewModel AddGameInput { get; set; } = new();
@@ -146,6 +147,7 @@ public class AdminDashboardModel : PageModel
 
         await LoadReportsAsync();
         await LoadSanctionsAsync();
+        await LoadSalesSummaryAsync();
         if (User.IsInRole("admin"))
         {
             await LoadAllUsersAsync();
@@ -405,7 +407,7 @@ public class AdminDashboardModel : PageModel
                     {
                         Id = s.Id,
                         UserId = s.UserId,
-                        Username = sanctionedUserAccount?.Username ?? "Usuario desconocido", 
+                        Username = sanctionedUserAccount?.Username ?? "Usuario desconocido",
                         Type = s.Type,
                         Reason = s.Reason,
                         StartDate = s.StartDate,
@@ -637,7 +639,7 @@ public class AdminDashboardModel : PageModel
 
 
         var regex = new Regex(@"https?:\/\/(?:store|steamcommunity)\.steampowered\.com\/(?:app|sub|bundle)\/(\d+)(?:[/?#].*)?$", RegexOptions.IgnoreCase);
-        var match = regex.Match(addGameInput.SteamLink ?? string.Empty); 
+        var match = regex.Match(addGameInput.SteamLink ?? string.Empty);
 
         int steamAppId;
         if (match.Success && int.TryParse(match.Groups[1].Value, out steamAppId))
@@ -954,12 +956,12 @@ public class AdminDashboardModel : PageModel
             }
         }
 
-        if (string.IsNullOrEmpty(CreateSanctionInput.UserId) || string.IsNullOrEmpty(CreateSanctionInput.Reason)) 
+        if (string.IsNullOrEmpty(CreateSanctionInput.UserId) || string.IsNullOrEmpty(CreateSanctionInput.Reason))
         {
             _logger.LogWarning("OnPostCreateSanctionAsync: Datos de sanción incompletos. UserId: {UserId}, Reason Length: {ReasonLen}, Type: {Type}",
                 CreateSanctionInput.UserId, CreateSanctionInput.Reason?.Length, CreateSanctionInput.Type);
             ModelState.AddModelError(string.Empty, "Por favor, completa todos los campos requeridos para la sanción.");
-            ShouldOpenCreateSanctionModal = true; 
+            ShouldOpenCreateSanctionModal = true;
             await LoadReportsAsync(); await LoadSanctionsAsync(); if (User.IsInRole("admin")) await LoadAllUsersAsync();
             return Page();
         }
@@ -968,7 +970,7 @@ public class AdminDashboardModel : PageModel
         {
             _logger.LogWarning("OnPostCreateSanctionAsync: Sanción de tipo 'suspension' sin fecha de fin.");
             ModelState.AddModelError(nameof(CreateSanctionInput.EndDate), "La fecha de fin es requerida para una suspensión.");
-            ShouldOpenCreateSanctionModal = true; 
+            ShouldOpenCreateSanctionModal = true;
             await LoadReportsAsync(); await LoadSanctionsAsync(); if (User.IsInRole("admin")) await LoadAllUsersAsync();
             return Page();
         }
@@ -987,10 +989,10 @@ public class AdminDashboardModel : PageModel
             var hasConflict = sanctions.Any(s =>
                 s.UserId.Trim().Equals(CreateSanctionInput.UserId.Trim(), StringComparison.OrdinalIgnoreCase) &&
                 (
-                    s.Type == SanctionType.ban || 
+                    s.Type == SanctionType.ban ||
                     (s.Type == SanctionType.suspension &&
-                     CreateSanctionInput.StartDate < s.EndDate && 
-                     (CreateSanctionInput.EndDate == null || CreateSanctionInput.EndDate > s.StartDate)) 
+                     CreateSanctionInput.StartDate < s.EndDate &&
+                     (CreateSanctionInput.EndDate == null || CreateSanctionInput.EndDate > s.StartDate))
                 )
             );
 
@@ -998,7 +1000,7 @@ public class AdminDashboardModel : PageModel
             {
                 _logger.LogWarning("Conflicto de sanción detectado para el usuario {UserId}. Ya existe una sanción activa o superpuesta.", CreateSanctionInput.UserId);
                 ModelState.AddModelError(string.Empty, "El usuario ya tiene una sanción activa o superpuesta.");
-                ShouldOpenCreateSanctionModal = true; 
+                ShouldOpenCreateSanctionModal = true;
                 await LoadReportsAsync(); await LoadSanctionsAsync(); if (User.IsInRole("admin")) await LoadAllUsersAsync();
                 return Page();
             }
@@ -1020,14 +1022,14 @@ public class AdminDashboardModel : PageModel
             {
                 _logger.LogInformation("Sanción creada exitosamente para el usuario {UserId}, Tipo: {Type}.", CreateSanctionInput.UserId, CreateSanctionInput.Type);
                 TempData["StatusMessage"] = "Sanción creada exitosamente.";
-                TempData.Remove("SelectedSanctionUserJson"); 
+                TempData.Remove("SelectedSanctionUserJson");
                 TempData.Remove("CreateSanctionInputJson");
             }
             else
             {
                 _logger.LogWarning("Falló la creación de la sanción para el usuario {UserId}. El servicio indicó un problema.", CreateSanctionInput.UserId);
                 TempData["StatusMessage"] = "Error: Falló la creación de la sanción.";
-                ShouldOpenCreateSanctionModal = true; 
+                ShouldOpenCreateSanctionModal = true;
             }
         }
         catch (HttpRequestException httpEx)
@@ -1068,8 +1070,8 @@ public class AdminDashboardModel : PageModel
                 reportId, CreateSanctionInput.UserId, CreateSanctionInput.Reason?.Length);
             StatusMessage = "Error: Faltan datos para aplicar la sanción y resolver el reporte.";
             ShouldOpenCreateSanctionModal = true;
-            SelectedSanctionUserJson = TempData["SelectedSanctionUserJson"] as string; 
-            CreateSanctionInputJson = JsonSerializer.Serialize(CreateSanctionInput); 
+            SelectedSanctionUserJson = TempData["SelectedSanctionUserJson"] as string;
+            CreateSanctionInputJson = JsonSerializer.Serialize(CreateSanctionInput);
             await LoadReportsAsync(); await LoadSanctionsAsync(); if (User.IsInRole("admin")) await LoadAllUsersAsync();
             return Page();
         }
@@ -1109,7 +1111,7 @@ public class AdminDashboardModel : PageModel
             {
                 _logger.LogWarning("Falló la creación de la sanción para el reporte {ReportId}.", reportId);
                 StatusMessage = "Error: Falló la creación de la sanción.";
-                ShouldOpenCreateSanctionModal = true; 
+                ShouldOpenCreateSanctionModal = true;
                 SelectedSanctionUserJson = TempData["SelectedSanctionUserJson"] as string;
                 CreateSanctionInputJson = JsonSerializer.Serialize(CreateSanctionInput);
                 await LoadReportsAsync(); await LoadSanctionsAsync(); if (User.IsInRole("admin")) await LoadAllUsersAsync();
@@ -1169,7 +1171,7 @@ public class AdminDashboardModel : PageModel
             StatusMessage += " Advertencia: Error interno al actualizar el reporte.";
         }
 
-        StatusMessage = "Sanción aplicada correctamente y reporte resuelto." + StatusMessage; 
+        StatusMessage = "Sanción aplicada correctamente y reporte resuelto." + StatusMessage;
 
         TempData.Remove("SelectedSanctionUserJson");
         TempData.Remove("CreateSanctionInputJson");
@@ -1194,7 +1196,7 @@ public class AdminDashboardModel : PageModel
         {
             var saleId = await _salesService.CreateSaleAsync(SaleInput);
             StatusMessage = "Juego puesto en venta exitosamente.";
-            
+
 
         }
         catch (Exception ex)
@@ -1217,7 +1219,7 @@ public class AdminDashboardModel : PageModel
         try
         {
             var games = await _gameService.SearchGamePreviewsByNameAsync(query);
-            return new JsonResult(games.Select(g => new { g.Id, g.Title }).ToList());
+            return new JsonResult(games.Select(g => new { g.Id, g.Title, g.HeaderUrl }).ToList());
         }
         catch (Exception ex)
         {
@@ -1226,8 +1228,39 @@ public class AdminDashboardModel : PageModel
         }
     }
 
+    private async Task LoadSalesSummaryAsync()
+{
+    var summaryData = await _salesService.GetSalesSummaryAsync();
+    if (summaryData == null) return;
+
+    foreach (var sale in summaryData)
+    {
+        var game = await _gameService.GetGamePreviewByIdAsync(Guid.Parse(sale.GameId));
+        if (game != null)
+        {
+            SalesSummary.Add(new SaleSummaryViewModel
+            {
+                GameTitle = game.Title,
+                GameHeaderUrl = game.HeaderUrl,
+                Price = sale.Price,
+                Sold = sale.Sold,
+                Available = sale.Available
+            });
+        }
+    }
+}
 
 
 
+
+}
+
+public class SaleSummaryViewModel
+{
+    public string GameTitle { get; set; }
+    public string GameHeaderUrl { get; set; }
+    public float Price { get; set; }
+    public int Sold { get; set; }
+    public int Available { get; set; }
 }
 

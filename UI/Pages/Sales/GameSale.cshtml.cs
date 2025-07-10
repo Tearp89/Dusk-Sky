@@ -93,7 +93,6 @@ public class GameSaleModel : PageModel
 
         if (!ModelState.IsValid)
     {
-        // Este código imprimirá los errores exactos en tu consola del servidor
         foreach (var modelStateKey in ViewData.ModelState.Keys)
         {
             var value = ViewData.ModelState[modelStateKey];
