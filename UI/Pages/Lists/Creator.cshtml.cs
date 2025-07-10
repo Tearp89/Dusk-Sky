@@ -55,10 +55,10 @@ public class CreateListModel : PageModel
             if (string.IsNullOrEmpty(listId))
             {
                 TempData["ErrorMessage"] = "Hubo un problema al crear la lista. El servicio no devolvió un ID de lista válido.";
-                _logger.LogError("El servicio CreateListAsync devolvió un ID de lista nulo o vacío para el usuario {UserId}.", userId); // ✅ Registro de error
+                _logger.LogError("El servicio CreateListAsync devolvió un ID de lista nulo o vacío para el usuario {UserId}.", userId); 
                 return Page();
             }
-            _logger.LogInformation("Lista '{ListName}' (ID: {ListId}) creada exitosamente por el usuario {UserId}.", List.Name, listId, userId); // ✅ Registro de éxito
+            _logger.LogInformation("Lista '{ListName}' (ID: {ListId}) creada exitosamente por el usuario {UserId}.", List.Name, listId, userId); 
 
             return RedirectToPage("SelectGames", new { listId, gameId = GameId });
         }

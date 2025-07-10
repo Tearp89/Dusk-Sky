@@ -21,7 +21,6 @@ public class ProfileModel : ProfileModelBase
     private readonly IModerationReportService _moderationService;
     private readonly ILogger<ProfileModel> _logger; 
 
-    // --- Propiedades para las nuevas secciones ---
     public List<FriendViewModel> Friends { get; set; } = new();
     public QuickStatsViewModel QuickStats { get; set; } = new();
     public ActivityFeedItemViewModel? LatestActivity { get; set; }
@@ -130,7 +129,7 @@ public class ProfileModel : ProfileModelBase
             {
                 var friendTasks = friendDocs.Select(async f =>
                 {
-                    if (f == null) return null; // Salta amigos nulos en la lista
+                    if (f == null) return null; 
 
                     var friendId = (f.SenderId == userId) ? f.ReceiverId : f.SenderId;
                     if (string.IsNullOrWhiteSpace(friendId))
@@ -153,7 +152,7 @@ public class ProfileModel : ProfileModelBase
                         {
                             UserId = friendId,
                             Username = friendAuthUser?.Username ?? "Unknown User",
-                            AvatarUrl = friendProfile?.AvatarUrl ?? "/images/default_avatar.png"
+                            AvatarUrl = friendProfile?.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/images/default_avatar.png"
                         };
                     }
                     catch (HttpRequestException ex)
@@ -255,7 +254,7 @@ public class ProfileModel : ProfileModelBase
                             Timestamp = r.CreatedAt,
                             UserId = r.UserId,
                             Username = ProfileHeader.Username, 
-                            UserAvatarUrl = ProfileHeader.AvatarUrl,
+                            UserAvatarUrl = ProfileHeader.AvatarUrl.Replace("localhost", "192.168.100.16"),
                             ReviewId = r.Id,
                             GameId = r.GameId.ToString(),
                             GameTitle = gamePreview.Title,
@@ -304,7 +303,7 @@ public class ProfileModel : ProfileModelBase
                             Timestamp = gt.LastUpdatedAt, 
                             UserId = gt.UserId,
                             Username = ProfileHeader.Username,
-                            UserAvatarUrl = ProfileHeader.AvatarUrl,
+                            UserAvatarUrl = ProfileHeader.AvatarUrl.Replace("localhost", "192.168.100.16"),
                             GameTrackingId = gt.Id,
                             GameId = gt.GameId,
                             GameTitle = gamePreview.Title,
@@ -347,7 +346,7 @@ public class ProfileModel : ProfileModelBase
                             Timestamp = gl.CreatedAt,
                             UserId = gl.UserId,
                             Username = ProfileHeader.Username,
-                            UserAvatarUrl = ProfileHeader.AvatarUrl,
+                            UserAvatarUrl = ProfileHeader.AvatarUrl.Replace("localhost", "192.168.100.16"),
                             ListId = gl.Id,
                             ListName = gl.Name,
                             Description = gl.Description,
@@ -479,7 +478,6 @@ public class ProfileModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostAcceptRequestAsync(string requestId, string profileUserId)
     {
-        // ✅ Validar parámetros
         if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostAcceptRequestAsync: requestId o profileUserId es nulo/vacío.");

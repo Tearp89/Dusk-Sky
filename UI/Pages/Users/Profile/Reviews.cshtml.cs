@@ -243,7 +243,6 @@ public class ReviewsProfileModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostAcceptRequestAsync(string requestId, string profileUserId)
     {
-        // ✅ Validar parámetros
         if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostAcceptRequestAsync: requestId o profileUserId es nulo/vacío.");

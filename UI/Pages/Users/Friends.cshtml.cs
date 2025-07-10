@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System; // For ArgumentNullException
+using System; 
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging; // ✅ Make sure this using is present
-using System.Net.Http; // ✅ Add this using for HttpRequestException
+using Microsoft.Extensions.Logging; 
+using System.Net.Http; 
 
 
 public class FriendsModel : PageModel
@@ -23,7 +23,7 @@ public class FriendsModel : PageModel
         IFriendshipService friendshipService,
         IAuthService authService,
         IUserManagerService userManagerService,
-        ILogger<FriendsModel> logger) // ✅ Inject ILogger
+        ILogger<FriendsModel> logger) 
     {
         _friendshipService = friendshipService ?? throw new ArgumentNullException(nameof(friendshipService), "IFriendshipService cannot be null.");
         _authService = authService ?? throw new ArgumentNullException(nameof(authService), "IAuthService cannot be null.");
@@ -78,7 +78,7 @@ public class FriendsModel : PageModel
                     {
                         UserId = friendId,
                         Username = !string.IsNullOrWhiteSpace(authUser?.Username) ? authUser.Username : "Unknown User",
-                        AvatarUrl = !string.IsNullOrWhiteSpace(profile?.AvatarUrl) ? profile.AvatarUrl : "/images/default-avatar.png"
+                        AvatarUrl = !string.IsNullOrWhiteSpace(profile?.AvatarUrl) ? profile.AvatarUrl.Replace("localhost", "192.168.100.16") : "/images/default-avatar.png"
                     };
                 }
                 catch (HttpRequestException ex) 
@@ -122,7 +122,7 @@ public class FriendsModel : PageModel
                         RequestId = r.Id,
                         UserId = senderId,
                         Username = !string.IsNullOrWhiteSpace(authUser?.Username) ? authUser.Username : "Unknown User",
-                        AvatarUrl = !string.IsNullOrWhiteSpace(profile?.AvatarUrl) ? profile.AvatarUrl : "/images/default-avatar.png"
+                        AvatarUrl = !string.IsNullOrWhiteSpace(profile?.AvatarUrl) ? profile.AvatarUrl.Replace("localhost", "192.168.100.16") : "/images/default-avatar.png"
                     };
                 }
                 catch (HttpRequestException ex) 
@@ -136,7 +136,7 @@ public class FriendsModel : PageModel
                     return null;
                 }
             });
-            PendingRequests = (await Task.WhenAll(requestTasks)).Where(r => r != null).ToList()!; // ✅ Filter out nulls
+            PendingRequests = (await Task.WhenAll(requestTasks)).Where(r => r != null).ToList()!; 
             _logger.LogInformation("OnGetAsync: Loaded {Count} pending requests for user '{UserId}'.", PendingRequests.Count, currentUserId); 
 
             return Page();
@@ -177,7 +177,6 @@ public class FriendsModel : PageModel
 
     public async Task<IActionResult> OnPostAcceptRequestAsync(string requestId)
     {
-        // ✅ Validate requestId
         if (string.IsNullOrWhiteSpace(requestId))
         {
             _logger.LogWarning("OnPostAcceptRequestAsync: Request ID is null or empty."); 

@@ -5,17 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging; // ✅ Asegúrate de incluir este using
-using System.Net.Http; // ✅ Añadir para HttpRequestException
+using Microsoft.Extensions.Logging; 
+using System.Net.Http; 
 
-// Asegúrate de que los using apunten a tus servicios y ViewModels
-// Por ejemplo:
-// using YourApp.Services;
-// using YourApp.ViewModels; // Donde están tus ActivityFeedItemViewModel, etc.
+
 
 public class ActivityModel : ProfileModelBase
 {
-    // --- Servicios inyectados ---
     private readonly IReviewService _reviewService;
     private readonly IGameTrackingService _gameTrackingService;
     private readonly IGameListService _gameListService;
@@ -110,7 +106,7 @@ public class ActivityModel : ProfileModelBase
                             Timestamp = r.CreatedAt,
                             UserId = r.UserId,
                             Username = ProfileHeader.Username,
-                            UserAvatarUrl = ProfileHeader.AvatarUrl,
+                            UserAvatarUrl = ProfileHeader.AvatarUrl.Replace("localhost", "192.168.100.16"),
                             ReviewId = r.Id,
                             GameId = r.GameId.ToString(),
                             GameTitle = gamePreview.Title,
@@ -160,7 +156,7 @@ public class ActivityModel : ProfileModelBase
                             Timestamp = gt.LastUpdatedAt, 
                             UserId = gt.UserId,
                             Username = ProfileHeader.Username,
-                            UserAvatarUrl = ProfileHeader.AvatarUrl,
+                            UserAvatarUrl = ProfileHeader.AvatarUrl.Replace("localhost", "192.168.100.16"),
                             GameTrackingId = gt.Id,
                             GameId = gt.GameId,
                             GameTitle = gamePreview.Title,
@@ -200,7 +196,7 @@ public class ActivityModel : ProfileModelBase
                         Timestamp = gl.CreatedAt,
                         UserId = gl.UserId,
                         Username = ProfileHeader.Username,
-                        UserAvatarUrl = ProfileHeader.AvatarUrl,
+                        UserAvatarUrl = ProfileHeader.AvatarUrl.Replace("localhost", "192.168.100.16"),
                         ListId = gl.Id,
                         ListName = gl.Name,
                         Description = gl.Description
@@ -249,7 +245,6 @@ public class ActivityModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostSendRequestAsync(string profileUserId)
     {
-        // ✅ Validar profileUserId
         if (string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostSendRequestAsync: profileUserId es nulo o vacío.");

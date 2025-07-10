@@ -10,13 +10,25 @@
     <h2 class="mb-4 text-center fw-bold py-5">Admin/Moderador Dashboard</h2>
 
 @if (!string.IsNullOrEmpty(Model.StatusMessage))
-    {
-        var alertClass = Model.StatusMessage.StartsWith("Error") ? "alert-danger" : "alert-success";
-        <div class="alert @alertClass alert-dismissible fade show" role="alert">
-            @Model.StatusMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+{
+    var isError = Model.StatusMessage.StartsWith("Error");
+    var toastBg = isError ? "bg-danger" : "bg-success";
+    var textColor = "text-white";
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        <div class="toast align-items-center @textColor @toastBg border-0 shadow-sm fade show"
+             role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000" data-bs-autohide="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @Model.StatusMessage
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
         </div>
-    }
+    </div>
+}
+
 
     @* --- SECCIÓN SÓLO PARA ADMINS --- *@
     @if (User.IsInRole("admin"))
@@ -31,11 +43,16 @@
                 <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#addGameModal">
                     <i class="bi bi-plus-circle"></i> Agregar juego
                 </button>
+                <button type="button" class="btn btn-warning btn-lg" data-bs-toggle="modal" data-bs-target="#createSaleModal">
+                    <i class="bi bi-cash-coin"></i> Poner en venta
+                </button>
+
                 <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#viewAllUsersModal">
                     <i class="bi bi-people"></i> Ver usuarios
                 </button>
+
             </div>
-        </div>
+        </div>  
     }
 
     @* --- SECCIONES PARA ADMINS Y MODERADORES --- *@
@@ -156,6 +173,44 @@
         </div>
     </div>
 </div>
+
+@* Modal: Create Sale (Admin Only) *@
+<div class="modal fade" id="createSaleModal" tabindex="-1" aria-labelledby="createSaleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CreateSale">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="createSaleModalLabel">Poner juego en venta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Buscar juego</label>
+                        <input type="text" class="form-control" id="searchSaleGameInput" placeholder="Escribe el nombre del juego..." />
+                        <div id="searchSaleGameResults" class="list-group mt-2"></div>
+                        <input type="hidden" name="SaleInput.GameId" id="selectedSaleGameId" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Precio (USD)</label>
+                        <input type="number" step="0.01" name="SaleInput.Price" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" name="SaleInput.Quantity" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning">Confirmar venta</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 @* Modal: View All Users (Admin Only) - SIN CAMBIOS (no afecta el problema del 400) *@
 <div class="modal fade" id="viewAllUsersModal" tabindex="-1" aria-labelledby="viewAllUsersModalLabel" aria-hidden="true">
@@ -697,6 +752,49 @@ if (shouldOpenSanctionModal === 'true') {
                     this.querySelectorAll('.text-danger').forEach(span => span.textContent = '');
                 });
             }
+
+             const searchSaleInput = document.getElementById('searchSaleGameInput');
+    const saleResults = document.getElementById('searchSaleGameResults');
+    const selectedGameIdInput = document.getElementById('selectedSaleGameId');
+
+    let saleSearchTimeout = null;
+
+    searchSaleInput.addEventListener('input', function () {
+        const query = this.value;
+        clearTimeout(saleSearchTimeout);
+
+        if (query.length < 2) {
+            saleResults.innerHTML = '';
+            return;
+        }
+
+        saleSearchTimeout = setTimeout(() => {
+            fetch(`/Admin/Dashboard?handler=SearchGames&query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(games => {
+                    saleResults.innerHTML = '';
+                    if (!games || games.length === 0) {
+                        saleResults.innerHTML = '<div class="list-group-item text-muted">No se encontraron juegos.</div>';
+                        return;
+                    }
+
+                    games.forEach(game => {
+                        const item = document.createElement('button');
+                        item.type = 'button';
+                        item.className = 'list-group-item list-group-item-action';
+                        item.textContent = game.title;
+                        item.onclick = () => {
+                            selectedGameIdInput.value = game.id;
+                            searchSaleInput.value = game.title;
+                            saleResults.innerHTML = '';
+                        };
+                        saleResults.appendChild(item);
+                    });
+                });
+        }, 300);
+    });
+
+            
 
         });
     </script>

@@ -3,17 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http; // Necesario para IFormFile
-using System.IO; // Necesario para MemoryStream (si lo usas para IFormFile)
-using System.Collections.Generic; // Para List<IFormFile> si tu UserProfileUploadDTO lo usa
-using Microsoft.Extensions.Logging; // ✅ Asegúrate de incluir este using
-using System; // Para ArgumentNullException
-using System.Net.Http; // ✅ Para HttpRequestException
+using Microsoft.AspNetCore.Http; 
+using System.IO; 
+using System.Collections.Generic; 
+using Microsoft.Extensions.Logging; 
+using System; 
+using System.Net.Http; 
 
-// Asegúrate de que los using apunten a tus servicios y ViewModels
-// Por ejemplo:
-// using YourApp.Services;
-// using YourApp.ViewModels;
 
 [Authorize]
 public class EditProfileModel : PageModel
@@ -70,8 +66,8 @@ public class EditProfileModel : PageModel
             Input.UserId = loggedInUserId;
             Input.Username = authUser.Username;
             Input.Bio = userProfile.Bio;
-            Input.CurrentAvatarUrl = userProfile.AvatarUrl;
-            Input.CurrentBannerUrl = userProfile.BannerUrl;
+            Input.CurrentAvatarUrl = userProfile.AvatarUrl.Replace("localhost", "192.168.100.16");
+            Input.CurrentBannerUrl = userProfile.BannerUrl.Replace("localhost", "192.168.100.16");
 
             _logger.LogInformation("OnGetAsync: Perfil del usuario '{UserId}' cargado exitosamente.", loggedInUserId); 
             return Page();
@@ -110,8 +106,8 @@ public class EditProfileModel : PageModel
                 var userProfile = await _userManagerService.GetProfileAsync(loggedInUserId);
                 if (userProfile != null)
                 {
-                    Input.CurrentAvatarUrl = userProfile.AvatarUrl;
-                    Input.CurrentBannerUrl = userProfile.BannerUrl;
+                    Input.CurrentAvatarUrl = userProfile.AvatarUrl.Replace("localhost", "192.168.100.16");
+                    Input.CurrentBannerUrl = userProfile.BannerUrl.Replace("localhost", "192.168.100.16");
                 }
                 else
                 {
@@ -191,8 +187,8 @@ public class EditProfileModel : PageModel
                 var userProfile = await _userManagerService.GetProfileAsync(loggedInUserId);
                 if (userProfile != null)
                 {
-                    Input.CurrentAvatarUrl = userProfile.AvatarUrl;
-                    Input.CurrentBannerUrl = userProfile.BannerUrl;
+                    Input.CurrentAvatarUrl = userProfile.AvatarUrl.Replace("localhost", "192.168.100.16");
+                    Input.CurrentBannerUrl = userProfile.BannerUrl.Replace("localhost", "192.168.100.16");
                 }
                 else
                 {
@@ -208,8 +204,8 @@ public class EditProfileModel : PageModel
             var userProfile = await _userManagerService.GetProfileAsync(loggedInUserId);
             if (userProfile != null)
             {
-                Input.CurrentAvatarUrl = userProfile.AvatarUrl;
-                Input.CurrentBannerUrl = userProfile.BannerUrl;
+                Input.CurrentAvatarUrl = userProfile.AvatarUrl.Replace("localhost", "192.168.100.16");
+                Input.CurrentBannerUrl = userProfile.BannerUrl.Replace("localhost", "192.168.100.16");
             }
             return Page();
         }
@@ -220,8 +216,8 @@ public class EditProfileModel : PageModel
             var userProfile = await _userManagerService.GetProfileAsync(loggedInUserId);
             if (userProfile != null)
             {
-                Input.CurrentAvatarUrl = userProfile.AvatarUrl;
-                Input.CurrentBannerUrl = userProfile.BannerUrl;
+                Input.CurrentAvatarUrl = userProfile.AvatarUrl.Replace("localhost", "192.168.100.16");
+                Input.CurrentBannerUrl = userProfile.BannerUrl.Replace("localhost", "192.168.100.16");
             }
             return Page();
         }
@@ -232,8 +228,8 @@ public class EditProfileModel : PageModel
             var userProfile = await _userManagerService.GetProfileAsync(loggedInUserId);
             if (userProfile != null)
             {
-                Input.CurrentAvatarUrl = userProfile.AvatarUrl;
-                Input.CurrentBannerUrl = userProfile.BannerUrl;
+                Input.CurrentAvatarUrl = userProfile.AvatarUrl.Replace("localhost", "192.168.100.16");
+                Input.CurrentBannerUrl = userProfile.BannerUrl.Replace("localhost", "192.168.100.16");
             }
             return Page();
         }

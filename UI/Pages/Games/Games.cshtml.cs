@@ -34,7 +34,7 @@ public class GamesGeneralModel : PageModel
 
             await Task.WhenAll(categoryTasks);
 
-            _logger.LogInformation("Carga de juegos por categoría completada exitosamente. Total de categorías procesadas: {CategoryCount}", CategorizedGames.Count); // ✅ Registro de información
+            _logger.LogInformation("Carga de juegos por categoría completada exitosamente. Total de categorías procesadas: {CategoryCount}", CategorizedGames.Count); 
         }
         catch (ArgumentException ex) 
         {
@@ -71,7 +71,7 @@ public class GamesGeneralModel : PageModel
         }
         if (gameTitles == null || !gameTitles.Any())
         {
-            _logger.LogWarning("AddCategoryAsync: La lista de gameTitles es nula o vacía para la categoría '{CategoryName}'.", categoryName); // ✅ Registro de advertencia
+            _logger.LogWarning("AddCategoryAsync: La lista de gameTitles es nula o vacía para la categoría '{CategoryName}'.", categoryName); 
             return;
         }
 
@@ -83,26 +83,26 @@ public class GamesGeneralModel : PageModel
             {
                 if (string.IsNullOrWhiteSpace(title))
                 {
-                    _logger.LogWarning("AddCategoryAsync: Título de juego nulo o vacío encontrado para la categoría '{CategoryName}'. Saltando.", categoryName); // ✅ Registro de advertencia
+                    _logger.LogWarning("AddCategoryAsync: Título de juego nulo o vacío encontrado para la categoría '{CategoryName}'. Saltando.", categoryName); 
                     return null;
                 }
 
                 var searchResult = await _gameService.SearchGamePreviewsByNameAsync(title);
                 if (searchResult == null || !searchResult.Any())
                 {
-                    _logger.LogInformation("AddCategoryAsync: No se encontraron resultados de vista previa para el juego '{GameTitle}' en la categoría '{CategoryName}'.", title, categoryName); // ✅ Registro de información
+                    _logger.LogInformation("AddCategoryAsync: No se encontraron resultados de vista previa para el juego '{GameTitle}' en la categoría '{CategoryName}'.", title, categoryName); 
                     return null;
                 }
                 return searchResult.FirstOrDefault();
             }
             catch (HttpRequestException ex) 
             {
-                _logger.LogError(ex, "HttpRequestException al cargar el juego '{GameTitle}' para la categoría '{CategoryName}'. Mensaje: {Message}", title, categoryName, ex.Message); // ✅ Registro de error
+                _logger.LogError(ex, "HttpRequestException al cargar el juego '{GameTitle}' para la categoría '{CategoryName}'. Mensaje: {Message}", title, categoryName, ex.Message); 
                 return null; 
             }
             catch (Exception ex) 
             {
-                _logger.LogError(ex, "Error inesperado al cargar el juego '{GameTitle}' para la categoría '{CategoryName}'. Mensaje: {Message}", title, categoryName, ex.Message); // ✅ Registro de error
+                _logger.LogError(ex, "Error inesperado al cargar el juego '{GameTitle}' para la categoría '{CategoryName}'. Mensaje: {Message}", title, categoryName, ex.Message); 
                 return null;
             }
         }).ToList();

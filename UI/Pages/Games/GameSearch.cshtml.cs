@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging; // ✅ Make sure this using is present
+using Microsoft.Extensions.Logging; 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Net.Http; // ✅ Add this using for HttpRequestException
+using System.Net.Http; 
 
 public class GameSearchModel : PageModel
 {
@@ -32,13 +32,13 @@ public class GameSearchModel : PageModel
             var results = await _gameService.SearchGamePreviewsByNameAsync(term);
             results ??= new List<GamePreviewDTO>(); 
 
-            _logger.LogInformation("OnGetSearchAsync: Search for '{SearchTerm}' completed. Found {ResultCount} results.", term, results.Count); // ✅ Log successful search
+            _logger.LogInformation("OnGetSearchAsync: Search for '{SearchTerm}' completed. Found {ResultCount} results.", term, results.Count); 
 
             return new JsonResult(new { success = true, data = results });
         }
         catch (HttpRequestException ex) 
         {
-            _logger.LogError(ex, "OnGetSearchAsync: HttpRequestException during game search for term: {SearchTerm}. Message: {ErrorMessage}", term, ex.Message); // ✅ Log the specific network error
+            _logger.LogError(ex, "OnGetSearchAsync: HttpRequestException during game search for term: {SearchTerm}. Message: {ErrorMessage}", term, ex.Message); 
             return new JsonResult(new { success = false, message = "There was a connection issue when performing the search. Please try again." })
             {
                 StatusCode = 503 
@@ -46,7 +46,7 @@ public class GameSearchModel : PageModel
         }
         catch (InvalidOperationException ex) 
         {
-            _logger.LogError(ex, "OnGetSearchAsync: InvalidOperationException during game search for term: {SearchTerm}. Message: {ErrorMessage}", term, ex.Message); // ✅ Log the specific operational error
+            _logger.LogError(ex, "OnGetSearchAsync: InvalidOperationException during game search for term: {SearchTerm}. Message: {ErrorMessage}", term, ex.Message); 
             return new JsonResult(new { success = false, message = "An operational error occurred during the search. Please contact support." })
             {
                 StatusCode = 500 
@@ -54,7 +54,7 @@ public class GameSearchModel : PageModel
         }
         catch (Exception ex) 
         {
-            _logger.LogError(ex, "OnGetSearchAsync: An unexpected error occurred during game search for term: {SearchTerm}. Message: {ErrorMessage}", term, ex.Message); // ✅ Log the general unexpected error
+            _logger.LogError(ex, "OnGetSearchAsync: An unexpected error occurred during game search for term: {SearchTerm}. Message: {ErrorMessage}", term, ex.Message); 
             return new JsonResult(new { success = false, message = "An unexpected error occurred during the search." })
             {
                 StatusCode = 500 

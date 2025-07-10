@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging; // ✅ Asegúrate de incluir este using
-using System.Net.Http; // ✅ Para HttpRequestException
+using Microsoft.Extensions.Logging; 
+using System.Net.Http; 
 
 
 
@@ -34,7 +34,7 @@ public class LikesModel : ProfileModelBase
         IReviewService reviewService,
         IGameListService gameListService,
         IModerationReportService moderationReportService,
-        ILogger<LikesModel> logger) // ✅ Inyección de ILogger
+        ILogger<LikesModel> logger) 
     {
         _gameTrackingService = gameTrackingService ?? throw new ArgumentNullException(nameof(gameTrackingService), "IGameTrackingService no puede ser nulo.");
         _gameService = gameService ?? throw new ArgumentNullException(nameof(gameService), "IGameService no puede ser nulo.");
@@ -85,7 +85,7 @@ public class LikesModel : ProfileModelBase
                 .Where(id =>
                 {
                     if (Guid.TryParse(id, out _)) return true;
-                    _logger.LogWarning("OnGetAsync: ID de juego liked inválido '{InvalidId}' encontrado para el usuario '{ProfileUserId}'.", id, userId); // ✅ Registro de advertencia
+                    _logger.LogWarning("OnGetAsync: ID de juego liked inválido '{InvalidId}' encontrado para el usuario '{ProfileUserId}'.", id, userId); 
                     return false;
                 })
                 .Select(Guid.Parse)

@@ -107,7 +107,7 @@ public class IndexModel : PageModel
                 await LoadReviewCards(recentReviewsForDuskSky, ReviewCards);
             }
 
-            var popularReviewsData = await _reviewService.GetTopReviewsAsync(10);
+            var popularReviewsData = await _reviewService.GetTopReviewsAsync(20);
             await LoadReviewCards(popularReviewsData, PopularReviewCards);
 
             var recentReviewsData = await _reviewService.GetRecentReviewsAsync(10);
@@ -146,6 +146,12 @@ public class IndexModel : PageModel
                 var game = gamePreviewTask.Result;
                 var authUser = authUserTask.Result;
 
+                if (authUser == null || authUser.status?.Equals("active", StringComparison.OrdinalIgnoreCase) != true)
+            {
+                _logger.LogDebug("Review {ReviewId} skipped because user {UserId} is not active or not found.", review.Id, review.UserId);
+                continue; 
+            }
+
                 targetList.Add(new ReviewFullDto
                 {
                     Id = review.Id,
@@ -154,7 +160,7 @@ public class IndexModel : PageModel
                     Rating = review.Rating,
                     GameId = review.GameId.ToString(),
                     UserName = authUser?.Username ?? "Usuario desconocido",
-                    ProfileImageUrl = user?.AvatarUrl ?? "/Images/noImage.png",
+                    ProfileImageUrl = user?.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/Images/noImage.png",
                     GameImageUrl = game?.HeaderUrl ?? "/Images/noImage.png",
                     GameTitle = game?.Title ?? "Juego desconocido",
                     CreatedAt = review.CreatedAt,
@@ -219,6 +225,11 @@ public class IndexModel : PageModel
                 var user = userTask.Result;
                 var items = itemsTask.Result;
                 var userWithName = userWithNameTask.Result;
+                if (userWithName == null || !string.Equals(userWithName.status, "active", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _logger.LogInformation("Lista '{ListId}' omitida porque el usuario '{UserId}' no está activo.");
+                            return;
+                        }
 
                 var headersUrl = new List<string>();
                 if (items != null)
@@ -235,7 +246,7 @@ public class IndexModel : PageModel
                 {
                     
                     Id = list.Id, Name = list.Name, Description = list.Description, IsPublic = list.IsPublic, UserId = list.UserId,
-                    Date = list.CreatedAt, UserName = userWithName?.Username ?? "Usuario desconocido", AvatarUrl = user?.AvatarUrl ?? "/Images/noImage.png",
+                    Date = list.CreatedAt, UserName = userWithName?.Username ?? "Usuario desconocido", AvatarUrl = user?.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/Images/noImage.png",
                     GameHeaders = headersUrl
                 });
             }

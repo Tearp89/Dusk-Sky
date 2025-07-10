@@ -168,7 +168,6 @@ public class StartPageModel : PageModel
             try
             {
                 profile = await _userService.GetProfileAsync(user.Id);
-                // Null validation for profile
                 if (profile == null)
                 {
                     _logger.LogWarning("User profile not found for ID: {UserId}. Using default avatar.", user.Id);
@@ -200,7 +199,7 @@ public class StartPageModel : PageModel
                 {
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim("avatar_url", profile?.AvatarUrl ?? "/images/default_avatar.png"),
+                    new Claim("avatar_url", profile?.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/images/default_avatar.png"),
                     new Claim(ClaimTypes.Role, user.Role ?? "user") 
                 };
 
@@ -237,8 +236,8 @@ public class StartPageModel : PageModel
             }
         }
 
-        _logger.LogWarning("Login failed for user '{Username}'. Incorrect credentials or invalid service response.", LoginData.Username);
-        ErrorMessage = "Incorrect email or password.";
+        _logger.LogWarning("Login failed for user '{Username}'. Credenciales incorrectas. Intente de nuevo.", LoginData.Username);
+        ErrorMessage = "Contraseña o nombre de usuario inconrrecto";
         return Page();
     }
 
@@ -362,7 +361,7 @@ public class StartPageModel : PageModel
                     {
                         new Claim(ClaimTypes.Name, user.Username),
                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                        new Claim("avatar_url", profile?.AvatarUrl ?? "/images/default_avatar.png"),
+                        new Claim("avatar_url", profile?.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/images/default_avatar.png"),
                         new Claim(ClaimTypes.Role, user.Role ?? "user")
                     };
 
@@ -576,7 +575,7 @@ public class StartPageModel : PageModel
                             if (userProfile != null)
                             {
                                 userName = userAuth?.Username ?? "Unknown User";
-                                avatarUrl = userProfile.AvatarUrl ?? "/Images/noImage.png";
+                                avatarUrl = userProfile.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/Images/noImage.png";
                             }
                             else
                             {
@@ -665,18 +664,25 @@ public class StartPageModel : PageModel
                     {
                         var userProfileTask = _userService.GetProfileAsync(list.UserId);
                         var userAuthTask = _authService.SearchUserByIdAsync(list.UserId);
+                        
                         var itemsTask = _gameListItemService.GetItemsByListIdAsync(list.Id);
 
                         await Task.WhenAll(userProfileTask, userAuthTask, itemsTask);
 
                         var userProfile = userProfileTask.Result;
                         var userAuth = userAuthTask.Result;
+                        
+                        if (userAuth == null || !string.Equals(userAuth.status, "active", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _logger.LogInformation("Lista '{ListId}' omitida porque el usuario '{UserId}' no está activo.");
+                            return null;
+                        }
                         var items = itemsTask.Result;
 
                         if (userProfile != null)
                         {
                             userName = userAuth?.Username ?? "Unknown User";
-                            avatarUrl = userProfile.AvatarUrl ?? "/Images/noImage.png";
+                            avatarUrl = userProfile.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/Images/noImage.png";
                         }
                         else
                         {

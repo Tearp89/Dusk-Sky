@@ -16,4 +16,5 @@ public class ReviewFullDto
     public int Likes { get; set; }
     public List<string> LikedBy { get; set; } = new();
     public bool UserLiked { get; set; } = false;
+    
 }
