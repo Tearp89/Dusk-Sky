@@ -1,0 +1,75 @@
+@page "{gameId}"
+@model GameSaleModel
+@{
+    ViewData["Title"] = "Confirmar Compra";
+}
+
+<div class="container my-5 py-5">
+    <div class="row">
+
+        <div class="col-md-7">
+            <h2 class="mb-4">Información de Pago</h2>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            
+            <form method="post">
+                <input type="hidden" asp-for="Input.SaleId" value="@Model.SaleInfo.SaleId" />
+                <input type="hidden" asp-for="Input.GameId" value="@Model.SaleInfo.GameId" />
+                
+                <div class="mb-3">
+                    <label asp-for="Input.CardName" class="form-label"></label>
+                    <input asp-for="Input.CardName" class="form-control" />
+                    <span asp-validation-for="Input.CardName" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.CardNumber" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-credit-card-fill"></i></span>
+                        <input asp-for="Input.CardNumber" class="form-control" placeholder="0000 0000 0000 0000" />
+                    </div>
+                    <span asp-validation-for="Input.CardNumber" class="text-danger small"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Input.ExpiryDate" class="form-label"></label>
+                        <input asp-for="Input.ExpiryDate" class="form-control" placeholder="MM/YY" />
+                        <span asp-validation-for="Input.ExpiryDate" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Input.Cvc" class="form-label"></label>
+                        <input asp-for="Input.Cvc" class="form-control" placeholder="123" />
+                        <span asp-validation-for="Input.Cvc" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <button type="submit" class="w-100 btn btn-primary btn-lg">
+                    Pagar $@Model.SaleInfo.Price.ToString("F2")
+                </button>
+            </form>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm sticky-top" >
+                <img src="@Model.SaleInfo.GameHeaderUrl" class="card-img-top" alt="@Model.SaleInfo.GameTitle">
+                <div class="card-body">
+                    <h4 class="card-title">@Model.SaleInfo.GameTitle</h4>
+                    <p class="card-text text-muted">@Model.SaleInfo.GameDescription</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Precio del juego
+                            <span>$@Model.SaleInfo.Price.ToString("F2")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                            Total a Pagar
+                            <span class="text-primary fs-5">$@Model.SaleInfo.Price.ToString("F2")</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

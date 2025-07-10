@@ -7,13 +7,16 @@ using System.Threading.Tasks;
 public class GamesGeneralModel : PageModel
 {
     private readonly IGameService _gameService;
+    private readonly ISalesService _salesService;
     private readonly ILogger<GamesGeneralModel> _logger; 
 
     public Dictionary<string, List<GamePreviewDTO>> CategorizedGames { get; set; } = new();
+     public List<SaleViewModel> GamesOnSale { get; set; } = new();
 
-    public GamesGeneralModel(IGameService gameService, ILogger<GamesGeneralModel> logger)
+    public GamesGeneralModel(IGameService gameService, ISalesService salesService, ILogger<GamesGeneralModel> logger)
     {
         _gameService = gameService ?? throw new ArgumentNullException(nameof(gameService), "IGameService no puede ser nulo.");
+        _salesService = salesService ?? throw new ArgumentNullException(nameof(gameService), "ISalesService no puede ser nulo.");
         _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo.");
     }
 
@@ -33,6 +36,24 @@ public class GamesGeneralModel : PageModel
             };
 
             await Task.WhenAll(categoryTasks);
+            var salesSummary = await _salesService.GetSalesSummaryAsync();
+        if (salesSummary != null)
+        {
+            foreach (var sale in salesSummary.Where(s => s.Available > 0))
+            {
+                var gameDetails = await _gameService.GetGamePreviewByIdAsync(Guid.Parse(sale.GameId));
+                if (gameDetails != null)
+                {
+                    GamesOnSale.Add(new SaleViewModel
+                    {
+                        GameId = gameDetails.Id.ToString(),
+                        Title = gameDetails.Title,
+                        HeaderUrl = gameDetails.HeaderUrl,
+                        Price = sale.Price
+                    });
+                }
+            }
+        }
 
             _logger.LogInformation("Carga de juegos por categoría completada exitosamente. Total de categorías procesadas: {CategoryCount}", CategorizedGames.Count); 
         }

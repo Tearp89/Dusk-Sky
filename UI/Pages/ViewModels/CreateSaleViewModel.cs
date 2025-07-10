@@ -19,3 +19,34 @@ public class CreateSaleViewModel
     public string GameTitle { get; set; } = string.Empty;
 }
 
+public class GameSaleViewModel
+{
+    public string GameId { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string HeaderUrl { get; set; } = string.Empty;
+    public float Price { get; set; }
+    public int Available { get; set; }
+}
+
+public class SaleSummaryWithGameDto
+{
+    public string GameId { get; set; } = string.Empty;
+
+    public string Title { get; set; } = string.Empty;
+
+    public string HeaderUrl { get; set; } = string.Empty;
+
+    public float Price { get; set; }
+
+    public int Sold { get; set; }
+
+    public int Available { get; set; }
+}
+
+public class SaleViewModel
+{
+    public string GameId { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string HeaderUrl { get; set; } = string.Empty;
+    public float Price { get; set; }
+}

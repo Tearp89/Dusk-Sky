@@ -19,6 +19,9 @@
 
 
     <div id="content-container" style="display: none;">
+        <div class="row">
+
+        
     
         @if (Model.CategorizedGames.Any())
         {
@@ -53,9 +56,100 @@
             </div>
         }
 
+        <div class="col-lg-3">
+                <aside class="sales-sidebar">
+                    <h4 class="mb-3 text-danger">🔥 En venta</h4>
+                    @if (Model.GamesOnSale.Any())
+                    {
+                        <ul class="list-unstyled">
+                            @foreach (var sale in Model.GamesOnSale)
+                            {
+                                <li class="mb-3">
+    <div class="sale-item">
+        
+        <a asp-page="/Sales/GameSale" asp-route-gameId="@sale.GameId" class="sale-item-link d-flex align-items-center">
+            <img src="@sale.HeaderUrl" alt="@sale.Title" class="sale-item-img"/>
+            <div class="sale-item-info">
+                <h6 class="sale-item-title">@sale.Title</h6>
+                <p class="sale-item-price">$@sale.Price.ToString("F2")</p>
+            </div>
+        </a>
+        
+        <a asp-page="/Sales/GameSale" asp-route-gameId="@sale.GameId" class="btn btn-sm btn-success ms-auto">
+            <i class="bi bi-cart-plus"></i> Comprar
+        </a>
+
+    </div>
+</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-muted small">No hay juegos en oferta por el momento.</p>
+                    }
+                </aside>
+            </div>
+        </div>
     </div> </div>
 
 <style>
+    
+
+.sales-sidebar {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    height: 100%;
+}
+
+.sale-item {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: 1px solid #dee2e6;
+}
+
+.sale-item:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.sale-item-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.sale-item-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-right: 15px;
+}
+
+.sale-item-info {
+    flex-grow: 1;
+}
+
+.sale-item-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sale-item-price {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #28a745; 
+}
     .scroll-container {
         overflow-x: auto;
         -ms-overflow-style: none;

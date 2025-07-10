@@ -42,13 +42,14 @@ public class SalesService : ISalesService
         return result ?? new List<SaleSummaryDto>();
     }
 
-    public async Task<dynamic?> GetSaleByGameIdAsync(string gameId)
+    public async Task<SaleDetailsDto?> GetSaleByGameIdAsync(string gameId)
     {
         var response = await _httpClient.GetAsync($"game/{gameId}");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<dynamic>(json);
+
+            return JsonSerializer.Deserialize<SaleDetailsDto>(json);
         }
         return null;
     }
