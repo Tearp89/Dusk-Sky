@@ -19,43 +19,133 @@
 
 
     <div id="content-container" style="display: none;">
-    
-        @if (Model.CategorizedGames.Any())
-        {
-            @foreach (var category in Model.CategorizedGames)
-            {
-                <section class="mb-5">
-                    <h2 class="text-dark mb-3">@category.Key</h2>
+    <div class="row">
 
-                    <div class="scroll-container">
-                        <div class="scroll-content">
-                            @foreach (var game in category.Value)
-                            {
-                                <div class="game-card">
-                                    <a asp-page="/Games/GameDetails" asp-route-gameId="@game.Id" class="text-decoration-none">
-                                        <img src="@game.HeaderUrl" alt="@game.Title" class="game-card-img" />
-                                        <div class="game-card-body">
-                                            <h6 class="game-card-title">@game.Title</h6>
+        <div class="col-lg-9">
+            @if (Model.CategorizedGames.Any())
+            {
+                @foreach (var category in Model.CategorizedGames)
+                {
+                    <section class="mb-5">
+                        <h2 class="text-dark mb-3">@category.Key</h2>
+                        <div class="scroll-container">
+                            <div class="scroll-content">
+                                @foreach (var game in category.Value)
+                                {
+                                    <div class="game-card">
+                                        <a asp-page="/Games/GameDetails" asp-route-gameId="@game.Id" class="text-decoration-none">
+                                            <img src="@game.HeaderUrl" alt="@game.Title" class="game-card-img" />
+                                            <div class="game-card-body">
+                                                <h6 class="game-card-title">@game.Title</h6>
+                                            </div>
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </section>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <h4 class="text-muted">No se encontraron juegos por el momento.</h4>
+                    <p class="text-muted">¡Por favor, vuelve a revisar más tarde!</p>
+                </div>
+            }
+        </div>
+        <div class="col-lg-3">
+            <aside class="sales-sidebar">
+                <h4 class="mb-3 text-danger">🔥 En Venta</h4>
+                @if (Model.GamesOnSale.Any())
+                {
+                    <ul class="list-unstyled">
+                        @foreach (var sale in Model.GamesOnSale)
+                        {
+                            <li class="mb-3">
+                                <div class="sale-item">
+                                    <a asp-page="/Games/GameDetails" asp-route-gameId="@sale.GameId" class="sale-item-link d-flex align-items-center">
+                                        <img src="@sale.HeaderUrl" alt="@sale.Title" class="sale-item-img"/>
+                                        <div class="sale-item-info">
+                                            <h6 class="sale-item-title">@sale.Title</h6>
+                                            <p class="sale-item-price">$@sale.Price.ToString("F2")</p>
                                         </div>
                                     </a>
+                                    <a asp-page="/Sales/GameSale" asp-route-gameId="@sale.GameId" class="btn btn-sm btn-success ms-auto button-glass-blue">
+                                        <i class="bi bi-cart-plus "></i> Comprar
+                                    </a>
                                 </div>
-                            }
-                        </div>
-                    </div>
-                </section>
-            }
-        }
-        else
-        {
-            <div class="text-center py-5">
-                <h4 class="text-muted">No se encontraron juegos por el momento.</h4>
-                <p class="text-muted">¡Por favor, vuelve a revisar más tarde!</p>
-            </div>
-        }
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted small">No hay juegos en oferta por el momento.</p>
+                }
+            </aside>
+        </div>
 
-    </div> </div>
+    </div>
+</div>
+</div>
 
 <style>
+    .sales-sidebar {
+        background-color: transparent;
+        padding: 5px;
+        border-radius: 12px;
+        height: 100%;
+    }
+
+    .sale-item {
+        display: flex;
+        align-items: center;
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 10px;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: 1px solid #dee2e6;
+    }
+
+    .sale-item:hover {
+        transform: scale(1.03);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .sale-item-link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .sale-item-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-right: 15px;
+    }
+
+    .sale-item-info {
+        flex-grow: 1;
+    }
+
+    .sale-item-title {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sale-item-price {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #28a745;
+    }
+
     .scroll-container {
         overflow-x: auto;
         -ms-overflow-style: none;
@@ -69,23 +159,23 @@
     .scroll-content {
         display: flex;
         flex-wrap: nowrap;
-        padding-bottom: 15px; 
+        padding-bottom: 15px;
     }
 
     .game-card {
-        flex: 0 0 auto; 
+        flex: 0 0 auto;
         width: 280px;
         margin-right: 20px;
         background-color: #fff;
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     }
-    
+
     .game-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
     .game-card-img {
@@ -97,7 +187,7 @@
     .game-card-body {
         padding: 1rem;
     }
-    
+
     .game-card-title {
         color: #343a40;
         white-space: nowrap;
@@ -110,13 +200,13 @@
 
 @section Scripts {
     <script>
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             const loader = document.getElementById('loader-container');
             const content = document.getElementById('content-container');
 
             if (loader && content) {
                 loader.style.display = 'none';
-                
+
                 content.style.display = 'block';
             }
         });

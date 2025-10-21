@@ -110,6 +110,7 @@
                                     <ul class="dropdown-menu dropdown-menu-end glassy-dropdown">
                                         <li><a class="dropdown-item" asp-page="/Users/Profile/Index" asp-route-userId="@User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)">Perfil</a></li>
                                         <li><a class="dropdown-item" asp-page="/Users/Friends">Amigos</a></li>
+                                        <li><a class="dropdown-item" asp-page="/Users/MyGames">Mis compras</a></li>
                                         @if(User.IsInRole("admin") || User.IsInRole("moderator")){
                                 <li>
                                     <a class="dropdown-item" asp-page="/Admin/AdminDashboard"> Admin panel</a>

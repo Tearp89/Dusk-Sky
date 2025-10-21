@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Globalization;
-using Microsoft.Extensions.Logging; // ✅ Asegúrate de incluir este using
-using System.Net.Http; // ✅ Añadir para HttpRequestException
+using Microsoft.Extensions.Logging; 
+using System.Net.Http; 
 
 [Authorize]
 public class ReviewDetailsModel : PageModel
@@ -18,7 +18,7 @@ public class ReviewDetailsModel : PageModel
     private readonly IGameListItemService _gameListItemService;
     private readonly IGameListService _gameListService;
     private readonly IModerationReportService _moderationReportService;
-    private readonly ILogger<ReviewDetailsModel> _logger; // ✅ Declaración del logger
+    private readonly ILogger<ReviewDetailsModel> _logger; 
     public bool IsOwner { get; set; }
 
     public ReviewDetailsModel(
@@ -75,9 +75,8 @@ public class ReviewDetailsModel : PageModel
         try
         {
             UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-            _logger.LogInformation("OnGetAsync: Iniciando carga de detalles de reseña '{ReviewId}' para el usuario '{UserId}'.", ReviewId, UserId); // ✅ Registro de información
+            _logger.LogInformation("OnGetAsync: Iniciando carga de detalles de reseña '{ReviewId}' para el usuario '{UserId}'.", ReviewId, UserId); 
 
-            // ✅ Validar que ReviewId no sea nulo o vacío
             if (string.IsNullOrWhiteSpace(ReviewId))
             {
                 _logger.LogWarning("OnGetAsync: ReviewId es nulo o vacío. Redirigiendo a /Error.");
@@ -151,7 +150,7 @@ public class ReviewDetailsModel : PageModel
                 LikedBy = reviewDto.LikedBy ?? new List<string>(),
                 UserLiked = !string.IsNullOrEmpty(UserId) && (reviewDto.LikedBy?.Contains(UserId) ?? false),
                 UserName = userAccount?.Username ?? "Usuario desconocido",
-                ProfileImageUrl = userProfile?.AvatarUrl ?? "/images/noavatar.png",
+                ProfileImageUrl = userProfile?.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/images/noavatar.png",
                 GameImageUrl = game?.HeaderUrl ?? "/images/noimage.png"
             };
             _logger.LogDebug("OnGetAsync: DTO de reseña enriquecido para la reseña '{ReviewId}'.", ReviewId);
@@ -178,7 +177,7 @@ public class ReviewDetailsModel : PageModel
                         Comments.Add(new CommentViewModel
                         {
                             UserName = authorUser?.Username ?? "Anónimo",
-                            UserAvatarUrl = author?.AvatarUrl ?? "/images/noavatar.png",
+                            UserAvatarUrl = author?.AvatarUrl.Replace("localhost", "192.168.100.16") ?? "/images/noavatar.png",
                             Content = comment.Text,
                             CreatedAt = comment.CreatedAt
                         });
@@ -505,7 +504,7 @@ public class ReviewDetailsModel : PageModel
             _logger.LogError(ex, "OnPostToggleTrackingAjaxAsync: HttpRequestException al actualizar el seguimiento para la reseña '{ReviewId}'. Mensaje: {Message}", request.ReviewId, ex.Message);
             return new JsonResult(new { success = false, message = $"Problema de conexión al actualizar el seguimiento: {ex.Message}" }) { StatusCode = 500 };
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnPostToggleTrackingAjaxAsync: Error inesperado al actualizar el seguimiento para la reseña '{ReviewId}'. Mensaje: {Message}", request.ReviewId, ex.Message);
             return new JsonResult(new { success = false, message = $"Error al actualizar el seguimiento: {ex.Message}" }) { StatusCode = 500 };
@@ -687,9 +686,7 @@ public class ReviewDetailsModel : PageModel
                 _logger.LogInformation("OnPostLogReviewWithTrackingAsync: Tracking existente actualizado para el juego '{GameId}' por el usuario '{UserId}'.", GameId, userId);
             }
 
-            SuccessMessage = "Reseña registraada exitosamente.";
-            return RedirectToPage("/Homepage/Index");
-
+            SuccessMessage = "Reseña registrada exitosamente.";
 
             return new JsonResult(new { success = true, message = "Reseña y seguimiento guardados exitosamente." });
 
@@ -896,7 +893,6 @@ public class ReviewDetailsModel : PageModel
         }
     }
 
-    // Clase de modelo para ReportReviewInputModel si no está definida en otro lugar
     public class ReportReviewInputModel
     {
         public string ContentId { get; set; } = string.Empty;

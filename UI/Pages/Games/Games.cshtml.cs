@@ -7,13 +7,16 @@ using System.Threading.Tasks;
 public class GamesGeneralModel : PageModel
 {
     private readonly IGameService _gameService;
+    private readonly ISalesService _salesService;
     private readonly ILogger<GamesGeneralModel> _logger; 
 
     public Dictionary<string, List<GamePreviewDTO>> CategorizedGames { get; set; } = new();
+     public List<SaleViewModel> GamesOnSale { get; set; } = new();
 
-    public GamesGeneralModel(IGameService gameService, ILogger<GamesGeneralModel> logger)
+    public GamesGeneralModel(IGameService gameService, ISalesService salesService, ILogger<GamesGeneralModel> logger)
     {
         _gameService = gameService ?? throw new ArgumentNullException(nameof(gameService), "IGameService no puede ser nulo.");
+        _salesService = salesService ?? throw new ArgumentNullException(nameof(gameService), "ISalesService no puede ser nulo.");
         _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo.");
     }
 
@@ -33,8 +36,26 @@ public class GamesGeneralModel : PageModel
             };
 
             await Task.WhenAll(categoryTasks);
+            var salesSummary = await _salesService.GetSalesSummaryAsync();
+        if (salesSummary != null)
+        {
+            foreach (var sale in salesSummary.Where(s => s.Available > 0))
+            {
+                var gameDetails = await _gameService.GetGamePreviewByIdAsync(Guid.Parse(sale.GameId));
+                if (gameDetails != null)
+                {
+                    GamesOnSale.Add(new SaleViewModel
+                    {
+                        GameId = gameDetails.Id.ToString(),
+                        Title = gameDetails.Title,
+                        HeaderUrl = gameDetails.HeaderUrl,
+                        Price = sale.Price
+                    });
+                }
+            }
+        }
 
-            _logger.LogInformation("Carga de juegos por categoría completada exitosamente. Total de categorías procesadas: {CategoryCount}", CategorizedGames.Count); // ✅ Registro de información
+            _logger.LogInformation("Carga de juegos por categoría completada exitosamente. Total de categorías procesadas: {CategoryCount}", CategorizedGames.Count); 
         }
         catch (ArgumentException ex) 
         {
@@ -71,7 +92,7 @@ public class GamesGeneralModel : PageModel
         }
         if (gameTitles == null || !gameTitles.Any())
         {
-            _logger.LogWarning("AddCategoryAsync: La lista de gameTitles es nula o vacía para la categoría '{CategoryName}'.", categoryName); // ✅ Registro de advertencia
+            _logger.LogWarning("AddCategoryAsync: La lista de gameTitles es nula o vacía para la categoría '{CategoryName}'.", categoryName); 
             return;
         }
 
@@ -83,26 +104,26 @@ public class GamesGeneralModel : PageModel
             {
                 if (string.IsNullOrWhiteSpace(title))
                 {
-                    _logger.LogWarning("AddCategoryAsync: Título de juego nulo o vacío encontrado para la categoría '{CategoryName}'. Saltando.", categoryName); // ✅ Registro de advertencia
+                    _logger.LogWarning("AddCategoryAsync: Título de juego nulo o vacío encontrado para la categoría '{CategoryName}'. Saltando.", categoryName); 
                     return null;
                 }
 
                 var searchResult = await _gameService.SearchGamePreviewsByNameAsync(title);
                 if (searchResult == null || !searchResult.Any())
                 {
-                    _logger.LogInformation("AddCategoryAsync: No se encontraron resultados de vista previa para el juego '{GameTitle}' en la categoría '{CategoryName}'.", title, categoryName); // ✅ Registro de información
+                    _logger.LogInformation("AddCategoryAsync: No se encontraron resultados de vista previa para el juego '{GameTitle}' en la categoría '{CategoryName}'.", title, categoryName); 
                     return null;
                 }
                 return searchResult.FirstOrDefault();
             }
             catch (HttpRequestException ex) 
             {
-                _logger.LogError(ex, "HttpRequestException al cargar el juego '{GameTitle}' para la categoría '{CategoryName}'. Mensaje: {Message}", title, categoryName, ex.Message); // ✅ Registro de error
+                _logger.LogError(ex, "HttpRequestException al cargar el juego '{GameTitle}' para la categoría '{CategoryName}'. Mensaje: {Message}", title, categoryName, ex.Message); 
                 return null; 
             }
             catch (Exception ex) 
             {
-                _logger.LogError(ex, "Error inesperado al cargar el juego '{GameTitle}' para la categoría '{CategoryName}'. Mensaje: {Message}", title, categoryName, ex.Message); // ✅ Registro de error
+                _logger.LogError(ex, "Error inesperado al cargar el juego '{GameTitle}' para la categoría '{CategoryName}'. Mensaje: {Message}", title, categoryName, ex.Message); 
                 return null;
             }
         }).ToList();

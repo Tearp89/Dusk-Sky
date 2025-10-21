@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging; // ✅ Asegúrate de incluir este using
-using System.Net.Http; // ✅ Para HttpRequestException
+using Microsoft.Extensions.Logging; 
+using System.Net.Http; 
 
 
 
 public class ListsProfileModel : ProfileModelBase
 {
-    // --- Servicios necesarios ---
     private readonly IGameListService _gameListService;
     private readonly IGameListItemService _gameListItemService;
     private readonly IGameService _gameService;
@@ -208,7 +207,6 @@ public class ListsProfileModel : ProfileModelBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> OnPostSendRequestAsync(string profileUserId)
     {
-        // ✅ Validar profileUserId
         if (string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostSendRequestAsync: profileUserId es nulo o vacío.");
@@ -348,7 +346,6 @@ public class ListsProfileModel : ProfileModelBase
     [ValidateAntiForgeryToken] 
     public async Task<IActionResult> OnPostReportUserAsync(string profileUserId, string reason)
     {
-        // ✅ Validar parámetros de entrada
         if (string.IsNullOrWhiteSpace(profileUserId))
         {
             _logger.LogWarning("OnPostReportUserAsync: profileUserId es nulo o vacío.");

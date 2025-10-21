@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies; // Necesario para HttpContext.SignOutAsync y CookieAuthenticationDefaults.AuthenticationScheme
-using Microsoft.Extensions.Logging; // ¡Nuevo: Importante para el logging!
+using Microsoft.AspNetCore.Authentication.Cookies; 
+using Microsoft.Extensions.Logging; 
 
 
 
@@ -26,7 +26,6 @@ public class SettingsModel : PageModel
     [TempData]
     public string StatusMessage { get; set; } = string.Empty;
 
-    // Constructor
     public SettingsModel(
         IAuthService authService,
         IUserManagerService userManagerService,

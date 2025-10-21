@@ -10,7 +10,7 @@ public class ReviewsModel : PageModel
     private readonly IGameService _gameService;
     private readonly IAuthService _authService;
     private readonly IUserManagerService _userManagerService;
-    private readonly ILogger<ReviewsModel> _logger; 
+    private readonly ILogger<ReviewsModel> _logger;
 
     public List<ReviewCardViewModel> PopularReviews { get; set; } = new();
     public List<ReviewCardViewModel> RecentReviews { get; set; } = new();
@@ -20,13 +20,13 @@ public class ReviewsModel : PageModel
         IGameService gameService,
         IAuthService authService,
         IUserManagerService userManagerService,
-        ILogger<ReviewsModel> logger) 
+        ILogger<ReviewsModel> logger)
     {
         _reviewService = reviewService ?? throw new ArgumentNullException(nameof(reviewService), "IReviewService no puede ser nulo.");
         _gameService = gameService ?? throw new ArgumentNullException(nameof(gameService), "IGameService no puede ser nulo.");
         _authService = authService ?? throw new ArgumentNullException(nameof(authService), "IAuthService no puede ser nulo.");
         _userManagerService = userManagerService ?? throw new ArgumentNullException(nameof(userManagerService), "IUserManagerService no puede ser nulo.");
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo."); 
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger), "ILogger no puede ser nulo.");
     }
 
     public async Task OnGetAsync()
@@ -42,24 +42,30 @@ public class ReviewsModel : PageModel
             var popularTasks = popularReviewDtos.Select(dto => MapToViewModelAsync(dto));
             var recentTasks = recentReviewDtos.Select(dto => MapToViewModelAsync(dto));
 
-            PopularReviews = (await Task.WhenAll(popularTasks)).ToList();
-            RecentReviews = (await Task.WhenAll(recentTasks)).ToList();
+            PopularReviews = (await Task.WhenAll(popularTasks))
+    .Where(r => r != null)
+    .ToList();
+
+            RecentReviews = (await Task.WhenAll(recentTasks))
+                .Where(r => r != null)
+                .ToList();
+
         }
-        catch (ArgumentNullException ex) 
+        catch (ArgumentNullException ex)
         {
             _logger.LogError(ex, "Error de argumento nulo al cargar las reseñas. Detalles: {Message}", ex.Message);
             TempData["ErrorMessage"] = "Hubo un problema de datos al cargar las reseñas. Por favor, inténtalo de nuevo más tarde.";
             PopularReviews = new List<ReviewCardViewModel>();
             RecentReviews = new List<ReviewCardViewModel>();
         }
-        catch (InvalidOperationException ex) 
+        catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Error de operación inválida al cargar las reseñas. Detalles: {Message}", ex.Message);
             TempData["ErrorMessage"] = "No se pudieron procesar algunas operaciones al cargar las reseñas. Inténtalo más tarde.";
             PopularReviews = new List<ReviewCardViewModel>();
             RecentReviews = new List<ReviewCardViewModel>();
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Ocurrió un error inesperado al cargar las reseñas. Detalles: {Message}", ex.Message);
             TempData["ErrorMessage"] = "Ocurrió un error inesperado al cargar las reseñas. Por favor, inténtalo de nuevo.";
@@ -100,12 +106,18 @@ public class ReviewsModel : PageModel
             {
                 _logger.LogWarning("ReviewDTO con ID '{ReviewId}' tiene un GameId vacío.", reviewDto.Id);
             }
-            
+
             UserSearchResultDto? authUser = null;
             UserProfileDTO? profile = null;
             if (!string.IsNullOrWhiteSpace(reviewDto.UserId))
             {
                 authUser = await _authService.SearchUserByIdAsync(reviewDto.UserId);
+                if (authUser == null || !string.Equals(authUser.status, "active", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogInformation("La reseña '{ReviewId}' fue omitida porque el usuario '{UserId}' no está activo.", reviewDto.Id, reviewDto.UserId);
+                    return null; // Ignorar esta reseña
+                }
+
                 profile = await _userManagerService.GetProfileAsync(reviewDto.UserId);
             }
             else
@@ -121,21 +133,22 @@ public class ReviewsModel : PageModel
                 GameImageUrl = game?.HeaderUrl ?? "/images/noImage.png",
                 UserId = reviewDto.UserId ?? "N/A",
                 UserName = !string.IsNullOrWhiteSpace(authUser?.Username) ? authUser.Username : "Unknown User",
-                UserAvatarUrl = !string.IsNullOrWhiteSpace(profile?.AvatarUrl) ? profile.AvatarUrl : "/images/default-avatar.png",
+                UserAvatarUrl = !string.IsNullOrWhiteSpace(profile?.AvatarUrl) ? profile.AvatarUrl.Replace
+                ("localhost", "192.168.100.16") : "/images/default-avatar.png",
                 Content = reviewDto.Content ?? string.Empty,
                 Rating = reviewDto.Rating,
                 LikesCount = reviewDto.Likes,
                 CreatedAt = reviewDto.CreatedAt
             };
         }
-        catch (HttpRequestException ex) 
+        catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Error de red al mapear la reseña '{ReviewId}'. Detalles: {Message}", reviewDto.Id, ex.Message);
             return new ReviewCardViewModel
             {
                 ReviewId = reviewDto.Id ?? Guid.Empty.ToString(),
                 GameId = reviewDto.GameId.ToString(),
-                GameTitle = "Error de Conexión", 
+                GameTitle = "Error de Conexión",
                 GameImageUrl = "/images/error.png",
                 UserId = reviewDto.UserId ?? "N/A",
                 UserName = "Error User",
@@ -146,7 +159,7 @@ public class ReviewsModel : PageModel
                 CreatedAt = reviewDto.CreatedAt
             };
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error inesperado al mapear la reseña '{ReviewId}'. Detalles: {Message}", reviewDto.Id, ex.Message);
             return new ReviewCardViewModel

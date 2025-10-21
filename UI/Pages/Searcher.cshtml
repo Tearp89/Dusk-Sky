@@ -90,7 +90,7 @@
 }
 
             <!-- Reviews agrupadas por juego -->
-            @if (Model.Reviews.Any())
+            @if (Model.Reviews != null && Model.Reviews.Any())
             {
                 <h5 id="reviews" class="text-primary">Reviews</h5>
 

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
-using Microsoft.Extensions.Logging; // ✅ Asegúrate de incluir este using
+using Microsoft.Extensions.Logging; 
 
 public class SelectGamesModel : PageModel
 {
@@ -65,13 +65,13 @@ public class SelectGamesModel : PageModel
             TempData["ErrorMessage"] = $"Error de sesión: {ex.Message}. Intenta de nuevo.";
             return Page();
         }
-        catch (InvalidOperationException ex) // ✅ Catch específico para operaciones inválidas
+        catch (InvalidOperationException ex) 
         {
             _logger.LogError(ex, "OnGetAsync: InvalidOperationException al cargar la página para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); 
             TempData["ErrorMessage"] = $"Error de operación al cargar la página: {ex.Message}";
             return Page();
         }
-        catch (Exception ex) // ✅ Catch general
+        catch (Exception ex) 
         {
             _logger.LogError(ex, "OnGetAsync: Ocurrió un error inesperado al cargar la página para la lista '{ListId}'. Mensaje: {Message}", ListId, ex.Message); 
             TempData["ErrorMessage"] = $"Ocurrió un error al cargar la página: {ex.Message}";
@@ -404,7 +404,6 @@ public class SelectGamesModel : PageModel
         public string Notes { get; set; } = string.Empty;
     }
 
-    // Clase para renderizar en la interfaz
     public class SelectedGamePreview
     {
         public GamePreviewDTO Game { get; set; } = null!;

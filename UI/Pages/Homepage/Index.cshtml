@@ -40,6 +40,20 @@
     </div>
 }
 
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["StatusMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+}
+
 <div class="index-text">
     <h4 style="color: white;">@ViewData["WelcomeMessage"]</h4> 
     <h6>Esta página de inicio se personalizará a medida que sigas a miembros activos en Letterboxd.</h6>

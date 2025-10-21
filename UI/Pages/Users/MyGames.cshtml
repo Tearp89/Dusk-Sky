@@ -1,0 +1,70 @@
+@page
+@model MyGamesModel
+@{
+    ViewData["Title"] = "Mis Compras";
+}
+
+<style>
+    .game-library-card {
+        background-color: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        height: 100%;
+    }
+    .game-library-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .game-library-img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+    .game-library-body {
+        padding: 1rem;
+    }
+    .game-library-title {
+        color: #343a40;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 0;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container my-5">
+    <div class="mb-4 py-5 text-center">
+        <h1 class="display-4 text-primary">Mi Biblioteca de Juegos</h1>
+        <p class="lead text-muted">Aquí encontrarás todos los juegos que has adquirido.</p>
+    </div>
+
+    @if (Model.PurchasedGames.Any())
+    {
+        <div class="row g-4">
+            @foreach (var game in Model.PurchasedGames)
+            {
+                <div class="col-md-4 col-lg-3">
+                    <a asp-page="/Games/GameDetails" asp-route-gameId="@game.GameId" class="text-decoration-none">
+                        <div class="game-library-card">
+                            <img src="@game.GameHeaderUrl" alt="@game.GameTitle" class="game-library-img" />
+                            <div class="game-library-body">
+                                <h6 class="game-library-title">@game.GameTitle</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <h4 class="text-muted">Aún no has comprado ningún juego.</h4>
+            <p class="text-muted">¡Explora la tienda para encontrar tu próxima aventura!</p>
+            <a asp-page="/Games/General" class="btn btn-primary mt-3">Explorar Juegos</a>
+        </div>
+    }
+</div>
